@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
@@ -39,22 +40,21 @@ const CTASection = () => {
              transition={{ delay: 0.2 }}
              className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); alert("App coming soon! Follow us for updates."); }}
-              className="w-full sm:w-auto px-10 py-4 bg-gold text-background font-body font-semibold text-sm tracking-wider uppercase hover:bg-gold-light transition-all duration-300"
+            <Link
+              to="/auth/register"
+              className="w-full sm:w-auto px-10 py-4 bg-gold text-background font-body font-semibold text-sm tracking-wider uppercase hover:bg-gold-light transition-all duration-300 shadow-xl shadow-gold/10"
             >
-              Order Food Now
-            </a>
+              Start Your Journey
+            </Link>
             
             <span className="text-muted-foreground font-body text-sm mx-2">OR</span>
             
-            <a
-              href="#for-chefs"
+            <Link
+              to="/auth/register"
               className="w-full sm:w-auto px-10 py-4 border border-gold/40 text-gold font-body text-sm tracking-wider uppercase hover:border-gold transition-all duration-300"
             >
               Join as a Chef
-            </a>
+            </Link>
           </motion.div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 import heroImg1 from "@/assets/images/DSC_1516.jpg";
 import heroImg2 from "@/assets/images/DSC_1455.jpg";
@@ -32,12 +33,20 @@ const HeroSection = () => {
           <p className="mt-6 text-muted-foreground font-body text-lg max-w-md leading-relaxed">
             Plokitch connects you with the best home chefs in Gombe. Real kitchens, real recipes, real flavour — delivered fast and reliably every time.
           </p>
-          <a
-            href="#order"
-            className="inline-block mt-8 px-8 py-3.5 border border-gold text-gold text-sm font-body font-medium tracking-wider uppercase hover:bg-gold hover:text-background transition-all duration-300"
-          >
-            Order Food Now
-          </a>
+          <div className="flex flex-wrap gap-4 mt-8">
+            <a
+              href="#order"
+              className="px-8 py-3.5 border border-gold text-gold text-sm font-body font-medium tracking-wider uppercase hover:bg-gold hover:text-background transition-all duration-300"
+            >
+              Order Food Now
+            </a>
+            <Link
+              to="/auth/register"
+              className="px-8 py-3.5 bg-gold text-background text-sm font-body font-medium tracking-wider uppercase hover:bg-gold-light transition-all duration-300 shadow-lg shadow-gold/20"
+            >
+              Join Now
+            </Link>
+          </div>
 
           {/* Rating */}
           <div className="mt-8 flex items-center gap-3">

@@ -1,0 +1,288 @@
+import { ReactNode, useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  LayoutDashboard, 
+  Utensils, 
+  Bike, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X, 
+  Bell, 
+  Search,
+  Users,
+  PieChart,
+  ShoppingBag,
+  Store,
+  MapPin,
+  RefreshCw,
+  ChefHat
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface DashboardLayoutProps {
+  children: ReactNode;
+  role: "chef" | "rider" | "admin" | "customer";
+}
+
+const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) => {
+  const [role, setRole] = useState(initialRole);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Simulated real-time notifications
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (role === "chef") {
+        toast.info("New Order Received!", {
+          description: "ORD-9921: Truffle Salmon Glaze x2",
+          action: { label: "View", onClick: () => navigate("/dashboard/chef") },
+        });
+      } else if (role === "rider") {
+        toast.success("New Delivery Available!", {
+          description: "High payout delivery nearby. Accept now?",
+          action: { label: "Accept", onClick: () => navigate("/dashboard/rider") },
+        });
+      } else if (role === "customer") {
+        toast.message("Order Update", {
+          description: "Your meal is being prepared by Chef Andre.",
+        });
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [role, navigate]);
+
+  const menuItems = {
+    chef: [
+      { icon: LayoutDashboard, label: "Overview", href: "/dashboard/chef" },
+      { icon: ShoppingBag, label: "Orders", href: "/dashboard/chef/orders" },
+      { icon: Utensils, label: "My Menu", href: "/dashboard/chef/menu" },
+      { icon: PieChart, label: "Analytics", href: "/dashboard/chef/analytics" },
+      { icon: Settings, label: "Settings", href: "/dashboard/chef/settings" },
+    ],
+    rider: [
+      { icon: LayoutDashboard, label: "Available Deliveries", href: "/dashboard/rider" },
+      { icon: Bike, label: "My Deliveries", href: "/dashboard/rider/active" },
+      { icon: PieChart, label: "Earnings", href: "/dashboard/rider/earnings" },
+      { icon: Settings, label: "Settings", href: "/dashboard/rider/settings" },
+    ],
+    admin: [
+      { icon: LayoutDashboard, label: "System Status", href: "/admin" },
+      { icon: Users, label: "User Management", href: "/admin/users" },
+      { icon: ShoppingBag, label: "Order Overview", href: "/admin/orders" },
+      { icon: PieChart, label: "Global Analytics", href: "/admin/analytics" },
+      { icon: Settings, label: "Platform Settings", href: "/admin/settings" },
+    ],
+    customer: [
+      { icon: Store, label: "Kitchens", href: "/customer/kitchens" },
+      { icon: ShoppingBag, label: "Marketplace", href: "/customer/marketplace" },
+      { icon: MapPin, label: "Track Order", href: "/customer/track" },
+      { icon: Settings, label: "Profile", href: "/customer/profile" },
+    ]
+  };
+
+  const currentMenu = menuItems[role];
+
+  const handleRoleSwitch = (newRole: "chef" | "rider" | "admin" | "customer") => {
+    setRole(newRole);
+    // In a real app we'd navigate, for demo we just switch UI
+    const paths = {
+      chef: "/dashboard/chef",
+      rider: "/dashboard/rider",
+      admin: "/admin",
+      customer: "/customer/kitchens"
+    };
+    navigate(paths[newRole]);
+  };
+
+  return (
+    <div className="min-h-screen bg-dark-deep font-body text-foreground flex flex-col md:flex-row">
+      {/* Sidebar - Desktop Only */}
+      <aside 
+        className={`${
+          isSidebarOpen ? "w-64" : "w-20"
+        } bg-dark-surface border-r border-gold/10 transition-all duration-300 hidden md:flex flex-col z-50`}
+      >
+        <div className="p-6 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center shrink-0">
+            <Utensils size={18} className="text-background" />
+          </div>
+          {isSidebarOpen && (
+            <span className="font-heading font-bold text-xl text-gold tracking-tight lowercase">Plokitch</span>
+          )}
+        </div>
+
+        {/* Role Switcher (For Test Only) */}
+        {isSidebarOpen && (
+          <div className="px-4 mb-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full border-gold/20 text-gold hover:bg-gold/5 flex justify-between gap-2 overflow-hidden">
+                  <span className="truncate flex items-center gap-2">
+                    <RefreshCw size={14} />
+                    Role: {role}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-dark-surface border-gold/10 text-white w-56">
+                <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gold/10" />
+                <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {currentMenu.map((item) => (
+            <Link
+              key={item.label}
+              to={item.href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                location.pathname === item.href
+                  ? "bg-gold text-background shadow-lg shadow-gold/20"
+                  : "text-muted-foreground hover:bg-gold/5 hover:text-gold"
+              }`}
+            >
+              <item.icon size={20} />
+              {isSidebarOpen && <span className="font-medium text-sm">{item.label}</span>}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-gold/10">
+          <Button 
+            variant="ghost" 
+            className="w-full flex items-center justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut size={20} />
+            {isSidebarOpen && <span className="text-sm">Sign Out</span>}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
+        <header className="h-16 md:h-20 bg-dark-surface/50 backdrop-blur-md border-b border-gold/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-4 flex-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="text-gold hidden md:flex"
+            >
+              <Menu size={24} />
+            </Button>
+            
+            {/* Mobile Title */}
+            <div className="flex items-center gap-2 md:hidden">
+              <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center shrink-0">
+                <Utensils size={16} className="text-background" />
+              </div>
+              <span className="font-heading font-black text-gold tracking-tight lowercase">Plokitch</span>
+            </div>
+
+            <div className="max-w-md w-full relative hidden lg:block ml-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Input 
+                placeholder="Search..." 
+                className="pl-10 bg-dark-deep/50 border-gold/10 focus:border-gold h-9 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 md:gap-6">
+            <button className="relative text-muted-foreground hover:text-gold transition-colors p-2">
+              <Bell size={20} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-gold rounded-full" />
+            </button>
+            <div className="flex items-center gap-3 pl-3 md:pl-6 border-l border-gold/10">
+              <div className="text-right hidden sm:block">
+                <p className="text-[10px] font-bold text-gold uppercase tracking-widest">{role}</p>
+              </div>
+              <Avatar className="h-8 w-8 md:h-10 md:w-10 border border-gold/20">
+                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${role}`} />
+                <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-x-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="p-4 md:p-8"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+
+      {/* Bottom Navigation - Mobile Only */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-dark-surface/90 backdrop-blur-xl border-t border-gold/10 flex items-center justify-between px-2 py-1 z-50 md:hidden">
+        {currentMenu.slice(0, 5).map((item) => (
+          <Link
+            key={item.label}
+            to={item.href}
+            className={`flex flex-col items-center gap-1 flex-1 py-2 px-1 rounded-xl transition-all ${
+              location.pathname === item.href
+                ? "text-gold"
+                : "text-muted-foreground"
+            }`}
+          >
+            <item.icon size={20} className={location.pathname === item.href ? "scale-110" : ""} />
+            <span className="text-[10px] font-medium tracking-tight truncate w-full text-center">{item.label}</span>
+            {location.pathname === item.href && (
+              <motion.div 
+                layoutId="activeTab"
+                className="w-1 h-1 bg-gold rounded-full"
+              />
+            )}
+          </Link>
+        ))}
+        {/* Role Switcher in Mobile Nav */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex flex-col items-center gap-1 flex-1 py-2 px-1 text-muted-foreground">
+              <RefreshCw size={20} />
+              <span className="text-[10px] font-medium">Switch</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="end" className="bg-dark-surface border-gold/10 text-white w-56 mb-2">
+            <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-gold/10" />
+            <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </nav>
+    </div>
+  );
+};
+
+export default DashboardLayout;

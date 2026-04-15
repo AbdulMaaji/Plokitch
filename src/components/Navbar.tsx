@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, X, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -39,12 +40,21 @@ const Navbar = () => {
         </div>
 
         {/* CTA */}
-        <a
-          href="#order"
-          className="hidden md:inline-block px-6 py-2.5 bg-gold text-background text-sm font-body font-semibold tracking-wider uppercase hover:bg-gold-light transition-all duration-300"
-        >
-          Order Now
-        </a>
+        <div className="hidden md:flex items-center gap-4">
+          <Link
+            to="/auth/login"
+            className="text-sm font-body font-medium text-foreground/80 hover:text-gold transition-colors flex items-center gap-2 px-3 py-2"
+          >
+            <User size={16} />
+            Login
+          </Link>
+          <Link
+            to="/auth/register"
+            className="px-6 py-2.5 bg-gold text-background text-sm font-body font-semibold tracking-wider uppercase hover:bg-gold-light transition-all duration-300"
+          >
+            Join Now
+          </Link>
+        </div>
 
         {/* Mobile Toggle */}
         <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-foreground">
@@ -71,13 +81,21 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <a
-                href="#order"
+              <Link
+                to="/auth/login"
+                onClick={() => setIsOpen(false)}
+                className="text-foreground/80 hover:text-gold transition-colors font-body flex items-center gap-2"
+              >
+                <User size={18} />
+                Login
+              </Link>
+              <Link
+                to="/auth/register"
                 onClick={() => setIsOpen(false)}
                 className="mt-2 px-6 py-2.5 bg-gold text-background text-sm font-body font-semibold tracking-wider uppercase text-center hover:bg-gold-light transition-all duration-300"
               >
-                Order Now
-              </a>
+                Join Now
+              </Link>
             </div>
           </motion.div>
         )}

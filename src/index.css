@@ -80,7 +80,13 @@
     border-color: hsl(var(--gold));
   }
   .section-label {
-    @apply text-sm uppercase tracking-[0.3em] text-gold font-body font-medium;
+    @apply text-[10px] md:text-sm uppercase tracking-[0.3em] text-gold font-body font-medium;
+  }
+  .mobile-safe-bottom {
+    @apply pb-24 md:pb-8;
+  }
+  .glass-card {
+    @apply bg-dark-surface/80 backdrop-blur-xl border border-white/5;
   }
 }
 
