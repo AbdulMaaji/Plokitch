@@ -7,22 +7,22 @@ const Navbar = () => {
 
   const links = [
     { label: "Home", href: "#hero" },
+    { label: "How It Works", href: "#how-it-works" },
+    { label: "For Chefs", href: "#for-chefs" },
     { label: "About", href: "#about" },
-    { label: "Menu", href: "#menu" },
-    { label: "Contact", href: "#reservation" },
   ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <a href="#hero" className="flex flex-col items-center gap-0">
-          <svg width="32" height="32" viewBox="0 0 64 64" fill="none" className="text-gold">
-            <path d="M32 4c-4 8-12 16-12 28a12 12 0 0024 0C44 20 36 12 32 4z" stroke="currentColor" strokeWidth="2.5" fill="none"/>
-            <path d="M28 24c-2 4-4 8-4 14a8 8 0 0016 0c0-6-2-10-4-14" stroke="currentColor" strokeWidth="2" fill="none"/>
-            <path d="M32 20c-1 3-3 6-3 11a3 3 0 006 0c0-5-2-8-3-11z" fill="currentColor"/>
+        <a href="#hero" className="flex items-center gap-2.5">
+          <svg width="34" height="34" viewBox="0 0 64 64" fill="none" className="text-gold">
+            <path d="M32 8C24 8 16 16 16 28c0 10 8 20 16 24 8-4 16-14 16-24C48 16 40 8 32 8z" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+            <path d="M22 36c4-4 6-10 10-12 4 2 6 8 10 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+            <circle cx="32" cy="28" r="4" fill="currentColor"/>
           </svg>
-          <span className="text-xs font-body font-semibold tracking-[0.25em] text-gold uppercase">Monks Crave</span>
+          <span className="text-xl font-heading font-semibold text-gold tracking-wide">Plokitch</span>
         </a>
 
         {/* Desktop Links */}
@@ -40,10 +40,10 @@ const Navbar = () => {
 
         {/* CTA */}
         <a
-          href="#menu"
-          className="hidden md:inline-block px-6 py-2.5 border border-gold text-gold text-sm font-body font-medium tracking-wider uppercase hover:bg-gold hover:text-background transition-all duration-300"
+          href="#order"
+          className="hidden md:inline-block px-6 py-2.5 bg-gold text-background text-sm font-body font-semibold tracking-wider uppercase hover:bg-gold-light transition-all duration-300"
         >
-          View Menu
+          Order Now
         </a>
 
         {/* Mobile Toggle */}
@@ -52,7 +52,6 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -73,11 +72,11 @@ const Navbar = () => {
                 </a>
               ))}
               <a
-                href="#menu"
+                href="#order"
                 onClick={() => setIsOpen(false)}
-                className="mt-2 px-6 py-2.5 border border-gold text-gold text-sm font-body font-medium tracking-wider uppercase text-center hover:bg-gold hover:text-background transition-all duration-300"
+                className="mt-2 px-6 py-2.5 bg-gold text-background text-sm font-body font-semibold tracking-wider uppercase text-center hover:bg-gold-light transition-all duration-300"
               >
-                View Menu
+                Order Now
               </a>
             </div>
           </motion.div>

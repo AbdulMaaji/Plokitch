@@ -1,13 +1,10 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import WhyChooseUs from "@/components/WhyChooseUs";
-import MenuSection from "@/components/MenuSection";
+import HowItWorksSection from "@/components/HowItWorksSection";
+import WhyUsSection from "@/components/WhyUsSection";
+import VendorSection from "@/components/VendorSection";
 import AboutSection from "@/components/AboutSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import InstagramGallery from "@/components/InstagramGallery";
-import ReservationSection from "@/components/ReservationSection";
-import BlogSection from "@/components/BlogSection";
-import NewsletterSection from "@/components/NewsletterSection";
+import CTASection from "@/components/CTASection";
 import FooterSection from "@/components/FooterSection";
 
 const Index = () => {
@@ -15,14 +12,11 @@ const Index = () => {
     <div className="min-h-screen">
       <Navbar />
       <HeroSection />
-      <WhyChooseUs />
-      <MenuSection />
+      <HowItWorksSection />
+      <WhyUsSection />
+      <VendorSection />
       <AboutSection />
-      <TestimonialsSection />
-      <InstagramGallery />
-      <ReservationSection />
-      <BlogSection />
-      <NewsletterSection />
+      <CTASection />
       <FooterSection />
     </div>
   );
