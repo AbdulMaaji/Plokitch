@@ -1,4 +1,4 @@
-import { Mail, Instagram, Youtube, Facebook } from "lucide-react";
+import { Mail } from "lucide-react";
 
 const FooterSection = () => {
   return (
@@ -56,9 +56,8 @@ const FooterSection = () => {
                 <Mail size={14} /> hello@plokitch.com
               </a>
               <div className="flex items-center gap-4 mt-2">
-                <a href="#" className="text-muted-foreground hover:text-gold transition-colors"><Instagram size={18} /></a>
-                <a href="#" className="text-muted-foreground hover:text-gold transition-colors"><Youtube size={18} /></a>
-                <a href="#" className="text-muted-foreground hover:text-gold transition-colors"><Facebook size={18} /></a>
+                <a href="#" className="text-muted-foreground hover:text-gold transition-colors text-xs uppercase tracking-widest">Twitter</a>
+                <a href="#" className="text-muted-foreground hover:text-gold transition-colors text-xs uppercase tracking-widest">Instagram</a>
               </div>
             </div>
           </div>
