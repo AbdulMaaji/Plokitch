@@ -17,7 +17,8 @@ import {
   Store,
   MapPin,
   RefreshCw,
-  ChefHat
+  ChefHat,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,6 +110,20 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
     navigate(paths[newRole]);
   };
 
+  const handleSignOut = () => {
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 800)),
+      {
+        loading: "Signing out of Plokitch...",
+        success: () => {
+          navigate("/");
+          return "Signed out successfully";
+        },
+        error: "Failed to sign out",
+      }
+    );
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-dark-deep font-body text-foreground flex flex-col md:flex-row">
       {/* Sidebar - Desktop Only */}
@@ -170,6 +185,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
         <div className="p-4 border-t border-gold/10">
           <Button 
             variant="ghost" 
+            onClick={handleSignOut}
             className="w-full flex items-center justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <LogOut size={20} />
@@ -217,10 +233,29 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
               <div className="text-right hidden sm:block">
                 <p className="text-[10px] font-bold text-gold uppercase tracking-widest">{role}</p>
               </div>
-              <Avatar className="h-8 w-8 md:h-10 md:w-10 border border-gold/20">
-                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${role}`} />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="h-8 w-8 md:h-10 md:w-10 border border-gold/20 cursor-pointer hover:opacity-80 transition-opacity">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${role}`} />
+                    <AvatarFallback>JD</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-dark-surface border-gold/10 text-white w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-gold/10" />
+                  <DropdownMenuItem onClick={() => navigate("/customer/profile")} className="hover:bg-gold/10 cursor-pointer flex gap-2">
+                    <User size={16} className="text-gold" /> Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(role === "admin" ? "/admin/settings" : `/dashboard/${role}/settings`)} className="hover:bg-gold/10 cursor-pointer flex gap-2">
+                    <Settings size={16} className="text-gold" /> Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gold/10" />
+                  <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10 text-destructive cursor-pointer flex gap-2">
+                    <LogOut size={16} /> Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
