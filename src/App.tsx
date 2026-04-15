@@ -7,6 +7,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/auth/Login.tsx";
 import Register from "./pages/auth/Register.tsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
 import ChefDashboard from "./pages/dashboard/chef/ChefDashboard.tsx";
 import ChefOrders from "./pages/dashboard/chef/ChefOrders.tsx";
 import ChefMenu from "./pages/dashboard/chef/ChefMenu.tsx";
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           
           {/* Chef Routes */}
           <Route path="/dashboard/chef" element={<ChefDashboard />} />
