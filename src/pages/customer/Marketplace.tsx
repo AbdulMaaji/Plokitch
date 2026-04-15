@@ -64,7 +64,7 @@ const Marketplace = () => {
           <div className="flex gap-2 md:gap-4">
             <div className="relative group flex-1 lg:min-w-[300px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-gold transition-colors" size={16} />
-              <Input placeholder="Search dishes..." className="h-11 md:h-12 pl-10 md:pl-12 bg-dark-surface border-gold/10 focus:border-gold rounded-xl shadow-lg text-sm" />
+              <Input placeholder="Search dishes..." className="h-11 md:h-12 pl-10 md:pl-12 !bg-white/5 backdrop-blur-md border-gold/10 focus:border-gold rounded-full shadow-lg text-sm transition-all" />
             </div>
             <Button variant="outline" className="h-11 md:h-12 border-gold/10 bg-dark-surface text-gold hover:bg-gold/5 rounded-xl px-4 md:px-6">
               <Filter size={18} />

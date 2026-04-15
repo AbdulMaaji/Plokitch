@@ -110,12 +110,12 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
   };
 
   return (
-    <div className="min-h-screen bg-dark-deep font-body text-foreground flex flex-col md:flex-row">
+    <div className="h-screen overflow-hidden bg-dark-deep font-body text-foreground flex flex-col md:flex-row">
       {/* Sidebar - Desktop Only */}
       <aside 
         className={`${
           isSidebarOpen ? "w-64" : "w-20"
-        } bg-dark-surface border-r border-gold/10 transition-all duration-300 hidden md:flex flex-col z-50`}
+        } bg-dark-surface border-r border-gold/10 transition-all duration-300 hidden md:flex flex-col z-50 sticky top-0 h-screen`}
       >
         <div className="p-6 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center shrink-0">
@@ -179,7 +179,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden pb-20 md:pb-0">
         <header className="h-16 md:h-20 bg-dark-surface/50 backdrop-blur-md border-b border-gold/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4 flex-1">
             <Button 
@@ -203,7 +203,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <Input 
                 placeholder="Search..." 
-                className="pl-10 bg-dark-deep/50 border-gold/10 focus:border-gold h-9 text-sm"
+                className="pl-10 !bg-white/5 backdrop-blur-md border-gold/10 focus:border-gold focus:!bg-white/10 h-10 text-sm rounded-full transition-all"
               />
             </div>
           </div>
@@ -225,7 +225,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
