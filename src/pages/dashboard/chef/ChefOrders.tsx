@@ -15,11 +15,11 @@ import { Input } from "@/components/ui/input";
 
 const ChefOrders = () => {
   const orders = [
-    { id: "ORD-9921", date: "2024-04-15", customer: "Sophia Chen", total: "$112.50", status: "Preparing", payment: "Paid" },
-    { id: "ORD-9922", date: "2024-04-15", customer: "Marcus Wright", total: "$45.00", status: "Ready", payment: "Paid" },
-    { id: "ORD-9923", date: "2024-04-14", customer: "Elena Rodriguez", total: "$78.20", status: "Delivered", payment: "Paid" },
-    { id: "ORD-9924", date: "2024-04-14", customer: "David Smith", total: "$92.00", status: "Cancelled", payment: "Refunded" },
-    { id: "ORD-9925", date: "2024-04-13", customer: "Aisha Khan", total: "$54.00", status: "Delivered", payment: "Paid" },
+    { id: "ORD-9921", date: "2024-04-15", customer: "Sophia Chen", total: "₦112,500", status: "Preparing", payment: "Paid" },
+    { id: "ORD-9922", date: "2024-04-15", customer: "Marcus Wright", total: "₦45,000", status: "Ready", payment: "Paid" },
+    { id: "ORD-9923", date: "2024-04-14", customer: "Elena Rodriguez", total: "₦78,200", status: "Delivered", payment: "Paid" },
+    { id: "ORD-9924", date: "2024-04-14", customer: "David Smith", total: "₦92,000", status: "Cancelled", payment: "Refunded" },
+    { id: "ORD-9925", date: "2024-04-13", customer: "Aisha Khan", total: "₦54,000", status: "Delivered", payment: "Paid" },
   ];
 
   return (

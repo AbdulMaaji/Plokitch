@@ -135,15 +135,15 @@ const LiveTrack = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Truffle Salmon Glaze x2</span>
-                  <span className="text-white font-bold">$90.00</span>
+                  <span className="text-white font-bold">₦90,000</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Artisan Bread Pack</span>
-                  <span className="text-white font-bold">$12.00</span>
+                  <span className="text-white font-bold">₦12,000</span>
                 </div>
                 <div className="pt-4 border-t border-gold/5 flex justify-between items-center">
                   <span className="text-gold font-black uppercase tracking-widest text-xs">Total</span>
-                  <span className="text-2xl font-black text-white font-heading">$112.50</span>
+                  <span className="text-2xl font-black text-white font-heading">₦112,500</span>
                 </div>
               </div>
               <Button variant="ghost" className="w-full mt-6 text-gold font-bold hover:bg-gold/5 flex items-center justify-center gap-2">

@@ -8,11 +8,11 @@ import { Switch } from "@/components/ui/switch";
 
 const ChefMenu = () => {
   const menuItems = [
-    { id: 1, name: "Truffle Salmon Glaze", category: "Mains", price: "$45.00", stock: 12, active: true },
-    { id: 2, name: "Wild Mushroom Risotto", category: "Mains", price: "$32.00", stock: 8, active: true },
-    { id: 3, name: "Artisan Bread Pack", category: "Sides", price: "$12.00", stock: 25, active: true },
-    { id: 4, name: "Lava Cake Central", category: "Desserts", price: "$18.00", stock: 5, active: false },
-    { id: 5, name: "Kaltu Zobo Fusion", category: "Drinks", price: "$8.00", stock: 50, active: true },
+    { id: 1, name: "Truffle Salmon Glaze", category: "Mains", price: "₦45,000", stock: 12, active: true },
+    { id: 2, name: "Wild Mushroom Risotto", category: "Mains", price: "₦32,000", stock: 8, active: true },
+    { id: 3, name: "Artisan Bread Pack", category: "Sides", price: "₦12,000", stock: 25, active: true },
+    { id: 4, name: "Lava Cake Central", category: "Desserts", price: "₦18,000", stock: 5, active: false },
+    { id: 5, name: "Kaltu Zobo Fusion", category: "Drinks", price: "₦8,000", stock: 50, active: true },
   ];
 
   return (
