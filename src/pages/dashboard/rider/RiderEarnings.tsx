@@ -15,16 +15,16 @@ import { Badge } from "@/components/ui/badge";
 
 const RiderEarnings = () => {
   const stats = [
-    { title: "Total Balance", value: "$420.50", icon: Wallet, color: "text-gold" },
-    { title: "Last Payout", value: "$310.00", icon: Building, color: "text-emerald-500" },
+    { title: "Total Balance", value: "₦420,500", icon: Wallet, color: "text-gold" },
+    { title: "Last Payout", value: "₦310,000", icon: Building, color: "text-emerald-500" },
     { title: "Weekly Goal", value: "85%", icon: TrendingUp, color: "text-blue-500" },
   ];
 
   const transactions = [
-    { id: "TX-901", date: "April 15", type: "Delivery Payout", amount: "$82.40", status: "Pending" },
-    { id: "TX-900", date: "April 14", type: "Weekly Withdrawal", amount: "-$310.00", status: "Completed" },
-    { id: "TX-899", date: "April 14", type: "Delivery Payout", amount: "$112.00", status: "Completed" },
-    { id: "TX-898", date: "April 13", type: "Referral Bonus", amount: "$25.00", status: "Completed" },
+    { id: "TX-901", date: "April 15", type: "Delivery Payout", amount: "₦82,400", status: "Pending" },
+    { id: "TX-900", date: "April 14", type: "Weekly Withdrawal", amount: "-₦310,000", status: "Completed" },
+    { id: "TX-899", date: "April 14", type: "Delivery Payout", amount: "₦112,000", status: "Completed" },
+    { id: "TX-898", date: "April 13", type: "Referral Bonus", amount: "₦25,000", status: "Completed" },
   ];
 
   return (
