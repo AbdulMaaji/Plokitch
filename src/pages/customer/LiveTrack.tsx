@@ -38,25 +38,52 @@ const LiveTrack = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Map Section */}
           <Card className="lg:col-span-2 bg-dark-surface border-gold/10 overflow-hidden relative min-h-[500px] rounded-[2.5rem]">
-            <div className="absolute inset-0 bg-[url('https://api.dicebear.com/7.x/shapes/svg?seed=trackmap')] opacity-20 contrast-125 scale-150 rotate-12" />
-            <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-transparent to-transparent" />
-            
-            {/* Mock Map Elements */}
-            <div className="absolute top-1/4 left-1/3">
-              <div className="w-12 h-12 bg-gold/20 rounded-full flex items-center justify-center border border-gold/40 animate-pulse">
-                <ChefHat className="text-gold" size={24} />
+            {/* Real OpenStreetMap iframe */}
+            <div className="relative w-full h-full min-h-[500px]">
+              <iframe
+                src="https://www.openstreetmap.org/export/embed.html?bbox=10.2740%2C11.1500%2C10.2940%2C11.1700&layer=mapnik&marker=11.1600%2C10.2840"
+                className="absolute inset-0 w-full h-full border-0 rounded-[2.5rem]"
+                style={{ filter: 'brightness(0.7) contrast(1.1)' }}
+                title="Order Tracking Map"
+              />
+              
+              {/* Overlay markers positioned on the map */}
+              <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gold/90 rounded-full flex items-center justify-center border-2 border-gold shadow-lg shadow-gold/50 animate-pulse">
+                    <ChefHat className="text-white" size={24} />
+                  </div>
+                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                    <span className="text-xs bg-gold text-black px-2 py-1 rounded-full font-bold">Kitchen</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="absolute top-1/2 left-1/3 transform -translate-x-1/2 -translate-y-1/2">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-blue-500/90 rounded-full flex items-center justify-center border-2 border-blue-500 shadow-lg shadow-blue-500/50 animate-bounce">
+                    <Bike className="text-white" size={32} />
+                  </div>
+                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                    <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full font-bold">Rider</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="absolute bottom-1/3 right-1/3 transform translate-x-1/2 translate-y-1/2">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-red-500/90 rounded-full flex items-center justify-center border-2 border-red-500 shadow-lg shadow-red-500/50">
+                    <MapPin className="text-white" size={24} />
+                  </div>
+                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                    <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">Delivery</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="absolute bottom-1/4 right-1/2">
-              <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/30 animate-bounce">
-                <Bike className="text-blue-500" size={32} />
-              </div>
-            </div>
-            <div className="absolute top-1/2 right-1/4">
-              <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/30">
-                <MapPin className="text-red-500" size={24} />
-              </div>
-            </div>
+
+            {/* Cover OpenStreetMap attribution */}
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-dark-surface" />
 
             <div className="absolute bottom-10 left-10 p-6 bg-dark-deep/80 backdrop-blur-xl border border-gold/20 rounded-2xl flex items-center gap-6 max-w-sm">
               <div className="w-16 h-16 rounded-full bg-dark-surface border border-gold/10 overflow-hidden">
