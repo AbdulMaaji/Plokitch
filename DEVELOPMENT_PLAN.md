@@ -280,4 +280,32 @@ orders {
 
 ---
 
+## **Deployment Strategy**
+
+### **Student Pack Benefits Available**
+- **Digital Ocean**: $200 free credit (1 year)
+- **Free Domain**: Via GitHub Student Pack (.app, .dev, .live, .studio, etc.)
+- **Frontend Hosting**: Vercel (free tier)
+- **Backend Hosting**: Digital Ocean droplet
+
+### **Architecture**
+```
+Frontend (React) -> Vercel -> Custom Domain
+Backend (Fastify) -> Digital Ocean -> Supabase DB
+```
+
+### **Cost Analysis**
+- **First Year**: $0-25/month (student pack benefits)
+- **After Year 1**: $40-140/month (full pricing)
+
+### **Deployment Timeline**
+- **Week 1**: Claim student benefits, setup Vercel deployment
+- **Week 2**: Setup Digital Ocean droplet, basic backend
+- **Week 3**: Domain configuration, SSL setup
+- **Week 4**: CI/CD pipeline, monitoring setup
+
+*See DEPLOYMENT_PLAN.md for complete deployment details.*
+
+---
+
 *This plan will be updated as development progresses and requirements evolve.*
