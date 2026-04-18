@@ -23,6 +23,7 @@ import OrderOverview from "./pages/admin/OrderOverview.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
 import Kitchens from "./pages/customer/Kitchens.tsx";
+import KitchenDetail from "./pages/customer/KitchenDetail.tsx";
 import Marketplace from "./pages/customer/Marketplace.tsx";
 import LiveTrack from "./pages/customer/LiveTrack.tsx";
 import CustomerProfile from "./pages/customer/CustomerProfile.tsx";
@@ -64,6 +65,7 @@ const App = () => (
           {/* Customer Routes */}
           <Route path="/customer" element={<Navigate to="/customer/kitchens" replace />} />
           <Route path="/customer/kitchens" element={<Kitchens />} />
+          <Route path="/customer/kitchens/:id" element={<KitchenDetail />} />
           <Route path="/customer/marketplace" element={<Marketplace />} />
           <Route path="/customer/track" element={<LiveTrack />} />
           <Route path="/customer/profile" element={<CustomerProfile />} />

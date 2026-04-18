@@ -10,8 +10,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 const Kitchens = () => {
+  const navigate = useNavigate();
   const chefs = [
     {
       name: "Chef Andre L'Aube",
@@ -91,7 +93,10 @@ const Kitchens = () => {
                   </div>
                 </div>
 
-                <Button className="w-full h-14 bg-gold hover:bg-gold-light text-background font-black tracking-[0.1em] group rounded-2xl">
+                <Button 
+                  className="w-full h-14 bg-gold hover:bg-gold-light text-background font-black tracking-[0.1em] group rounded-2xl"
+                  onClick={() => navigate(`/customer/kitchens/${chef.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                >
                   VIEW FULL ATELIER
                   <ChevronRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
