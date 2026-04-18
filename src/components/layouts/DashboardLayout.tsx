@@ -44,6 +44,22 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
   const location = useLocation();
   const navigate = useNavigate();
 
+  const getAllowedRoles = () => {
+    switch (initialRole) {
+      case "admin":
+        return ["admin", "chef", "rider", "customer"];
+      case "chef":
+        return ["chef", "customer"];
+      case "rider":
+        return ["rider", "customer"];
+      case "customer":
+      default:
+        return ["customer"];
+    }
+  };
+
+  const allowedRoles = getAllowedRoles();
+
   // Simulated real-time notifications
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -142,7 +158,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
         </div>
 
         {/* Role Switcher (For Test Only) */}
-        {isSidebarOpen && (
+        {isSidebarOpen && allowedRoles.length > 1 && (
           <div className="px-4 mb-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -156,10 +172,10 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
               <DropdownMenuContent className="bg-dark-surface border-gold/10 text-white w-56">
                 <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gold/10" />
-                <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>
+                {allowedRoles.includes("customer") && <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>}
+                {allowedRoles.includes("chef") && <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>}
+                {allowedRoles.includes("rider") && <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>}
+                {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -299,22 +315,24 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
           </Link>
         ))}
         {/* Role Switcher in Mobile Nav */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex flex-col items-center gap-1 flex-1 py-2 px-1 text-muted-foreground">
-              <RefreshCw size={20} />
-              <span className="text-[10px] font-medium">Switch</span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="end" className="bg-dark-surface border-gold/10 text-white w-56 mb-2">
-            <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-gold/10" />
-            <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {allowedRoles.length > 1 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex flex-col items-center gap-1 flex-1 py-2 px-1 text-muted-foreground">
+                <RefreshCw size={20} />
+                <span className="text-[10px] font-medium">Switch</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="end" className="bg-dark-surface border-gold/10 text-white w-56 mb-2">
+              <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-gold/10" />
+              {allowedRoles.includes("customer") && <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>}
+              {allowedRoles.includes("chef") && <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>}
+              {allowedRoles.includes("rider") && <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>}
+              {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </nav>
     </div>
   );
