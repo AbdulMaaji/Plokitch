@@ -6,20 +6,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, Lock, Mail } from "lucide-react";
+import { signIn } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
+
+    const { data, error } = await signIn.email({
+      email,
+      password,
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      toast.error(error.message || "Failed to sign in. Please check your credentials.");
+      return;
+    }
+
+    if (data) {
+      toast.success("Welcome back!");
+      // Determine dashboard route based on role...
+      // Since we just log in, we could route to a default or check session next.
+      // Assuming customer default for now.
       navigate("/customer");
-    }, 1500);
+    }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-dark-deep relative overflow-hidden">
@@ -66,6 +86,8 @@ const Login = () => {
                     type="email" 
                     placeholder="name@example.com" 
                     required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 bg-dark-deep/50 border-gold/10 focus:border-gold transition-colors"
                   />
                 </div>
@@ -82,6 +104,8 @@ const Login = () => {
                     type="password" 
                     placeholder="••••••••" 
                     required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 bg-dark-deep/50 border-gold/10 focus:border-gold transition-colors"
                   />
                 </div>

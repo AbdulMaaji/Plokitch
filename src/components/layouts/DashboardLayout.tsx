@@ -1,15 +1,15 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  Utensils, 
-  Bike, 
-  Settings, 
-  LogOut, 
-  Menu, 
-  X, 
-  Bell, 
+import {
+  LayoutDashboard,
+  Utensils,
+  Bike,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  Bell,
   Search,
   Users,
   PieChart,
@@ -24,6 +24,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +54,23 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const [isSignOutOpen, setIsSignOutOpen] = useState(false);
+
+  const getAllowedRoles = () => {
+    switch (initialRole) {
+      case "admin":
+        return ["admin", "chef", "rider", "customer"];
+      case "chef":
+        return ["chef", "customer"];
+      case "rider":
+        return ["rider", "customer"];
+      case "customer":
+      default:
+        return ["customer"];
+    }
+  };
+
+  const allowedRoles = getAllowedRoles();
 
   // Simulated real-time notifications
   useEffect(() => {
@@ -110,27 +138,22 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
     navigate(paths[newRole]);
   };
 
-  const handleSignOut = () => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 800)),
-      {
-        loading: "Signing out of Plokitch...",
-        success: () => {
-          navigate("/");
-          return "Signed out successfully";
-        },
-        error: "Failed to sign out",
-      }
-    );
+  const handleSignOutConfirm = async () => {
+    try {
+      await authClient.signOut();
+      toast.success("Signed out successfully");
+      navigate("/");
+    } catch (error) {
+      toast.error("Failed to sign out");
+    }
   };
 
   return (
     <div className="h-screen overflow-hidden bg-dark-deep font-body text-foreground flex flex-col md:flex-row">
       {/* Sidebar - Desktop Only */}
-      <aside 
-        className={`${
-          isSidebarOpen ? "w-64" : "w-20"
-        } bg-dark-surface border-r border-gold/10 transition-all duration-300 hidden md:flex flex-col z-50 sticky top-0 h-screen`}
+      <aside
+        className={`${isSidebarOpen ? "w-64" : "w-20"
+          } bg-dark-surface border-r border-gold/10 transition-all duration-300 hidden md:flex flex-col z-50 sticky top-0 h-screen`}
       >
         <div className="p-6 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center shrink-0">
@@ -142,7 +165,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
         </div>
 
         {/* Role Switcher (For Test Only) */}
-        {isSidebarOpen && (
+        {isSidebarOpen && allowedRoles.length > 1 && (
           <div className="px-4 mb-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -156,10 +179,10 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
               <DropdownMenuContent className="bg-dark-surface border-gold/10 text-white w-56">
                 <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gold/10" />
-                <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>
+                {allowedRoles.includes("customer") && <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>}
+                {allowedRoles.includes("chef") && <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>}
+                {allowedRoles.includes("rider") && <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>}
+                {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -170,11 +193,10 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
             <Link
               key={item.label}
               to={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                location.pathname === item.href
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname === item.href
                   ? "bg-gold text-background shadow-lg shadow-gold/20"
                   : "text-muted-foreground hover:bg-gold/5 hover:text-gold"
-              }`}
+                }`}
             >
               <item.icon size={20} />
               {isSidebarOpen && <span className="font-medium text-sm">{item.label}</span>}
@@ -183,9 +205,9 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
         </nav>
 
         <div className="p-4 border-t border-gold/10">
-          <Button 
-            variant="ghost" 
-            onClick={handleSignOut}
+          <Button
+            variant="ghost"
+            onClick={() => setIsSignOutOpen(true)}
             className="w-full flex items-center justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <LogOut size={20} />
@@ -198,15 +220,15 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden pb-20 md:pb-0">
         <header className="h-16 md:h-20 bg-dark-surface/50 backdrop-blur-md border-b border-gold/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4 flex-1">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="text-gold hidden md:flex"
             >
               <Menu size={24} />
             </Button>
-            
+
             {/* Mobile Title */}
             <div className="flex items-center gap-2 md:hidden">
               <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center shrink-0">
@@ -217,8 +239,8 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
 
             <div className="max-w-md w-full relative hidden lg:block ml-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <Input 
-                placeholder="Search..." 
+              <Input
+                placeholder="Search..."
                 className="pl-10 !bg-white/5 backdrop-blur-md border-gold/10 focus:border-gold focus:!bg-white/10 h-10 text-sm rounded-full transition-all"
               />
             </div>
@@ -233,7 +255,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
               <div className="text-right hidden sm:block">
                 <p className="text-[10px] font-bold text-gold uppercase tracking-widest">{role}</p>
               </div>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="h-8 w-8 md:h-10 md:w-10 border border-gold/20 cursor-pointer hover:opacity-80 transition-opacity">
@@ -251,7 +273,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
                     <Settings size={16} className="text-gold" /> Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gold/10" />
-                  <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10 text-destructive cursor-pointer flex gap-2">
+                  <DropdownMenuItem onClick={() => setIsSignOutOpen(true)} className="hover:bg-destructive/10 text-destructive cursor-pointer flex gap-2">
                     <LogOut size={16} /> Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -282,16 +304,15 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
           <Link
             key={item.label}
             to={item.href}
-            className={`flex flex-col items-center gap-1 flex-1 py-2 px-1 rounded-xl transition-all ${
-              location.pathname === item.href
+            className={`flex flex-col items-center gap-1 flex-1 py-2 px-1 rounded-xl transition-all ${location.pathname === item.href
                 ? "text-gold"
                 : "text-muted-foreground"
-            }`}
+              }`}
           >
             <item.icon size={20} className={location.pathname === item.href ? "scale-110" : ""} />
             <span className="text-[10px] font-medium tracking-tight truncate w-full text-center">{item.label}</span>
             {location.pathname === item.href && (
-              <motion.div 
+              <motion.div
                 layoutId="activeTab"
                 className="w-1 h-1 bg-gold rounded-full"
               />
@@ -299,23 +320,40 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
           </Link>
         ))}
         {/* Role Switcher in Mobile Nav */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex flex-col items-center gap-1 flex-1 py-2 px-1 text-muted-foreground">
-              <RefreshCw size={20} />
-              <span className="text-[10px] font-medium">Switch</span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="end" className="bg-dark-surface border-gold/10 text-white w-56 mb-2">
-            <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-gold/10" />
-            <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {allowedRoles.length > 1 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex flex-col items-center gap-1 flex-1 py-2 px-1 text-muted-foreground">
+                <RefreshCw size={20} />
+                <span className="text-[10px] font-medium">Switch</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="end" className="bg-dark-surface border-gold/10 text-white w-56 mb-2">
+              <DropdownMenuLabel>Simulation Mode</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-gold/10" />
+              {allowedRoles.includes("customer") && <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>}
+              {allowedRoles.includes("chef") && <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>}
+              {allowedRoles.includes("rider") && <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>}
+              {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </nav>
+
+      <AlertDialog open={isSignOutOpen} onOpenChange={setIsSignOutOpen}>
+        <AlertDialogContent className="bg-dark-surface border-gold/20 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading font-black text-gold">Ready to leave?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Are you sure you want to sign out of your account? You will need to log back in to access your dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 hover:bg-white/5 text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSignOutConfirm} className="bg-red-500 text-white hover:bg-red-600 font-bold uppercase tracking-widest">Sign Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -14,7 +14,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const url = new URL(
           request.url,
-          `${request.protocol}://${request.hostname}:${process.env.PORT ?? 4000}`
+          `${request.protocol}://${request.hostname}`
         );
 
         const headers = fromNodeHeaders(request.headers);
