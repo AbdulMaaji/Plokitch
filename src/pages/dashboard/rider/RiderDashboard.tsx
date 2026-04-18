@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,30 +35,10 @@ const RiderDashboard = () => {
   return (
     <DashboardLayout role="rider">
       <div className="h-[calc(100vh-120px)] md:h-[calc(100vh-160px)] relative overflow-hidden rounded-[2rem] border border-gold/10 bg-dark-deep">
-        {/* Full-screen Map Concept */}
+        {/* Full-screen Map Integration */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[url('https://api.dicebear.com/7.x/shapes/svg?seed=mapdark')] opacity-30 contrast-125 grayscale h-full w-full object-cover lg:scale-150" />
+          <OrderTrackingMap showLabels={false} className="h-full w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-dark-deep via-transparent to-transparent opacity-80" />
-          
-          {/* Mock Pulse Pins */}
-          <div className="absolute top-1/4 left-1/3">
-            <div className="relative">
-              <div className="w-4 h-4 bg-emerald-500 rounded-full border-2 border-white animate-ping absolute" />
-              <div className="w-4 h-4 bg-emerald-500 rounded-full border-2 border-white relative shadow-lg shadow-emerald-500/50" />
-            </div>
-          </div>
-          <div className="absolute top-1/2 left-1/2">
-            <div className="relative">
-              <div className="w-4 h-4 bg-gold rounded-full border-2 border-white animate-ping absolute" />
-              <div className="w-4 h-4 bg-gold rounded-full border-2 border-white relative shadow-lg shadow-gold/50" />
-            </div>
-          </div>
-          <div className="absolute bottom-1/3 right-1/4">
-            <div className="relative">
-              <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white animate-ping absolute" />
-              <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white relative shadow-lg shadow-blue-500/50" />
-            </div>
-          </div>
         </div>
 
         {/* Top Overlay Controls */}

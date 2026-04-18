@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 const ActiveDeliveries = () => {
+  const navigate = useNavigate();
   const activeDeliveries = [
     { 
       id: "DEL-410", 
@@ -83,7 +85,10 @@ const ActiveDeliveries = () => {
                     </div>
 
                     <div className="flex flex-row lg:flex-col gap-3">
-                      <Button className="h-14 lg:w-48 bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest flex gap-2">
+                      <Button 
+                        onClick={() => navigate("/dashboard/rider")}
+                        className="h-14 lg:w-48 bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest flex gap-2"
+                      >
                         <Navigation size={18} />
                         OPEN MAPS
                       </Button>

@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
 
 const ChefDashboard = () => {
   const activeOrders = [
@@ -138,14 +139,21 @@ const ChefDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2 bg-dark-surface border-gold/10 p-6 flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1">
-              <h3 className="text-xl font-heading font-black text-white mb-2">Grow Your Orders</h3>
-              <p className="text-sm text-muted-foreground mb-6">Promote your kitchen to reach 2,500+ more customers in Gombe this weekend.</p>
-              <Button className="bg-white text-background hover:bg-gold hover:text-background font-black tracking-widest">BOOST NOW</Button>
+          <Card className="lg:col-span-2 bg-dark-surface border-gold/10 p-0 overflow-hidden relative group min-h-[300px]">
+            <div className="absolute top-6 left-6 z-10">
+              <Badge className="bg-dark-deep/80 backdrop-blur-md border border-gold/20 text-gold font-black px-4 py-1.5 uppercase tracking-widest text-[10px]">
+                Active Delivery Tracking
+              </Badge>
             </div>
-            <div className="w-32 h-32 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center rotate-3 shrink-0">
-              <TrendingUp size={48} className="text-gold" />
+            <OrderTrackingMap showLabels={false} className="h-full w-full min-h-[300px]" />
+            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-dark-surface via-dark-surface/40 to-transparent flex items-end justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Current Assignment</p>
+                <h4 className="text-lg font-bold text-white">Rider: Dominic T.</h4>
+              </div>
+              <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-4 py-1.5 font-black uppercase tracking-widest">
+                8 mins away
+              </Badge>
             </div>
           </Card>
         </div>
