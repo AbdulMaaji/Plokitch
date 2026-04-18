@@ -38,9 +38,11 @@ await fastify.register(fastifySensible);
 
 await fastify.register(fastifyCors, {
   origin: [
-    process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
+    process.env.CLIENT_ORIGIN ?? "http://localhost:8080",
     "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:8080",
+    "http://192.168.1.174:8080",
   ],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],

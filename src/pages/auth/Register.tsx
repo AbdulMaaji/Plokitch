@@ -7,21 +7,46 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, Mail, User, ChefHat, Bike, ShieldCheck } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { signUp } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const Register = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState("customer");
+  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+
+    const name = `${firstName} ${lastName}`.trim();
+
+    const { data, error } = await signUp.email({
+      email,
+      password,
+      name,
+      // Pass the role using the custom fields configured in backend
+      role, 
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      toast.error(error.message || "Failed to create account.");
+      return;
+    }
+
+    if (data) {
+      toast.success("Account created successfully!");
       if (role === "chef") navigate("/dashboard/chef");
       else if (role === "rider") navigate("/dashboard/rider");
       else navigate("/customer");
-    }, 1500);
+    }
   };
 
   const roles = [
@@ -64,17 +89,52 @@ const Register = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
-                  <Input id="firstName" placeholder="John" required className="bg-dark-deep/50 border-gold/10 focus:border-gold" />
+                  <Input 
+                    id="firstName" 
+                    placeholder="John" 
+                    required 
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-dark-deep/50 border-gold/10 focus:border-gold" 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
-                  <Input id="lastName" placeholder="Doe" required className="bg-dark-deep/50 border-gold/10 focus:border-gold" />
+                  <Input 
+                    id="lastName" 
+                    placeholder="Doe" 
+                    required 
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="bg-dark-deep/50 border-gold/10 focus:border-gold" 
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
-                <Input id="email" type="email" placeholder="john@example.com" required className="bg-dark-deep/50 border-gold/10 focus:border-gold" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="john@example.com" 
+                  required 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-dark-deep/50 border-gold/10 focus:border-gold" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  placeholder="••••••••" 
+                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-dark-deep/50 border-gold/10 focus:border-gold" 
+                />
               </div>
 
               <div className="space-y-4">
