@@ -24,6 +24,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +54,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const [isSignOutOpen, setIsSignOutOpen] = useState(false);
 
   const getAllowedRoles = () => {
     switch (initialRole) {
@@ -126,18 +138,14 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
     navigate(paths[newRole]);
   };
 
-  const handleSignOut = () => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 800)),
-      {
-        loading: "Signing out of Plokitch...",
-        success: () => {
-          navigate("/");
-          return "Signed out successfully";
-        },
-        error: "Failed to sign out",
-      }
-    );
+  const handleSignOutConfirm = async () => {
+    try {
+      await authClient.signOut();
+      toast.success("Signed out successfully");
+      navigate("/");
+    } catch (error) {
+      toast.error("Failed to sign out");
+    }
   };
 
   return (
@@ -199,7 +207,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
         <div className="p-4 border-t border-gold/10">
           <Button
             variant="ghost"
-            onClick={handleSignOut}
+            onClick={() => setIsSignOutOpen(true)}
             className="w-full flex items-center justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <LogOut size={20} />
@@ -265,7 +273,7 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
                     <Settings size={16} className="text-gold" /> Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gold/10" />
-                  <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10 text-destructive cursor-pointer flex gap-2">
+                  <DropdownMenuItem onClick={() => setIsSignOutOpen(true)} className="hover:bg-destructive/10 text-destructive cursor-pointer flex gap-2">
                     <LogOut size={16} /> Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -331,6 +339,21 @@ const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) 
           </DropdownMenu>
         )}
       </nav>
+
+      <AlertDialog open={isSignOutOpen} onOpenChange={setIsSignOutOpen}>
+        <AlertDialogContent className="bg-dark-surface border-gold/20 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading font-black text-gold">Ready to leave?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Are you sure you want to sign out of your account? You will need to log back in to access your dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 hover:bg-white/5 text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSignOutConfirm} className="bg-red-500 text-white hover:bg-red-600 font-bold uppercase tracking-widest">Sign Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

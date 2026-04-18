@@ -18,12 +18,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const CustomerProfile = () => {
+  const navigate = useNavigate();
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
@@ -61,6 +74,16 @@ const CustomerProfile = () => {
       toast.error("Something went wrong");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+      toast.success("Signed out successfully");
+      navigate("/");
+    } catch (error) {
+      toast.error("Failed to sign out");
     }
   };
 
@@ -258,10 +281,26 @@ const CustomerProfile = () => {
                   </Button>
                 ))}
                 <div className="pt-4 mt-4 border-t border-white/5">
-                  <Button variant="ghost" className="w-full justify-start gap-4 h-14 text-red-500 hover:bg-red-500/5 font-black uppercase tracking-widest text-[10px]">
-                    <LogOut size={18} />
-                    Sign Out
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-start gap-4 h-14 text-red-500 hover:bg-red-500/5 font-black uppercase tracking-widest text-[10px]">
+                        <LogOut size={18} />
+                        Sign Out
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-dark-surface border-gold/20 text-white">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="font-heading font-black text-gold">Ready to leave?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-muted-foreground">
+                          Are you sure you want to sign out of your account? You will need to log back in to access your dashboard.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="border-white/10 hover:bg-white/5 text-white">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSignOut} className="bg-red-500 text-white hover:bg-red-600 font-bold uppercase tracking-widest">Sign Out</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
