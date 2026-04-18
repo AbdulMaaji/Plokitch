@@ -49,15 +49,25 @@ interface DashboardLayoutProps {
   role: "chef" | "rider" | "admin" | "customer";
 }
 
-const DashboardLayout = ({ children, role: initialRole }: DashboardLayoutProps) => {
-  const [role, setRole] = useState(initialRole);
+const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => {
+  const { data: session } = authClient.useSession();
+  const userRole = session?.user?.role as "chef" | "rider" | "admin" | "customer" || pageRole;
+  
+  const [role, setRole] = useState(pageRole);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
 
+  // Update role if pageRole changes
+  useEffect(() => {
+    setRole(pageRole);
+  }, [pageRole]);
+
   const getAllowedRoles = () => {
-    switch (initialRole) {
+    // Admin can simulate anything
+    // If not admin, use the role from the session
+    switch (userRole) {
       case "admin":
         return ["admin", "chef", "rider", "customer"];
       case "chef":
