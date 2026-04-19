@@ -31,14 +31,26 @@ export async function locationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Get rider's current location if a rider is assigned
+      // Get rider's current location and name if a rider is assigned
       let riderLocation: { lat: number; lng: number } | null = null;
+      let riderName: string | null = null;
+      
       if (orderData.riderId) {
         const rider = await db.query.riderProfile.findFirst({
           where: eq(riderProfile.userId, orderData.riderId),
+          with: {
+            user: {
+              columns: {
+                name: true,
+              }
+            }
+          }
         });
         if (rider?.currentLocation) {
           riderLocation = rider.currentLocation;
+        }
+        if (rider?.user?.name) {
+          riderName = rider.user.name;
         }
       }
 

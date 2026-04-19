@@ -18,7 +18,8 @@ import {
   MapPin,
   RefreshCw,
   ChefHat,
-  User
+  User,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,8 +108,9 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
       { icon: Settings, label: "Platform Settings", href: "/admin/settings" },
     ],
     customer: [
+      { icon: Sparkles, label: "Discover", href: "/explore" },
       { icon: Store, label: "Kitchens", href: "/customer/kitchens" },
-      { icon: ShoppingBag, label: "Marketplace", href: "/customer/marketplace" },
+      { icon: Utensils, label: "Dishes", href: "/dishes" },
       { icon: MapPin, label: "Track Order", href: "/customer/track" },
       { icon: Settings, label: "Profile", href: "/customer/profile" },
     ]
@@ -252,7 +254,6 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
             )}
             <button className="relative text-muted-foreground hover:text-gold transition-colors p-2">
               <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-gold rounded-full" />
             </button>
             <div className="flex items-center gap-3 pl-3 md:pl-6 border-l border-gold/10">
               <div className="text-right hidden sm:block">
@@ -270,7 +271,7 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
                 <DropdownMenuContent className="bg-dark-surface border-gold/10 text-white w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gold/10" />
-                  <DropdownMenuItem onClick={() => navigate("/customer/profile")} className="hover:bg-gold/10 cursor-pointer flex gap-2">
+                  <DropdownMenuItem onClick={() => navigate(role === "customer" ? "/customer/profile" : role === "admin" ? "/admin/settings" : `/dashboard/${role}/settings`)} className="hover:bg-gold/10 cursor-pointer flex gap-2">
                     <User size={16} className="text-gold" /> Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate(role === "admin" ? "/admin/settings" : `/dashboard/${role}/settings`)} className="hover:bg-gold/10 cursor-pointer flex gap-2">

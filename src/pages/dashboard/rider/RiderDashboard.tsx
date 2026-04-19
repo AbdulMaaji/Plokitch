@@ -39,15 +39,23 @@ const RiderDashboard = () => {
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   
-  // Fetch my current active delivery
   const { data: myOrders } = useQuery({
     queryKey: ["my-orders"],
     queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders`, {
-        headers: { "Content-Type": "application/json" }
-      });
-      const json = await res.json();
-      return json.data as any[];
+      if (!session?.session?.token) return [];
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders`, {
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.session.token}`
+          }
+        });
+        const json = await res.json();
+        return json.data || [];
+      } catch (error) {
+        console.error("Failed to fetch my orders:", error);
+        return [];
+      }
     }
   });
 
@@ -67,9 +75,19 @@ const RiderDashboard = () => {
   const { data: availableOrders, isLoading: isLoadingAvailable } = useQuery({
     queryKey: ["available-orders"],
     queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders/available`);
-      const json = await res.json();
-      return json.data as any[];
+      if (!session?.session?.token) return [];
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders/available`, {
+          headers: {
+            "Authorization": `Bearer ${session.session.token}`
+          }
+        });
+        const json = await res.json();
+        return json.data || [];
+      } catch (error) {
+        console.error("Failed to fetch available orders:", error);
+        return [];
+      }
     },
     refetchInterval: 10000,
   });
@@ -77,9 +95,13 @@ const RiderDashboard = () => {
   // Mutation to accept an order
   const acceptOrder = useMutation({
     mutationFn: async (orderId: string) => {
+      if (!session?.session?.token) throw new Error("Not authenticated");
       const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders/${orderId}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.session.token}`
+        },
         body: JSON.stringify({ 
           status: "picking",
           riderId: session?.user?.id 

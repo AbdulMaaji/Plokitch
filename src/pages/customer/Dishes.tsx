@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
+import { DISH_CATEGORIES } from "@/constants/categories";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -27,6 +28,7 @@ const Dishes = () => {
   const [selectedDish, setSelectedDish] = useState<any | null>(null);
   const [dishes, setDishes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     const fetchMarketplace = async () => {
@@ -61,11 +63,18 @@ const Dishes = () => {
   }, []);
 
   const filteredDishes = useMemo(() => {
-    return dishes.filter(dish => 
-      dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dish.chef.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery, dishes]);
+    return dishes.filter(dish => {
+      const matchesSearch = 
+        dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dish.chef.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const itemCategory = dish.category?.toLowerCase() || "mains";
+      const selectedCatLower = selectedCategory.toLowerCase();
+      const matchesCategory = selectedCategory === "All" || itemCategory === selectedCatLower;
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, dishes, selectedCategory]);
 
   return (
     <DashboardLayout role="customer">
@@ -94,6 +103,31 @@ const Dishes = () => {
             </Button>
           </div>
         </header>
+
+        {/* Category Filter Bar */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar -mx-6 px-6 lg:mx-0 lg:px-0">
+          <Button 
+            onClick={() => setSelectedCategory("All")}
+            variant={selectedCategory === "All" ? "default" : "outline"}
+            className={`h-11 px-8 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shrink-0 ${
+              selectedCategory === "All" ? "bg-gold text-background hover:bg-gold" : "border-gold/10 text-muted-foreground hover:border-gold/40 hover:bg-white/5"
+            }`}
+          >
+            All Selections
+          </Button>
+          {DISH_CATEGORIES.map(cat => (
+            <Button 
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              variant={selectedCategory === cat ? "default" : "outline"}
+              className={`h-11 px-8 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shrink-0 ${
+                selectedCategory === cat ? "bg-gold text-background hover:bg-gold" : "border-gold/10 text-muted-foreground hover:border-gold/40 hover:bg-white/5"
+              }`}
+            >
+              {cat}
+            </Button>
+          ))}
+        </div>
 
         <section>
           <div className="flex items-center justify-between mb-8">

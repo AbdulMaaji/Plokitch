@@ -1,5 +1,5 @@
-import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { useSession } from "@/lib/auth-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   User, 
@@ -22,6 +22,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { Locate, Map as MapIcon, Navigation2 } from "lucide-react";
 
 const RiderSettings = () => {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("Profile Information");
 
   const handleSave = () => {
@@ -65,14 +66,14 @@ const RiderSettings = () => {
               <CardContent className="px-6 pb-8 -mt-12 text-center">
                 <div className="relative inline-block mx-auto mb-4">
                   <div className="w-24 h-24 rounded-full border-4 border-dark-deep bg-dark-surface overflow-hidden">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=rider" alt="Rider Profile" />
+                    <img src={session?.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session?.user.email}`} alt="Rider Profile" />
                   </div>
                   <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gold text-background flex items-center justify-center border-2 border-dark-deep shadow-xl hover:scale-110 transition-transform">
                     <Camera size={14} />
                   </button>
                 </div>
-                <h3 className="text-xl font-bold text-white uppercase tracking-tight">Dominic Toretto</h3>
-                <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-1">Rating: 4.98 ⭐</p>
+                <h3 className="text-xl font-bold text-white uppercase tracking-tight">{session?.user.name || "UNNAMED RIDER"}</h3>
+                <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mt-1">Rating: 5.0 ⭐</p>
                 <div className="mt-8 flex flex-col gap-2 text-white">
                    {navItems.map((item) => (
                     <Button 
@@ -110,11 +111,11 @@ const RiderSettings = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black text-gold uppercase tracking-widest">Primary Vehicle</Label>
-                        <Input defaultValue="Tesla Model 3" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                        <Input placeholder="e.g. Toyota Corolla" className="bg-dark-deep border-gold/10 focus:border-gold" />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black text-gold uppercase tracking-widest">License Plate</Label>
-                        <Input defaultValue="GMB-22-LGT" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                        <Input placeholder="Enter Plate Number" className="bg-dark-deep border-gold/10 focus:border-gold" />
                       </div>
                     </div>
                     <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
