@@ -35,10 +35,10 @@ const HeroSection = () => {
           </p>
           <div className="flex flex-wrap gap-4 mt-8">
             <Link
-              to="/customer/kitchens"
+              to="/explore"
               className="px-8 py-3.5 bg-gold text-background text-sm font-body font-black tracking-widest uppercase hover:bg-gold-light transition-all duration-300 shadow-lg shadow-gold/20"
             >
-              Explore Kitchens
+              Explore Bazaar
             </Link>
             <Link
               to="/dishes"

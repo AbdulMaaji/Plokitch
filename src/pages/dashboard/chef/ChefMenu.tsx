@@ -23,9 +23,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { useChefData } from "@/hooks/useChefData";
 import { uploadImage } from "@/lib/upload";
 import { Loader2 } from "lucide-react";
+import { DISH_CATEGORIES } from "@/constants/categories";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -60,11 +60,14 @@ const ChefMenu = () => {
     imageUrl: "",
   });
 
-  const categories = ["All", "Mains", "Sides", "Desserts", "Drinks"];
+  const categories = ["All", ...DISH_CATEGORIES];
 
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+    const itemCategory = item.category?.toLowerCase() || "mains";
+    const selectedCatLower = selectedCategory.toLowerCase();
+    
+    const matchesCategory = selectedCategory === "All" || itemCategory === selectedCatLower;
     return matchesSearch && matchesCategory;
   });
 

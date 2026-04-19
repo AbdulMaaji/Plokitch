@@ -6,7 +6,8 @@ import {
   ChefHat, 
   Heart,
   ChevronRight,
-  Clock
+  Clock,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,8 +68,8 @@ const Kitchens = () => {
                   
                   {/* Floating Chef Avatar */}
                   <div className="absolute -bottom-4 left-8 w-12 h-12 rounded-full border-4 border-dark-surface overflow-hidden shadow-xl z-20 bg-dark-deep">
-                    {chef.owner?.image ? (
-                      <img src={chef.owner.image} alt={chef.owner.name} className="w-full h-full object-cover" />
+                    {chef.user?.image ? (
+                      <img src={chef.user.image} alt={chef.user.name} className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-full h-full p-2 text-gold/20" />
                     )}

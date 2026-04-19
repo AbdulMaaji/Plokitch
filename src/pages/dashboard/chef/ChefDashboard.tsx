@@ -83,7 +83,6 @@ const ChefDashboard = () => {
           <div>
             <h1 className="text-3xl md:text-4xl font-heading font-black text-white">Kitchen Orders</h1>
             <p className="text-muted-foreground text-sm flex items-center gap-2 mt-1">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               Your kitchen ({myVendor.businessName}) is live in {myVendor.location?.city}
             </p>
           </div>
@@ -199,7 +198,7 @@ const ChefDashboard = () => {
             <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-dark-surface via-dark-surface/40 to-transparent flex items-end justify-between">
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Current Assignment</p>
-                <h4 className="text-lg font-bold text-white">Rider: Dominic T.</h4>
+                <h4 className="text-lg font-bold text-white">Search Rider...</h4>
               </div>
               <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-4 py-1.5 font-black uppercase tracking-widest">
                 8 mins away

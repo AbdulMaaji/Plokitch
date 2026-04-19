@@ -21,7 +21,7 @@ export async function vendorRoutes(fastify: FastifyInstance) {
     const vendors = await db.query.vendor.findMany({
       where: eq(vendor.isActive, true),
       with: {
-        owner: {
+        user: {
           columns: {
             name: true,
             image: true,
@@ -29,7 +29,6 @@ export async function vendorRoutes(fastify: FastifyInstance) {
         },
         menuItems: {
           where: eq(menuItem.isAvailable, true),
-          limit: 4,
         },
       },
       limit,
@@ -72,7 +71,7 @@ export async function vendorRoutes(fastify: FastifyInstance) {
     const vendorData = await db.query.vendor.findFirst({
       where: eq(vendor.id, id),
       with: {
-        owner: {
+        user: {
           columns: {
             name: true,
             image: true,

@@ -15,9 +15,11 @@ import {
   ShoppingBag,
   UtensilsCrossed,
   Award,
-  Zap
+  Zap,
+  User
 } from "lucide-react";
 import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
+import { DISH_CATEGORIES } from "@/constants/categories";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -27,6 +29,7 @@ const KitchenDetail = () => {
   const [selectedDish, setSelectedDish] = useState<any>(null);
   const [kitchenData, setKitchenData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     const fetchKitchenDetail = async () => {
@@ -42,8 +45,8 @@ const KitchenDetail = () => {
             bio: k.description,
             time: k.deliveryTime || "25-35 min",
             image: k.imageUrl || "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop",
-            chefImage: k.owner?.image,
-            chefName: k.owner?.name,
+            chefImage: k.user?.image,
+            chefName: k.user?.name,
             tag: k.tag || "Verified Artisan",
             dishes: k.menuItems.map((item: any) => ({
               ...item,
@@ -60,6 +63,14 @@ const KitchenDetail = () => {
     };
     if (id) fetchKitchenDetail();
   }, [id]);
+
+  const filteredDishes = useMemo(() => {
+    if (!kitchenData) return [];
+    if (selectedCategory === "All") return kitchenData.dishes;
+    return kitchenData.dishes.filter((dish: any) => 
+      dish.category?.toLowerCase() === selectedCategory.toLowerCase()
+    );
+  }, [kitchenData, selectedCategory]);
 
   if (loading) {
     return (
@@ -202,15 +213,30 @@ const KitchenDetail = () => {
                   <h2 className="text-3xl font-heading font-black text-white">Atelier Menu</h2>
                   <p className="text-muted-foreground mt-1">Explore current season's exclusive creations</p>
                </div>
-               <div className="flex gap-2">
-                  <Badge className="bg-gold/10 text-gold border-gold/20 px-3 py-1 cursor-pointer hover:bg-gold hover:text-background transition-all">ALL</Badge>
-                  <Badge variant="outline" className="border-gold/10 text-white/40 px-3 py-1 cursor-pointer hover:border-gold/40 transition-all">MAINS</Badge>
-                  <Badge variant="outline" className="border-gold/10 text-white/40 px-3 py-1 cursor-pointer hover:border-gold/40 transition-all">SIDES</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge 
+                    onClick={() => setSelectedCategory("All")}
+                    className={`${selectedCategory === "All" ? "bg-gold text-background" : "bg-gold/10 text-gold border-gold/20"} px-3 py-1 cursor-pointer transition-all uppercase text-[10px] font-black`}
+                  >
+                    ALL
+                  </Badge>
+                  {DISH_CATEGORIES.map(cat => (
+                    <Badge 
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      variant={selectedCategory === cat ? "default" : "outline"}
+                      className={`px-3 py-1 cursor-pointer transition-all uppercase text-[10px] font-black ${
+                        selectedCategory === cat ? "bg-gold text-background" : "border-gold/10 text-white/40 hover:border-gold/40"
+                      }`}
+                    >
+                      {cat}
+                    </Badge>
+                  ))}
                </div>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {kitchenData.dishes.map((dish: any) => (
+              {filteredDishes.map((dish: any) => (
                 <Card 
                   key={dish.id} 
                   className="bg-dark-surface border-gold/10 overflow-hidden group hover:border-gold/40 transition-all cursor-pointer rounded-2xl"

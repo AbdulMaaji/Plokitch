@@ -20,6 +20,15 @@ const Navbar = () => {
     if (role === "admin") return "/admin";
     if (role === "chef") return "/dashboard/chef";
     if (role === "rider") return "/dashboard/rider";
+    return "/customer/kitchens";
+  };
+
+  const getProfileLink = () => {
+    if (!session?.user) return "/auth/login";
+    const role = session.user.role || "customer";
+    if (role === "admin") return "/admin/settings";
+    if (role === "chef") return "/dashboard/chef/settings";
+    if (role === "rider") return "/dashboard/rider/settings";
     return "/customer/profile";
   };
 
@@ -66,7 +75,7 @@ const Navbar = () => {
                <Link to="/customer/cart" className="text-foreground/80 hover:text-gold transition-colors">
                   <ShoppingBag size={20} />
                </Link>
-               <Link to="/customer/profile" className="flex items-center gap-3 group">
+               <Link to={getProfileLink()} className="flex items-center gap-3 group">
                   <div className="w-8 h-8 rounded-full border border-gold/30 bg-gold/5 flex items-center justify-center overflow-hidden">
                      {session.user.image ? (
                         <img src={session.user.image} className="w-full h-full object-cover" alt="Profile" />
@@ -133,7 +142,7 @@ const Navbar = () => {
               {session ? (
                  <>
                     <Link
-                      to="/customer/profile"
+                      to={getProfileLink()}
                       onClick={() => setIsOpen(false)}
                       className="text-sm font-black uppercase tracking-widest text-gold flex items-center gap-3"
                     >
