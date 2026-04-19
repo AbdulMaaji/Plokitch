@@ -41,7 +41,7 @@ const CTASection = () => {
              className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link
-              to="/auth/register"
+              to="/explore"
               className="w-full sm:w-auto px-10 py-4 bg-gold text-background font-body font-semibold text-sm tracking-wider uppercase hover:bg-gold-light transition-all duration-300 shadow-xl shadow-gold/10"
             >
               Start Your Journey

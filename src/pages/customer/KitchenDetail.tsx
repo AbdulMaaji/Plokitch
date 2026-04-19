@@ -44,15 +44,15 @@ const KitchenDetail = () => {
             cuisine: k.cuisineType,
             bio: k.description,
             time: k.deliveryTime || "25-35 min",
-            image: k.imageUrl || "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop",
+            image: k.imageUrl,
             chefImage: k.user?.image,
             chefName: k.user?.name,
             tag: k.tag || "Verified Artisan",
             dishes: k.menuItems.map((item: any) => ({
               ...item,
               chef: k.businessName,
-              vendorId: k.id, // Ensure vendorId is available for the order
-              image: item.imageUrl || "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop"
+              vendorId: k.id,
+              image: item.imageUrl
             }))
           });
         }
@@ -120,11 +120,17 @@ const KitchenDetail = () => {
         {/* Hero Section */}
         <div className="relative rounded-[2.5rem] overflow-hidden border border-gold/10 shadow-2xl">
           <div className="h-80 md:h-[28rem] relative">
-            <img 
-              src={kitchenData.image} 
-              alt={kitchenData.name} 
-              className="w-full h-full object-cover"
-            />
+            {kitchenData.image ? (
+              <img 
+                src={kitchenData.image} 
+                alt={kitchenData.name} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-dark-surface to-dark-deep flex items-center justify-center opacity-30">
+                <ChefHat size={120} className="text-gold" />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-dark-surface/40 to-transparent" />
           </div>
           
@@ -244,7 +250,13 @@ const KitchenDetail = () => {
                   onClick={() => setSelectedDish(dish)}
                 >
                   <div className="h-48 overflow-hidden relative">
+                  {dish.image ? (
                     <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full bg-dark-deep flex items-center justify-center">
+                      <UtensilsCrossed size={40} className="text-gold/20 group-hover:text-gold/40 transition-colors" />
+                    </div>
+                  )}
                     <div className="absolute top-4 left-4">
                        <Badge className="bg-dark-deep/80 backdrop-blur-md border border-gold/20 text-gold text-[8px] font-black uppercase tracking-widest">{dish.tag}</Badge>
                     </div>

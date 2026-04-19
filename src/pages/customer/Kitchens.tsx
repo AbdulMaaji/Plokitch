@@ -140,11 +140,17 @@ const Kitchens = () => {
             {chefs.map((chef) => (
               <Card key={chef.id} className="bg-dark-surface border-gold/10 overflow-hidden group hover:border-gold/40 transition-all duration-500 rounded-[2rem] shadow-2xl">
                 <div className="relative h-64">
-                  <img 
-                    src={chef.imageUrl || "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop"} 
-                    alt={chef.businessName} 
-                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
-                  />
+                  {chef.imageUrl ? (
+                    <img 
+                      src={chef.imageUrl} 
+                      alt={chef.businessName} 
+                      className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-dark-surface to-dark-deep flex items-center justify-center">
+                      <ChefHat size={48} className="text-gold/20 group-hover:text-gold/40 transition-colors" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-transparent to-transparent opacity-80" />
                   <Badge className="absolute top-6 left-6 bg-dark-deep/60 backdrop-blur-md border border-white/10 text-gold font-bold">{chef.tag || "Verified Kitchen"}</Badge>
                   

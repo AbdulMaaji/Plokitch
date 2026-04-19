@@ -53,15 +53,23 @@ function FitBounds({ points }: { points: LatLng[] }) {
   const map = useMap();
 
   useEffect(() => {
-    if (points.length === 0) return;
+    if (points.length === 0 || !map) return;
 
-    if (points.length === 1) {
-      map.setView([points[0].lat, points[0].lng], 15, { animate: true });
-      return;
-    }
+    // Defensive check: ensure the map is ready and has a pane
+    const container = map.getContainer();
+    if (!container || !container.offsetParent) return;
 
     const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true });
+    
+    try {
+      if (points.length === 1) {
+        map.setView([points[0].lat, points[0].lng], 15, { animate: true });
+      } else {
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true });
+      }
+    } catch (err) {
+      console.warn("Leaflet fitBounds failed gracefully:", err);
+    }
   }, [map, points]);
 
   return null;

@@ -46,7 +46,7 @@ const Dishes = () => {
               rating: item.rating || "4.9",
               reviews: vendor.totalReviews || 0,
               time: vendor.deliveryTime || "25-35 min",
-              image: item.imageUrl || "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
+              image: item.imageUrl,
               prepTime: item.prepTime || "30-45 mins",
               tag: item.tag || "Artisan Choice",
               ingredients: Array.isArray(item.ingredients) ? item.ingredients : []
@@ -158,7 +158,13 @@ const Dishes = () => {
                       onClick={() => setSelectedDish(dish)}
                     >
                       <div className="relative h-64 overflow-hidden">
-                        <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        {dish.image ? (
+                          <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-full bg-dark-deep flex items-center justify-center">
+                            <UtensilsCrossed size={64} className="text-gold/10 group-hover:text-gold/30 transition-colors" />
+                          </div>
+                        )}
                         <div className="absolute top-4 right-4">
                           <Badge className="bg-dark-deep/80 backdrop-blur-md text-gold border-gold/20">{dish.tag}</Badge>
                         </div>
