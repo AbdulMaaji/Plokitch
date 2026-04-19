@@ -41,7 +41,7 @@ const HeroSection = () => {
               Explore Bazaar
             </Link>
             <Link
-              to="/dishes"
+              to="/explore"
               className="px-8 py-3.5 border border-gold text-gold text-sm font-body font-black tracking-widest uppercase hover:bg-gold/5 transition-all duration-300"
             >
               Browse Dishes

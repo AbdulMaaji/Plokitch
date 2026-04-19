@@ -9,8 +9,8 @@ const Navbar = () => {
   const { data: session } = authClient.useSession();
 
   const links = [
-    { label: "Kitchens", href: "/customer/kitchens" },
-    { label: "Dishes", href: "/dishes" },
+    { label: "Restaurants", href: "/restaurants" },
+    { label: "Bazaar", href: "/explore" },
     { label: "How It Works", href: "/#how-it-works" },
   ];
 

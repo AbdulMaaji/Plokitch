@@ -45,7 +45,7 @@ const Explore = () => {
               chefId: vendor.id,
               chef: vendor.businessName,
               chefBio: vendor.description,
-              image: item.imageUrl || "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
+              image: item.imageUrl, // No fallback here, handled in JSX
               rating: item.rating || "4.9",
               prepTime: item.prepTime || "30-45 mins",
               tag: item.tag || "Popular"
@@ -191,12 +191,19 @@ const Explore = () => {
                       className="h-full bg-dark-surface border-gold/10 hover:border-gold/40 transition-all rounded-[2.5rem] overflow-hidden group cursor-pointer"
                       onClick={() => navigate(`/customer/kitchens/${k.id}`)}
                     >
-                      <div className="h-64 relative overflow-hidden">
-                        <img 
-                          src={k.imageUrl || "https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=800"} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
-                          alt={k.businessName} 
-                        />
+                      <div className="h-64 relative overflow-hidden bg-dark-deep">
+                        {k.imageUrl ? (
+                          <img 
+                            src={k.imageUrl} 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+                            alt={k.businessName} 
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gold/10 to-transparent">
+                            <ChefHat size={48} className="text-gold/20 mb-2" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gold/40">Visuals coming soon</span>
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-transparent to-transparent opacity-60" />
                         <div className="absolute top-6 left-6">
                           <Badge className="bg-gold text-background border-none font-black text-[9px] tracking-widest uppercase px-3 py-1.5">
@@ -300,12 +307,19 @@ const Explore = () => {
                       className="bg-dark-surface border-gold/10 hover:border-gold/40 transition-all rounded-[2.5rem] overflow-hidden group cursor-pointer h-full flex flex-col"
                       onClick={() => setSelectedDish(dish)}
                     >
-                      <div className="h-56 relative overflow-hidden">
-                        <img 
-                          src={dish.image} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
-                          alt={dish.name} 
-                        />
+                      <div className="h-56 relative overflow-hidden bg-dark-deep">
+                        {dish.image ? (
+                          <img 
+                            src={dish.image} 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+                            alt={dish.name} 
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gold/10 to-transparent">
+                            <Flame size={32} className="text-gold/20 mb-2" />
+                            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-gold/40">Recipe Image Pending</span>
+                          </div>
+                        )}
                         <div className="absolute top-4 right-4">
                            <div className="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2">
                              <Star size={12} className="fill-gold text-gold" />

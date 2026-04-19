@@ -23,6 +23,7 @@ import OrderOverview from "./pages/admin/OrderOverview.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
 import Kitchens from "./pages/customer/Kitchens.tsx";
+import Restaurants from "./pages/customer/Restaurants.tsx";
 import KitchenDetail from "./pages/customer/KitchenDetail.tsx";
 import Dishes from "./pages/customer/Dishes.tsx";
 import Explore from "./pages/Explore.tsx";
@@ -72,6 +73,7 @@ const App = () => (
           {/* Customer Routes */}
           <Route path="/customer" element={<Navigate to="/customer/kitchens" replace />} />
           <Route path="/customer/kitchens" element={<Kitchens />} />
+          <Route path="/restaurants" element={<Restaurants />} />
           <Route path="/customer/kitchens/:id" element={<KitchenDetail />} />
           <Route path="/dishes" element={<Dishes />} />
           <Route path="/customer/marketplace" element={<Navigate to="/dishes" replace />} />
