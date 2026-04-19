@@ -68,6 +68,7 @@ const App = () => (
           <Route path="/customer/kitchens/:id" element={<KitchenDetail />} />
           <Route path="/customer/marketplace" element={<Marketplace />} />
           <Route path="/customer/track" element={<LiveTrack />} />
+          <Route path="/customer/track/:orderId" element={<LiveTrack />} />
           <Route path="/customer/profile" element={<CustomerProfile />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

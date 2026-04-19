@@ -43,7 +43,9 @@ const CustomerProfile = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAddressOpen, setIsAddressOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", phone: "" });
+  const [newAddress, setNewAddress] = useState({ street: "", city: "Gombe", state: "Gombe", lat: "", lng: "" });
   
   // Settings mock state
   const [notifications, setNotifications] = useState(true);
@@ -271,14 +273,71 @@ const CustomerProfile = () => {
                   { icon: Bell, label: "Notification Settings" },
                   { icon: User, label: "Support & Help" },
                 ].map((item) => (
-                  <Button 
-                    key={item.label} 
-                    variant="ghost" 
-                    className="w-full justify-start gap-4 h-14 text-muted-foreground hover:text-gold hover:bg-gold/5 font-bold uppercase tracking-widest text-[10px]"
-                  >
-                    <item.icon size={18} />
-                    {item.label}
-                  </Button>
+                  <Dialog open={isAddressOpen} onOpenChange={setIsAddressOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        key={item.label} 
+                        variant="ghost" 
+                        onClick={() => {
+                          if (item.label === "Delivery Addresses") setIsAddressOpen(true);
+                        }}
+                        className="w-full justify-start gap-4 h-14 text-muted-foreground hover:text-gold hover:bg-gold/5 font-bold uppercase tracking-widest text-[10px]"
+                      >
+                        <item.icon size={18} />
+                        {item.label}
+                      </Button>
+                    </DialogTrigger>
+                    {item.label === "Delivery Addresses" && (
+                      <DialogContent className="bg-dark-surface border-gold/20 text-white sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-black font-heading text-gold">Delivery Addresses</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-6 py-4">
+                          <div className="space-y-4">
+                            <div className="grid gap-2">
+                              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Street Address</Label>
+                              <Input 
+                                placeholder="42 Artisan Way" 
+                                value={newAddress.street}
+                                onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
+                                className="bg-dark-deep border-gold/10 focus:border-gold" 
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="grid gap-2">
+                                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">City</Label>
+                                <Input value={newAddress.city} readOnly className="bg-dark-deep border-gold/10" />
+                              </div>
+                              <div className="grid gap-2">
+                                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">State</Label>
+                                <Input value={newAddress.state} readOnly className="bg-dark-deep border-gold/10" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="pt-4 border-t border-white/5 space-y-4">
+                             <Button 
+                              variant="outline" 
+                              onClick={() => {
+                                toast.info("Syncing Location", { description: "Capturing your current coordinates..." });
+                                setNewAddress({...newAddress, lat: "10.2897", lng: "11.1673"});
+                              }}
+                              className="w-full h-12 border-gold/20 text-gold text-[10px] font-black tracking-widest flex gap-2"
+                             >
+                                <MapPin size={14} />
+                                USE CURRENT LOCATION
+                             </Button>
+                             {newAddress.lat && (
+                               <div className="flex justify-between text-[10px] font-mono text-muted-foreground bg-white/5 p-2 rounded-lg">
+                                  <span>LAT: {newAddress.lat}</span>
+                                  <span>LNG: {newAddress.lng}</span>
+                               </div>
+                             )}
+                             <Button className="w-full bg-gold text-background font-black tracking-widest uppercase">SAVE ADDRESS</Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    )}
+                  </Dialog>
                 ))}
                 <div className="pt-4 mt-4 border-t border-white/5">
                   <AlertDialog>

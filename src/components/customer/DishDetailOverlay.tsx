@@ -26,6 +26,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
   return (
     <AnimatePresence>
       <motion.div 
+        key="overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -33,6 +34,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
         className="fixed inset-0 bg-dark-deep/80 backdrop-blur-sm z-[100]"
       />
       <motion.div 
+        key="sheet"
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
         exit={{ x: "100%" }}

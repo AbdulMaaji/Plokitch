@@ -18,6 +18,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { Locate, Map as MapIcon, Navigation2 } from "lucide-react";
 
 const RiderSettings = () => {
   const [activeTab, setActiveTab] = useState("Profile Information");
@@ -143,6 +145,89 @@ const RiderSettings = () => {
                         <p className="text-[10px] text-muted-foreground font-medium pr-8">Enable deliveries outside the central city radius</p>
                       </div>
                       <Switch className="data-[state=checked]:bg-gold" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : activeTab === "Service Areas" ? (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 text-white">
+                <Card className="bg-dark-surface border-gold/10">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-heading font-black text-white uppercase tracking-wider">Base Location</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-8">
+                    <p className="text-xs text-muted-foreground">Your base location determines which orders priority you receive. Set this to your starting point.</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black text-gold uppercase tracking-widest">Base Address</Label>
+                          <Input placeholder="Home or Hub Address" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-[10px] font-black text-gold uppercase tracking-widest">City</Label>
+                            <Input placeholder="Gombe" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[10px] font-black text-gold uppercase tracking-widest">State</Label>
+                            <Input placeholder="Gombe" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => toast.info("Syncing GPS", { description: "Updating your service anchor to current position..." })}
+                          className="w-full h-12 border-gold/20 text-gold text-[10px] font-black tracking-widest flex gap-2"
+                        >
+                          <Locate size={14} />
+                          GET CURRENT LOCATION
+                        </Button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="aspect-video rounded-2xl bg-dark-deep border border-gold/10 flex flex-col items-center justify-center text-gold/20 relative overflow-hidden">
+                           <MapIcon size={32} className="mb-2" />
+                           <span className="text-[8px] font-black uppercase tracking-widest">Map Preview Area</span>
+                        </div>
+                        <div className="p-4 rounded-xl bg-gold/5 border border-gold/10 grid grid-cols-2 gap-4">
+                           <div className="space-y-1">
+                              <p className="text-[9px] text-gold font-black uppercase tracking-widest">Lat</p>
+                              <p className="text-xs font-bold text-white font-mono">10.2897</p>
+                           </div>
+                           <div className="space-y-1">
+                              <p className="text-[9px] text-gold font-black uppercase tracking-widest">Lng</p>
+                              <p className="text-xs font-bold text-white font-mono">11.1673</p>
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-dark-surface border-gold/10">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-heading font-black text-white uppercase tracking-wider">Delivery Radius Control</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-8">
+                    <div className="space-y-6">
+                       <div className="flex justify-between items-center">
+                          <div>
+                             <h4 className="text-sm font-bold text-white uppercase tracking-widest">Maximum Travel Radius</h4>
+                             <p className="text-[10px] text-muted-foreground">Limit orders to a specific distance from base</p>
+                          </div>
+                          <Badge variant="outline" className="border-gold text-gold font-black">25 KM</Badge>
+                       </div>
+                       <Input type="range" min="5" max="100" defaultValue="25" className="h-2 bg-dark-deep accent-gold cursor-pointer" />
+                    </div>
+
+                    <div className="pt-6 border-t border-gold/5 flex items-center gap-4">
+                       <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                          <Navigation2 size={18} />
+                       </div>
+                       <div>
+                          <p className="text-[10px] font-black text-white uppercase tracking-widest">Dynamic Route Optimization</p>
+                          <p className="text-[9px] text-muted-foreground">Enabled • Using Gombe Logistic Mesh</p>
+                       </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -12,6 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
+import { GOMBE_CENTER } from "@/hooks/useOrderLocation";
+import type { LatLng } from "@/components/Map/OrderTrackingMap";
 
 const ActiveDeliveries = () => {
   const navigate = useNavigate();
@@ -50,56 +53,73 @@ const ActiveDeliveries = () => {
               <Card key={delivery.id} className="bg-dark-surface border-gold/20 overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <CardContent className="p-8">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                  <div className="flex flex-col xl:flex-row gap-8">
+                    {/* Delivery Details */}
                     <div className="flex-1 space-y-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center text-gold border border-gold/20">
-                          <Bike size={28} />
-                        </div>
-                        <div>
-                          <p className="text-xs font-black text-gold uppercase tracking-widest">{delivery.id}</p>
-                          <h3 className="text-2xl font-bold text-white">{delivery.status}</h3>
-                          <Badge className="bg-emerald-500/10 text-emerald-500 border-none mt-1 animate-pulse">{delivery.time}</Badge>
-                        </div>
-                      </div>
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                        <div className="flex-1 space-y-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center text-gold border border-gold/20">
+                              <Bike size={28} />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black text-gold uppercase tracking-widest">{delivery.id}</p>
+                              <h3 className="text-2xl font-bold text-white">{delivery.status}</h3>
+                              <Badge className="bg-emerald-500/10 text-emerald-500 border-none mt-1 animate-pulse">{delivery.time}</Badge>
+                            </div>
+                          </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-                        <div className="absolute left-[7px] top-4 bottom-4 w-px bg-gold/20" />
-                        <div className="flex gap-4 relative">
-                          <div className="w-3.5 h-3.5 rounded-full bg-gold border-2 border-background z-10 mt-1" />
-                          <div>
-                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Pickup Location</p>
-                            <p className="text-sm font-bold text-white">{delivery.chef}</p>
-                            <p className="text-xs text-muted-foreground">{delivery.pickup}</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                            <div className="absolute left-[7px] top-4 bottom-4 w-px bg-gold/20" />
+                            <div className="flex gap-4 relative">
+                              <div className="w-3.5 h-3.5 rounded-full bg-gold border-2 border-background z-10 mt-1" />
+                              <div>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Pickup Location</p>
+                                <p className="text-sm font-bold text-white">{delivery.chef}</p>
+                                <p className="text-xs text-muted-foreground">{delivery.pickup}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-4 relative">
+                              <div className="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-background z-10 mt-1" />
+                              <div>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Dropoff Location</p>
+                                <p className="text-sm font-bold text-white">{delivery.customer}</p>
+                                <p className="text-xs text-muted-foreground">{delivery.dropoff}</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex gap-4 relative">
-                          <div className="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-background z-10 mt-1" />
-                          <div>
-                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Dropoff Location</p>
-                            <p className="text-sm font-bold text-white">{delivery.customer}</p>
-                            <p className="text-xs text-muted-foreground">{delivery.dropoff}</p>
+
+                        <div className="flex flex-row lg:flex-col gap-3">
+                          <Button 
+                            onClick={() => navigate("/dashboard/rider")}
+                            className="h-14 lg:w-48 bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest flex gap-2"
+                          >
+                            <Navigation size={18} />
+                            OPEN MAPS
+                          </Button>
+                          <div className="flex gap-3">
+                            <Button variant="outline" size="icon" className="h-14 w-14 border-gold/20 text-gold hover:bg-gold/5">
+                              <Phone size={20} />
+                            </Button>
+                            <Button variant="outline" size="icon" className="h-14 w-14 border-gold/20 text-gold hover:bg-gold/5">
+                              <MessageSquare size={20} />
+                            </Button>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex flex-row lg:flex-col gap-3">
-                      <Button 
-                        onClick={() => navigate("/dashboard/rider")}
-                        className="h-14 lg:w-48 bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest flex gap-2"
-                      >
-                        <Navigation size={18} />
-                        OPEN MAPS
-                      </Button>
-                      <div className="flex gap-3">
-                        <Button variant="outline" size="icon" className="h-14 w-14 border-gold/20 text-gold hover:bg-gold/5">
-                          <Phone size={20} />
-                        </Button>
-                        <Button variant="outline" size="icon" className="h-14 w-14 border-gold/20 text-gold hover:bg-gold/5">
-                          <MessageSquare size={20} />
-                        </Button>
-                      </div>
+                    {/* Mini Map Preview */}
+                    <div className="xl:w-80 h-48 xl:h-auto rounded-2xl overflow-hidden border border-gold/10">
+                      <OrderTrackingMap
+                        kitchenLocation={GOMBE_CENTER}
+                        riderLocation={{ lat: GOMBE_CENTER.lat - 0.005, lng: GOMBE_CENTER.lng - 0.003 }}
+                        deliveryLocation={{ lat: GOMBE_CENTER.lat - 0.01, lng: GOMBE_CENTER.lng - 0.01 }}
+                        showLabels={false}
+                        showRoute={true}
+                        className="h-full min-h-[192px]"
+                      />
                     </div>
                   </div>
                 </CardContent>

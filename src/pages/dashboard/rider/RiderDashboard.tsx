@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -6,47 +6,161 @@ import {
   MapPin, 
   Navigation, 
   Clock, 
-  DollarSign, 
   ChevronDown,
-  LayoutGrid,
   Activity,
-  Maximize2
+  Maximize2,
+  Locate,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { useBroadcastLocation } from "@/hooks/useRealtimeLocation";
+import { useOrderLocation, GOMBE_CENTER } from "@/hooks/useOrderLocation";
+import type { LatLng } from "@/components/Map/OrderTrackingMap";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+
+// We keep a demo ID just for fallback if none selected
+const DEMO_ORDER_ID = "demo-order-9921";
 
 const RiderDashboard = () => {
+  const queryClient = useQueryClient();
+  const { data: session } = authClient.useSession();
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   
-  const availableOrders = [
-    { id: "DEL-410", chef: "Chef Andre", pickup: "Greenwich Village", dropoff: "SoHo", distance: "1.2 mi", payout: "$8.50" },
-    { id: "DEL-411", chef: "Elena's Kitchen", pickup: "Upper East Side", dropoff: "Central Park", distance: "0.8 mi", payout: "$6.20" },
-    { id: "DEL-412", chef: "Sushi Koji", pickup: "Chelsea", dropoff: "Hell's Kitchen", distance: "2.4 mi", payout: "$12.40" },
-    { id: "DEL-413", chef: "Gombe Delights", pickup: "Main Market", dropoff: "Kaltungo Ave", distance: "3.1 mi", payout: "$15.00" },
-  ];
+  // Fetch my current active delivery
+  const { data: myOrders } = useQuery({
+    queryKey: ["my-orders"],
+    queryFn: async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders`, {
+        headers: { "Content-Type": "application/json" }
+      });
+      const json = await res.json();
+      return json.data as any[];
+    }
+  });
+
+  const activeOrder = useMemo(() => {
+    return myOrders?.find(o => o.status === "picking" || o.status === "delivering");
+  }, [myOrders]);
+
+  useEffect(() => {
+    if (activeOrder) {
+      setActiveOrderId(activeOrder.id);
+    }
+  }, [activeOrder]);
+
+  const { data: orderLoc } = useOrderLocation(activeOrderId);
+  
+  // Fetch available orders (Ready for pickup)
+  const { data: availableOrders, isLoading: isLoadingAvailable } = useQuery({
+    queryKey: ["available-orders"],
+    queryFn: async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders/available`);
+      const json = await res.json();
+      return json.data as any[];
+    },
+    refetchInterval: 10000,
+  });
+
+  // Mutation to accept an order
+  const acceptOrder = useMutation({
+    mutationFn: async (orderId: string) => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          status: "picking",
+          riderId: session?.user?.id 
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to accept order");
+      return json.data;
+    },
+    onSuccess: () => {
+      toast.success("Order accepted! Head to the kitchen.");
+      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["available-orders"] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message);
+    }
+  });
+
+  // Live GPS tracking
+  const { lat, lng, heading, speed, error, isTracking, startTracking, stopTracking } = useGeolocation({
+    enableHighAccuracy: true,
+    autoStart: true,
+  });
+
+  // Broadcast position to customers
+  const { broadcastPosition } = useBroadcastLocation({
+    orderId: activeOrderId || "no-order",
+  });
+
+  // Broadcast GPS position whenever it updates
+  useEffect(() => {
+    if (lat !== null && lng !== null) {
+      broadcastPosition({ lat, lng, heading, speed });
+    }
+  }, [lat, lng, heading, speed, broadcastPosition]);
+
+  // Current rider position for the map
+  const riderPos: LatLng | null = lat !== null && lng !== null
+    ? { lat, lng }
+    : null;
 
   return (
     <DashboardLayout role="rider">
       <div className="h-[calc(100vh-120px)] md:h-[calc(100vh-160px)] relative overflow-hidden rounded-[2rem] border border-gold/10 bg-dark-deep">
         {/* Full-screen Map Integration */}
         <div className="absolute inset-0 z-0">
-          <OrderTrackingMap showLabels={false} className="h-full w-full" />
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-deep via-transparent to-transparent opacity-80" />
+          <OrderTrackingMap
+            showLabels={true}
+            showRoute={true}
+            className="h-full w-full"
+            kitchenLocation={orderLoc?.kitchen || GOMBE_CENTER}
+            riderLocation={riderPos}
+            deliveryLocation={orderLoc?.delivery || { lat: GOMBE_CENTER.lat - 0.01, lng: GOMBE_CENTER.lng - 0.01 }}
+            center={riderPos}
+          />
         </div>
 
         {/* Top Overlay Controls */}
         <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between gap-4">
           <div className="flex flex-col gap-2">
-            <Badge className="w-fit bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 backdrop-blur-md px-3 py-1 font-black tracking-widest uppercase text-[10px]">
-              Active in Gombe Central
+            {/* GPS Status Indicator */}
+            <Badge className={`w-fit ${isTracking ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : error ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'} border backdrop-blur-md px-3 py-1 font-black tracking-widest uppercase text-[10px] flex items-center gap-2`}>
+              {isTracking ? <Wifi size={12} /> : <WifiOff size={12} />}
+              {isTracking ? "GPS Active" : error ? "GPS Error" : "GPS Off"}
             </Badge>
+
+            {error && (
+              <div className="bg-red-500/10 backdrop-blur-md border border-red-500/20 rounded-xl px-3 py-2 max-w-xs">
+                <p className="text-[10px] text-red-400 font-bold">{error}</p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={startTracking}
+                  className="text-gold text-[10px] h-6 px-2 mt-1 hover:bg-gold/10"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 bg-dark-surface/80 backdrop-blur-xl border border-gold/10 p-3 rounded-2xl shadow-2xl">
               <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold border border-gold/20">
                 <Bike size={20} />
@@ -59,6 +173,18 @@ const RiderDashboard = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Recenter on current position */}
+            {riderPos && (
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-14 w-14 rounded-2xl bg-dark-surface/80 backdrop-blur-md border border-gold/10 text-gold shadow-2xl hover:bg-gold/10"
+                onClick={() => {/* Map will recenter via center prop */}}
+              >
+                <Locate size={22} />
+              </Button>
+            )}
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="h-14 bg-gold hover:bg-gold-light text-background font-black px-6 rounded-2xl shadow-2xl shadow-gold/20 flex gap-2">
@@ -72,23 +198,33 @@ const RiderDashboard = () => {
                   <p className="text-xs font-black text-gold uppercase tracking-[0.2em]">Nearby Deliveries</p>
                 </div>
                 <div className="max-h-[400px] overflow-y-auto space-y-2 p-1 custom-scrollbar">
-                  {availableOrders.map((order) => (
-                    <DropdownMenuItem key={order.id} className="focus:bg-gold/10 rounded-xl p-4 border border-transparent hover:border-gold/20 transition-all cursor-pointer block">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-sm font-black text-white">{order.chef}</span>
-                        <span className="font-bold text-gold">{order.payout}</span>
+                  {availableOrders && availableOrders.length > 0 ? (
+                    availableOrders.map((order) => (
+                      <div key={order.id} className="focus:bg-gold/10 rounded-xl p-4 border border-gold/5 hover:border-gold/20 transition-all block bg-dark-deep/30">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-sm font-black text-white">{order.vendor?.name || "Ready Order"}</span>
+                          <span className="font-bold text-gold">₦{order.totalAmount}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-3 uppercase tracking-wider font-bold">
+                          <MapPin size={10} className="text-gold" />
+                          <span className="truncate max-w-[100px]">{order.vendor?.address || "Kitchen"}</span>
+                          <ChevronDown size={10} className="-rotate-90" />
+                          <span className="truncate max-w-[100px]">{order.deliveryAddress?.street || "Customer"}</span>
+                        </div>
+                        <Button 
+                          onClick={() => acceptOrder.mutate(order.id)}
+                          disabled={acceptOrder.isPending || !!activeOrder}
+                          className="w-full h-8 bg-gold hover:bg-gold-light text-background font-black text-[10px] uppercase tracking-widest rounded-lg"
+                        >
+                          {acceptOrder.isPending ? "ACCEPTING..." : activeOrder ? "FINISH CURRENT FIRST" : "ACCEPT ORDER"}
+                        </Button>
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-3 uppercase tracking-wider font-bold">
-                        <MapPin size={10} className="text-gold" />
-                        {order.pickup}
-                        <ChevronDown size={10} className="-rotate-90" />
-                        {order.dropoff}
-                      </div>
-                      <Button className="w-full h-8 bg-gold hover:bg-gold-light text-background font-black text-[10px] uppercase tracking-widest rounded-lg">
-                        VIEW ROUTE
-                      </Button>
-                    </DropdownMenuItem>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="p-8 text-center">
+                      <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">No orders available right now</p>
+                    </div>
+                  )}
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -104,11 +240,21 @@ const RiderDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-xs font-black text-white uppercase tracking-widest">Rider Status: Online</span>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${isTracking ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                  <span className="text-xs font-black text-white uppercase tracking-widest">
+                    Rider Status: {isTracking ? "Online" : "Offline"}
+                  </span>
                 </div>
-                <Button variant="ghost" className="h-8 px-4 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full">
-                  Go Offline
+                <Button 
+                  variant="ghost" 
+                  onClick={isTracking ? stopTracking : startTracking}
+                  className={`h-8 px-4 text-xs font-bold rounded-full ${
+                    isTracking 
+                      ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' 
+                      : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                  }`}
+                >
+                  {isTracking ? "Go Offline" : "Go Online"}
                 </Button>
               </div>
 
@@ -128,6 +274,15 @@ const RiderDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {riderPos && (
+                <div className="mt-4 p-3 rounded-xl bg-dark-deep/50 border border-gold/5">
+                  <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Current Coordinates</p>
+                  <p className="text-xs text-white/60 font-mono">
+                    {riderPos.lat.toFixed(6)}, {riderPos.lng.toFixed(6)}
+                  </p>
+                </div>
+              )}
 
               <div className="mt-6 p-4 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-between">
                 <div>

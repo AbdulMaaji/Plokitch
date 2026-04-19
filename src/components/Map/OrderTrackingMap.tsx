@@ -1,70 +1,227 @@
-import { Bike, ChefHat, MapPin } from "lucide-react";
+import { useEffect, useRef, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Tooltip, Polyline, useMap } from "react-leaflet";
+import L from "leaflet";
+import { createMarkerIcon } from "./MapMarker";
+import "./leaflet-setup.css";
+
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+
+export interface LatLng {
+  lat: number;
+  lng: number;
+}
 
 interface OrderTrackingMapProps {
   className?: string;
+  /** Kitchen / vendor location */
+  kitchenLocation?: LatLng | null;
+  /** Rider's live position */
+  riderLocation?: LatLng | null;
+  /** Customer delivery destination */
+  deliveryLocation?: LatLng | null;
+  /** Whether to show labels on markers */
   showLabels?: boolean;
+  /** Whether to show the route polyline */
+  showRoute?: boolean;
+  /** Center the map on this point (e.g. rider's own position) */
+  center?: LatLng | null;
+  /** Fixed zoom level (otherwise auto-fit) */
+  zoom?: number;
 }
 
-const OrderTrackingMap = ({ className = "", showLabels = true }: OrderTrackingMapProps) => {
+// ─────────────────────────────────────────────
+// Dark tile layer URL
+// ─────────────────────────────────────────────
+
+const DARK_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
+
+// ─────────────────────────────────────────────
+// Default center — Gombe, Nigeria
+// ─────────────────────────────────────────────
+
+const DEFAULT_CENTER: LatLng = { lat: 10.2897, lng: 11.1673 };
+const DEFAULT_ZOOM = 14;
+
+// ─────────────────────────────────────────────
+// Helper: auto-fit bounds to show all markers
+// ─────────────────────────────────────────────
+
+function FitBounds({ points }: { points: LatLng[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (points.length === 0) return;
+
+    if (points.length === 1) {
+      map.setView([points[0].lat, points[0].lng], 15, { animate: true });
+      return;
+    }
+
+    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true });
+  }, [map, points]);
+
+  return null;
+}
+
+// ─────────────────────────────────────────────
+// Helper: smoothly update map center
+// ─────────────────────────────────────────────
+
+function RecenterMap({ center, zoom }: { center: LatLng; zoom?: number }) {
+  const map = useMap();
+  const prevCenter = useRef<LatLng | null>(null);
+
+  useEffect(() => {
+    if (
+      prevCenter.current &&
+      prevCenter.current.lat === center.lat &&
+      prevCenter.current.lng === center.lng
+    ) {
+      return;
+    }
+    prevCenter.current = center;
+    map.setView([center.lat, center.lng], zoom ?? map.getZoom(), { animate: true });
+  }, [map, center, zoom]);
+
+  return null;
+}
+
+// ─────────────────────────────────────────────
+// Main Component
+// ─────────────────────────────────────────────
+
+const OrderTrackingMap = ({
+  className = "",
+  kitchenLocation,
+  riderLocation,
+  deliveryLocation,
+  showLabels = true,
+  showRoute = true,
+  center,
+  zoom,
+}: OrderTrackingMapProps) => {
+  // Memoize marker icons
+  const kitchenIcon = useMemo(() => createMarkerIcon("kitchen", 44), []);
+  const riderIcon = useMemo(() => createMarkerIcon("rider", 52), []);
+  const destinationIcon = useMemo(() => createMarkerIcon("destination", 44), []);
+
+  // Collect all valid points for auto-fitting
+  const allPoints = useMemo(() => {
+    const pts: LatLng[] = [];
+    if (kitchenLocation) pts.push(kitchenLocation);
+    if (riderLocation) pts.push(riderLocation);
+    if (deliveryLocation) pts.push(deliveryLocation);
+    return pts;
+  }, [kitchenLocation, riderLocation, deliveryLocation]);
+
+  // Route polyline coordinates (kitchen → rider → destination)
+  const routeCoords = useMemo(() => {
+    const coords: [number, number][] = [];
+    if (kitchenLocation) coords.push([kitchenLocation.lat, kitchenLocation.lng]);
+    if (riderLocation) coords.push([riderLocation.lat, riderLocation.lng]);
+    if (deliveryLocation) coords.push([deliveryLocation.lat, deliveryLocation.lng]);
+    return coords;
+  }, [kitchenLocation, riderLocation, deliveryLocation]);
+
+  const mapCenter = center ?? (allPoints.length > 0 ? allPoints[0] : DEFAULT_CENTER);
+
   return (
-    <div className={`relative w-full h-full min-h-[500px] ${className}`}>
-      {/* Real OpenStreetMap iframe */}
-      <iframe
-        src="https://www.openstreetmap.org/export/embed.html?bbox=10.2740%2C11.1500%2C10.2940%2C11.1700&layer=mapnik&marker=11.1600%2C10.2840"
-        className="absolute inset-0 w-full h-full border-0"
-        style={{ filter: 'brightness(0.5) contrast(1.2) saturate(0.8) hue-rotate(180deg)' }}
-        title="Order Tracking Map"
-      />
-      
-      {/* Gradient Overlays for Dark Mode Aesthetic */}
-      <div className="absolute inset-0 bg-gradient-to-t from-dark-deep via-transparent to-transparent opacity-60 pointer-events-none" />
-      <div className="absolute inset-0 bg-dark-deep/20 pointer-events-none" />
+    <div className={`relative w-full h-full min-h-[400px] ${className}`}>
+      <MapContainer
+        center={[mapCenter.lat, mapCenter.lng]}
+        zoom={zoom ?? DEFAULT_ZOOM}
+        zoomControl={true}
+        attributionControl={true}
+        className="w-full h-full"
+        style={{ background: "#0a0a0a" }}
+      >
+        {/* Dark tile layer */}
+        <TileLayer url={DARK_TILE_URL} attribution={TILE_ATTRIBUTION} />
 
-      {/* Overlay markers positioned on the map */}
-      {/* Kitchen Marker */}
-      <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="relative">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-gold/90 rounded-full flex items-center justify-center border-2 border-gold shadow-lg shadow-gold/50 animate-pulse">
-            <ChefHat className="text-white" size={20} />
-          </div>
-          {showLabels && (
-            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-              <span className="text-[10px] bg-gold text-black px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Kitchen</span>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Rider Marker */}
-      <div className="absolute top-1/2 left-1/3 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="relative">
-          <div className="w-14 h-14 md:w-16 md:h-16 bg-blue-500/90 rounded-full flex items-center justify-center border-2 border-blue-500 shadow-lg shadow-blue-500/50">
-            <Bike className="text-white animate-bounce" size={28} />
-          </div>
-          {showLabels && (
-            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-              <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Rider</span>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Delivery Point Marker */}
-      <div className="absolute bottom-1/3 right-1/3 transform translate-x-1/2 translate-y-1/2">
-        <div className="relative">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-red-500/90 rounded-full flex items-center justify-center border-2 border-red-500 shadow-lg shadow-red-500/50">
-            <MapPin className="text-white" size={20} />
-          </div>
-          {showLabels && (
-            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-              <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Destination</span>
-            </div>
-          )}
-        </div>
-      </div>
+        {/* Auto-fit or recenter */}
+        {center ? (
+          <RecenterMap center={center} zoom={zoom} />
+        ) : allPoints.length > 0 ? (
+          <FitBounds points={allPoints} />
+        ) : null}
 
-      {/* Map Decoration Fix */}
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-dark-deep/40 backdrop-blur-sm pointer-events-none" />
+        {/* Route polyline */}
+        {showRoute && routeCoords.length >= 2 && (
+          <>
+            {/* Glow effect line */}
+            <Polyline
+              positions={routeCoords}
+              pathOptions={{
+                color: "rgba(212, 175, 55, 0.15)",
+                weight: 10,
+                lineCap: "round",
+                lineJoin: "round",
+              }}
+            />
+            {/* Main dashed line */}
+            <Polyline
+              positions={routeCoords}
+              pathOptions={{
+                color: "#d4af37",
+                weight: 3,
+                opacity: 0.8,
+                dashArray: "12, 8",
+                lineCap: "round",
+                lineJoin: "round",
+              }}
+            />
+          </>
+        )}
+
+        {/* Kitchen Marker */}
+        {kitchenLocation && (
+          <Marker
+            position={[kitchenLocation.lat, kitchenLocation.lng]}
+            icon={kitchenIcon}
+          >
+            {showLabels && (
+              <Tooltip direction="top" permanent={false}>
+                <span className="font-bold text-xs uppercase tracking-wider">Kitchen</span>
+              </Tooltip>
+            )}
+          </Marker>
+        )}
+
+        {/* Rider Marker */}
+        {riderLocation && (
+          <Marker
+            position={[riderLocation.lat, riderLocation.lng]}
+            icon={riderIcon}
+          >
+            {showLabels && (
+              <Tooltip direction="top" permanent={false}>
+                <span className="font-bold text-xs uppercase tracking-wider">Rider</span>
+              </Tooltip>
+            )}
+          </Marker>
+        )}
+
+        {/* Destination Marker */}
+        {deliveryLocation && (
+          <Marker
+            position={[deliveryLocation.lat, deliveryLocation.lng]}
+            icon={destinationIcon}
+          >
+            {showLabels && (
+              <Tooltip direction="top" permanent={false}>
+                <span className="font-bold text-xs uppercase tracking-wider">Destination</span>
+              </Tooltip>
+            )}
+          </Marker>
+        )}
+      </MapContainer>
+
+      {/* Bottom gradient overlay */}
+      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-dark-deep/60 to-transparent pointer-events-none z-[500]" />
     </div>
   );
 };
