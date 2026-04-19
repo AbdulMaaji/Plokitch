@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -38,6 +39,46 @@ const RiderDashboard = () => {
   const { data: session } = authClient.useSession();
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+
+  // Check if rider has a profile; if not, create one
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ["rider-profile"],
+    queryFn: async () => {
+      if (!session?.session?.token) return null;
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/riders/me`, {
+        headers: { "Authorization": `Bearer ${session.session.token}` }
+      });
+      if (res.status === 404) return null;
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: !!session?.session?.token,
+  });
+
+  const initProfile = useMutation({
+    mutationFn: async () => {
+      if (!session?.session?.token) throw new Error("Not authenticated");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/riders`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.session.token}`
+        },
+        body: JSON.stringify({ vehicleType: "Bicycle" }), // Default
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rider-profile"] });
+    }
+  });
+
+  useEffect(() => {
+    if (!isProfileLoading && session && !profile && !initProfile.isPending) {
+      console.log("No rider profile found, initializing...");
+      initProfile.mutate();
+    }
+  }, [profile, isProfileLoading, session, initProfile]);
   
   const { data: myOrders } = useQuery({
     queryKey: ["my-orders"],
@@ -60,7 +101,10 @@ const RiderDashboard = () => {
   });
 
   const activeOrder = useMemo(() => {
-    return myOrders?.find(o => o.status === "picking" || o.status === "delivering");
+    // If we have any order that's being picked up or delivered, that's our focus
+    const ongoing = myOrders?.find(o => o.status === "picking" || o.status === "delivering");
+    if (ongoing) return ongoing;
+    return null;
   }, [myOrders]);
 
   useEffect(() => {
@@ -121,6 +165,37 @@ const RiderDashboard = () => {
     }
   });
 
+  // Mutation to broadcast status updates (picking -> delivering -> completed)
+  const updateStatus = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
+      if (!session?.session?.token) throw new Error("Not authenticated");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.session.token}`
+        },
+        body: JSON.stringify({ status }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update status");
+      return json.data;
+    },
+    onSuccess: (data) => {
+      console.log("Status updated successfully:", data);
+      toast.success(`Order set to ${data.status.toUpperCase()}`, {
+        description: data.status === 'delivering' ? "Customer notified. Start your travel." : "Payment released. Great job!"
+      });
+      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      if (data.status === 'completed') {
+        setActiveOrderId(null);
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err.message);
+    }
+  });
+
   // Live GPS tracking
   const { lat, lng, heading, speed, error, isTracking, startTracking, stopTracking } = useGeolocation({
     enableHighAccuracy: true,
@@ -134,10 +209,10 @@ const RiderDashboard = () => {
 
   // Broadcast GPS position whenever it updates
   useEffect(() => {
-    if (lat !== null && lng !== null) {
+    if (lat !== null && lng !== null && activeOrderId) {
       broadcastPosition({ lat, lng, heading, speed });
     }
-  }, [lat, lng, heading, speed, broadcastPosition]);
+  }, [lat, lng, heading, speed, broadcastPosition, activeOrderId]);
 
   // Current rider position for the map
   const riderPos: LatLng | null = lat !== null && lng !== null
@@ -257,8 +332,9 @@ const RiderDashboard = () => {
         </div>
 
         {/* Bottom Status Card */}
-        <div className="absolute bottom-6 left-6 right-6 z-20 md:max-w-md">
-          <Card className="bg-dark-surface/90 backdrop-blur-xl border-gold/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] rounded-[2rem] overflow-hidden">
+        <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-col md:flex-row gap-6 items-end">
+          {/* Status/Analytics Card */}
+          <Card className="bg-dark-surface/90 backdrop-blur-xl border-gold/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] rounded-[2rem] overflow-hidden w-full md:max-w-md">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -305,18 +381,50 @@ const RiderDashboard = () => {
                   </p>
                 </div>
               )}
-
-              <div className="mt-6 p-4 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-black text-white uppercase tracking-wider">Demand Spike</h4>
-                  <p className="text-[10px] text-gold/80 font-bold uppercase">Main Market Area • 1.5x Multiplier</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center text-background">
-                  <TrendingUpIcon size={20} />
-                </div>
-              </div>
             </CardContent>
           </Card>
+
+          {/* Floating Active Order Card */}
+          <AnimatePresence>
+            {activeOrder && (
+              <motion.div 
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                className="flex-1 w-full"
+              >
+                <Card className="bg-gold border-none shadow-2xl rounded-[2rem] overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-background/10 backdrop-blur-md flex items-center justify-center text-background border border-background/10">
+                          <Navigation size={24} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-background/60">Active Delivery</p>
+                          <h4 className="text-lg font-black text-background uppercase truncate max-w-[200px]">
+                            {activeOrder.status === 'picking' ? `Pickup: ${activeOrder.vendor?.businessName}` : `Dropoff: ${activeOrder.customer?.name}`}
+                          </h4>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        size="lg"
+                        disabled={updateStatus.isPending}
+                        onClick={() => updateStatus.mutate({ 
+                          orderId: activeOrder.id, 
+                          status: activeOrder.status === 'picking' ? 'delivering' : 'completed' 
+                        })}
+                        className="bg-background text-gold hover:bg-background/90 font-black h-14 px-8 rounded-2xl shadow-xl uppercase tracking-widest"
+                      >
+                        {updateStatus.isPending ? "Updating..." : activeOrder.status === 'picking' ? "MARK PICKED UP" : "MARK DELIVERED"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </DashboardLayout>

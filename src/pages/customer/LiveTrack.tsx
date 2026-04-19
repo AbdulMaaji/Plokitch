@@ -102,11 +102,14 @@ const LiveTrack = () => {
 
             <div className="absolute bottom-10 left-10 p-6 bg-dark-deep/80 backdrop-blur-xl border border-gold/20 rounded-2xl flex items-center gap-6 max-w-sm z-[600]">
               <div className="w-16 h-16 rounded-full bg-dark-surface border border-gold/10 overflow-hidden">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Rider" alt="Rider" />
+                <img 
+                  src={orderLoc?.rider?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${orderLoc?.rider?.name || 'Rider'}`} 
+                  alt="Rider" 
+                />
               </div>
               <div className="flex-1">
                 <p className="text-[10px] text-gold font-black uppercase tracking-widest mb-1">Your Rider</p>
-                <h3 className="text-xl font-bold text-white">Dominic T.</h3>
+                <h3 className="text-xl font-bold text-white">{orderLoc?.rider?.name || "Assigning Rider..."}</h3>
                 <div className="flex items-center gap-4 mt-3">
                   <Button size="icon" className="h-10 w-10 rounded-full bg-gold/10 text-gold border border-gold/20 hover:bg-gold/20">
                     <Phone size={18} />

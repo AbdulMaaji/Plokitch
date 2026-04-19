@@ -18,36 +18,90 @@ import { useCart } from "@/context/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { authClient } from "@/lib/auth-client";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { totalAmount, clearCart, items } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("card");
+  const { data: session } = authClient.useSession();
+  
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
   const formattedTotal = new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 0
   }).format(totalAmount).replace('NGN', '₦');
+  
+  const savedAddress = session?.user?.address ? 
+    (typeof session.user.address === 'string' ? JSON.parse(session.user.address) : session.user.address) 
+    : null;
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (items.length === 0) {
       toast.error("Your basket is empty");
       return;
     }
 
+    if (!session?.session?.token) {
+      toast.error("Please sign in to place an order");
+      navigate("/auth/login");
+      return;
+    }
+
     setIsProcessing(true);
     
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      toast.success("Order Placed Successfully!", {
-        description: "Chef Andre has been notified of your order.",
+    try {
+      // Group items by vendorId (schema supports one vendor per order)
+      const vendorId = items[0]?.vendorId;
+      if (!vendorId) throw new Error("Vendor information missing in cart.");
+
+      const orderData = {
+        vendorId,
+        items: items.map(item => ({
+          menuItemId: item.id,
+          name: item.name,
+          price: item.numericPrice,
+          quantity: item.quantity
+        })),
+        deliveryAddress: savedAddress || {
+          street: "Address not set", 
+          city: "Please update profile",
+          state: "Gombe",
+          instructions: "No instructions"
+        },
+        notes: "Artisanal preparation requested."
+      };
+
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.session.token}`
+        },
+        body: JSON.stringify(orderData)
       });
-      clearCart();
-      navigate("/customer/track");
-    }, 2500);
+
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("Order Placed Successfully!", {
+          description: `Your order #${data.data.id.slice(0, 8)} is being forwarded to the chef.`,
+        });
+        clearCart();
+        navigate(`/customer/track/${data.data.id}`);
+      } else {
+        throw new Error(data.error || "Failed to place order");
+      }
+    } catch (error: any) {
+      toast.error("Checkout Failed", {
+        description: error.message || "An unexpected error occurred. Please try again."
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -79,11 +133,23 @@ const Checkout = () => {
               <Card className="bg-dark-surface border-gold/10 p-6 relative overflow-hidden group">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
-                    <Badge className="bg-gold/10 text-gold border-gold/20 mb-2 font-bold uppercase tracking-widest text-[8px]">Primary Address</Badge>
-                    <h3 className="text-lg font-bold text-white">42 Artisan Way, Gombe Central</h3>
-                    <p className="text-muted-foreground text-sm">Gombe State, Nigeria • +234 800 000 0042</p>
+                    <Badge className="bg-gold/10 text-gold border-gold/20 mb-2 font-bold uppercase tracking-widest text-[8px]">
+                      {savedAddress ? "Saved Address" : "No Address Found"}
+                    </Badge>
+                    <h3 className="text-lg font-bold text-white">
+                      {savedAddress ? `${savedAddress.street}, ${savedAddress.city}` : "Your delivery address is not set."}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      {savedAddress ? `${savedAddress.state}, Nigeria` : "Please update your profile to continue."}
+                    </p>
                   </div>
-                  <Button variant="outline" className="text-gold border-gold/20 text-xs font-black uppercase tracking-widest px-4">CHANGE</Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/customer/profile")}
+                    className="text-gold border-gold/20 text-xs font-black uppercase tracking-widest px-4"
+                  >
+                    {savedAddress ? "CHANGE" : "SET ADDRESS"}
+                  </Button>
                 </div>
                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                   <Truck size={80} className="text-gold" />
@@ -190,7 +256,9 @@ const Checkout = () => {
                 <div className="pt-6 border-t border-white/5 space-y-4">
                   <div className="flex justify-between text-xs text-muted-foreground font-bold uppercase tracking-widest">
                     <span>Deliver To</span>
-                    <span className="text-white">Gombe Central</span>
+                    <span className="text-white truncate max-w-[120px]">
+                      {savedAddress ? savedAddress.street : "Not Set"}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground font-bold uppercase tracking-widest">
                     <span>Estimated Arrival</span>
@@ -205,14 +273,16 @@ const Checkout = () => {
 
                 <Button 
                   onClick={handlePlaceOrder}
-                  disabled={isProcessing || items.length === 0}
-                  className="w-full h-16 bg-gold hover:bg-gold-light text-background font-black rounded-2xl shadow-xl shadow-gold/20 text-lg gap-3 uppercase tracking-widest"
+                  disabled={isProcessing || items.length === 0 || !savedAddress}
+                  className="w-full h-16 bg-gold hover:bg-gold-light text-background font-black rounded-2xl shadow-xl shadow-gold/20 text-lg gap-3 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessing ? (
                     <>
                       <Loader2 size={24} className="animate-spin" />
                       SECURELY PAYING...
                     </>
+                  ) : !savedAddress ? (
+                    "PLEASE SET ADDRESS"
                   ) : (
                     <>
                       CONFIRM & PAY {formattedTotal}

@@ -59,6 +59,15 @@ export const user = pgTable("user", {
   role: userRoleEnum("role").notNull().default("customer"),
   phone: text("phone"),
   isActive: boolean("is_active").notNull().default(true),
+  address: jsonb("address").$type<{
+    street: string;
+    city: string;
+    state: string;
+    lat?: number;
+    lng?: number;
+  }>(),
+  pushNotificationsEnabled: boolean("push_notifications_enabled").notNull().default(true),
+  marketingEmailsEnabled: boolean("marketing_emails_enabled").notNull().default(false),
 });
 
 export const session = pgTable("session", {
@@ -216,6 +225,17 @@ export const review = pgTable("review", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const favoriteVendor = pgTable("favorite_vendor", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  vendorId: uuid("vendor_id")
+    .notNull()
+    .references(() => vendor.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const riderProfile = pgTable("rider_profile", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
@@ -247,6 +267,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   ordersAsCustomer: many(order, { relationName: "customerOrders" }),
   ordersAsRider: many(order, { relationName: "riderDeliveries" }),
   reviews: many(review),
+  favorites: many(favoriteVendor),
 }));
 
 export const vendorRelations = relations(vendor, ({ one, many }) => ({
@@ -254,6 +275,7 @@ export const vendorRelations = relations(vendor, ({ one, many }) => ({
   menuItems: many(menuItem),
   orders: many(order),
   reviews: many(review),
+  favoritedBy: many(favoriteVendor),
 }));
 
 export const menuItemRelations = relations(menuItem, ({ one }) => ({
@@ -283,4 +305,9 @@ export const reviewRelations = relations(review, ({ one }) => ({
 
 export const riderProfileRelations = relations(riderProfile, ({ one }) => ({
   user: one(user, { fields: [riderProfile.userId], references: [user.id] }),
+}));
+
+export const favoriteVendorRelations = relations(favoriteVendor, ({ one }) => ({
+  user: one(user, { fields: [favoriteVendor.userId], references: [user.id] }),
+  vendor: one(vendor, { fields: [favoriteVendor.vendorId], references: [vendor.id] }),
 }));

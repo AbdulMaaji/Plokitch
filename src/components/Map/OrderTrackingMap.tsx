@@ -53,15 +53,23 @@ function FitBounds({ points }: { points: LatLng[] }) {
   const map = useMap();
 
   useEffect(() => {
-    if (points.length === 0) return;
+    if (points.length === 0 || !map) return;
 
-    if (points.length === 1) {
-      map.setView([points[0].lat, points[0].lng], 15, { animate: true });
-      return;
-    }
+    // Defensive check: ensure the map is ready and has a pane
+    const container = map.getContainer();
+    if (!container || !container.offsetParent) return;
 
     const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true });
+    
+    try {
+      if (points.length === 1) {
+        map.setView([points[0].lat, points[0].lng], 15, { animate: true });
+      } else {
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true });
+      }
+    } catch (err) {
+      console.warn("Leaflet fitBounds failed gracefully:", err);
+    }
   }, [map, points]);
 
   return null;
@@ -112,18 +120,18 @@ const OrderTrackingMap = ({
   // Collect all valid points for auto-fitting
   const allPoints = useMemo(() => {
     const pts: LatLng[] = [];
-    if (kitchenLocation) pts.push(kitchenLocation);
-    if (riderLocation) pts.push(riderLocation);
-    if (deliveryLocation) pts.push(deliveryLocation);
+    if (kitchenLocation?.lat && kitchenLocation?.lng) pts.push(kitchenLocation);
+    if (riderLocation?.lat && riderLocation?.lng) pts.push(riderLocation);
+    if (deliveryLocation?.lat && deliveryLocation?.lng) pts.push(deliveryLocation);
     return pts;
   }, [kitchenLocation, riderLocation, deliveryLocation]);
 
   // Route polyline coordinates (kitchen → rider → destination)
   const routeCoords = useMemo(() => {
     const coords: [number, number][] = [];
-    if (kitchenLocation) coords.push([kitchenLocation.lat, kitchenLocation.lng]);
-    if (riderLocation) coords.push([riderLocation.lat, riderLocation.lng]);
-    if (deliveryLocation) coords.push([deliveryLocation.lat, deliveryLocation.lng]);
+    if (kitchenLocation?.lat && kitchenLocation?.lng) coords.push([kitchenLocation.lat, kitchenLocation.lng]);
+    if (riderLocation?.lat && riderLocation?.lng) coords.push([riderLocation.lat, riderLocation.lng]);
+    if (deliveryLocation?.lat && deliveryLocation?.lng) coords.push([deliveryLocation.lat, deliveryLocation.lng]);
     return coords;
   }, [kitchenLocation, riderLocation, deliveryLocation]);
 

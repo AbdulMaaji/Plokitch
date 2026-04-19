@@ -185,6 +185,8 @@ export async function orderRoutes(fastify: FastifyInstance) {
           | "cancelled";
         riderId?: string;
       };
+ 
+      fastify.log.info({ id, body }, "Updating order status");
 
       // Constraint: Rider can only have one active delivery
       if (body.status === "picking" || body.status === "delivering") {

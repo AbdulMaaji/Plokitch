@@ -22,7 +22,22 @@ const ChefDashboard = () => {
   const { myVendor, activeOrders, loading, refreshData, session } = useChefData();
 
   const handleUpdateStatus = async (orderId: string, currentStatus: string) => {
-    const nextStatus = currentStatus === 'preparing' ? 'ready' : 'completed';
+    let nextStatus: string;
+    
+    switch (currentStatus) {
+      case 'pending':
+        nextStatus = 'confirmed';
+        break;
+      case 'confirmed':
+        nextStatus = 'preparing';
+        break;
+      case 'preparing':
+        nextStatus = 'ready';
+        break;
+      default:
+        return; // Other statuses are handled by riders/system
+    }
+
     try {
       const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
         method: 'PATCH',
@@ -34,11 +49,13 @@ const ChefDashboard = () => {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Order marked as ${nextStatus.toUpperCase()}`);
+        toast.success(`Order ${nextStatus.toUpperCase()}`, {
+          description: `Order successfully transitioned to ${nextStatus}.`
+        });
         refreshData();
       }
     } catch (error) {
-      toast.error("Failed to update status");
+      toast.error("Status Update Failed");
     }
   };
 

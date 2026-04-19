@@ -38,11 +38,20 @@ This document tracks the technical implementation of the Gombe-centric real-time
 - **Maps**: Transitioned order tracking maps to high-resolution satellite view using Esri World Imagery.
 - **Cleanup**: Removed "Verified Artisan" badges from customer dashboards to maintain a cleaner aesthetic.
 
+### 6. Marketplace Stabilization & De-mocking
+- **Auth Stability**: Resolved `401 Unauthorized` errors in `useOrderLocation` by correctly injecting session tokens into API headers.
+- **Stock Photo Purge**: Removed all hardcoded Unsplash placeholder images from `Kitchens.tsx`, `KitchenDetail.tsx`, `Dishes.tsx`, and `Restaurants.tsx`.
+- **Premium Fallbacks**: Implemented an artisan-themed fallback system using gold gradients and stylized icons (`ChefHat`, `Utensils`) for vendors and dishes without photos.
+- **Chef Dashboard Restoration**: Recovered the `ChefOrders.tsx` dashboard from a critical syntax failure, restoring state management and hooks.
+- **Enhanced Kitchen Actions**: Implemented **Order Confirmation** flow and a dedicated **Order Details Modal** for Chefs.
+- **Map Stabilization**: Fixed a persistent Leaflet runtime crash (`_leaflet_pos`) in `OrderTrackingMap.tsx` by adding defensive initialization checks.
+- **Funnel Optimization**: Centralized landing page "Discovery" links to point to the `/explore` page for a unified user experience.
+
 ## Next Steps
 - [x] Perform a full end-to-end test of the order flow (Customer Order -> Chef Ready -> Rider Accept -> Live Track).
 - [x] Implement manual and geolocation address updates in Settings.
-- [ ] Fine-tune map markers and polyline aesthetics for the premium "dark-mode" look.
+- [x] Purge all stock photography and implement high-fidelity fallbacks.
 - [ ] Expand `/api/location/active-order` to handle multiple orders for administrators.
 
 ---
-*Last Updated: 2026-04-19*
+*Last Updated: 2026-04-19 (Stabilization Phase)*

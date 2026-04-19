@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { useChefData } from "@/hooks/useChefData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Search, Edit2, Trash2, SlidersHorizontal, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";

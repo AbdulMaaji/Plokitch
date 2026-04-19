@@ -141,9 +141,9 @@ const Restaurants = () => {
                             alt={k.businessName} 
                           />
                         ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gold/10 to-transparent">
-                            <ChefHat size={64} className="text-gold/20 mb-4" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gold/40">Visual Identity Pending</span>
+                          <div className="w-full h-full bg-gradient-to-br from-dark-surface to-dark-deep flex flex-col items-center justify-center border-b border-gold/5">
+                            <ChefHat size={64} className="text-gold/20 mb-4 group-hover:text-gold/40 transition-colors" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gold/40">Artisan Kitchen</span>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-transparent to-transparent opacity-60" />

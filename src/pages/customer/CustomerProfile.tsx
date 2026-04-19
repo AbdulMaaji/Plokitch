@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { authClient, useSession } from "@/lib/auth-client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -38,9 +39,27 @@ import { useNavigate } from "react-router-dom";
 import { uploadImage } from "@/lib/upload";
 
 const CustomerProfile = () => {
-  const navigate = useNavigate();
-  const { data: session, isPending } = useSession();
-  const user = session?.user;
+  const { data: session, isPending: isSessionPending } = useSession();
+  const queryClient = useQueryClient();
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+  // Fetch full user profile from our own API
+  const { data: fullUser, isLoading: isUserLoading } = useQuery({
+    queryKey: ["full-user"],
+    queryFn: async () => {
+      if (!session?.session?.token) return null;
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        headers: { "Authorization": `Bearer ${session.session.token}` }
+      });
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: !!session?.session?.token,
+  });
+
+  const user = fullUser || session?.user;
+  const isPending = isSessionPending || isUserLoading;
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -50,9 +69,11 @@ const CustomerProfile = () => {
   const [newAddress, setNewAddress] = useState({ street: "", city: "Gombe", state: "Gombe", lat: "", lng: "" });
   const [isUploading, setIsUploading] = useState(false);
   
-  // Settings mock state
+  // Settings persistence state
   const [notifications, setNotifications] = useState(true);
   const [marketing, setMarketing] = useState(false);
+  const [favoriteVendors, setFavoriteVendors] = useState<any[]>([]);
+  const [favsLoading, setFavsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -61,8 +82,46 @@ const CustomerProfile = () => {
         phone: user.phone || "",
         image: user.image || ""
       });
+      // @ts-ignore
+      setNotifications(user.pushNotificationsEnabled ?? true);
+      // @ts-ignore
+      setMarketing(user.marketingEmailsEnabled ?? false);
+      
+      if (user.address) {
+        try {
+          const addr = typeof user.address === 'string' ? JSON.parse(user.address) : user.address;
+          setNewAddress(addr);
+        } catch (e) {
+          console.error("Failed to parse address:", e);
+        }
+      }
     }
   }, [user]);
+
+  const handleSaveAddress = async () => {
+    try {
+      setIsSaving(true);
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({ address: newAddress })
+      });
+      
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to save address");
+
+      toast.success("Address saved successfully!");
+      queryClient.invalidateQueries({ queryKey: ["full-user"] });
+      setIsAddressOpen(false);
+    } catch (err) {
+      toast.error("Something went wrong saving address");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,19 +141,25 @@ const CustomerProfile = () => {
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
-      const { data, error } = await authClient.updateUser({
-        name: editForm.name,
-        // @ts-ignore
-        phone: editForm.phone,
-        image: editForm.image,
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          phone: editForm.phone,
+          image: editForm.image,
+        })
       });
       
-      if (error) {
-         toast.error(error.message || "Failed to update profile");
-      } else {
-         toast.success("Profile updated successfully!");
-         setIsEditOpen(false);
-      }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update profile");
+      
+      toast.success("Profile updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["full-user"] });
+      setIsEditOpen(false);
     } catch (err) {
       toast.error("Something went wrong");
     } finally {
@@ -136,6 +201,35 @@ const CustomerProfile = () => {
     };
     fetchOrders();
   }, [session]);
+
+  useEffect(() => {
+    const fetchFavs = async () => {
+      if (!session?.session?.token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/favorites`, {
+          headers: { 'Authorization': `Bearer ${session.session.token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setFavoriteVendors(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch favorites:", error);
+      } finally {
+        setFavsLoading(false);
+      }
+    };
+    fetchFavs();
+  }, [session]);
+
+  const updatePreferences = async (updates: { pushNotificationsEnabled?: boolean, marketingEmailsEnabled?: boolean }) => {
+    try {
+      const { error } = await authClient.updateUser(updates as any);
+      if (error) toast.error("Failed to save settings");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <DashboardLayout role="customer">
@@ -241,19 +335,31 @@ const CustomerProfile = () => {
                     <DialogTitle className="text-2xl font-black font-heading text-gold">Settings</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-6 py-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
                       <div className="space-y-0.5">
                         <Label className="text-base font-bold">Push Notifications</Label>
                         <p className="text-sm text-muted-foreground">Receive order updates and alerts.</p>
                       </div>
-                      <Switch checked={notifications} onCheckedChange={setNotifications} />
+                      <Switch 
+                        checked={notifications} 
+                        onCheckedChange={(val) => {
+                          setNotifications(val);
+                          updatePreferences({ pushNotificationsEnabled: val });
+                        }} 
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label className="text-base font-bold">Marketing Emails</Label>
                         <p className="text-sm text-muted-foreground">Get exclusive deals and offers.</p>
                       </div>
-                      <Switch checked={marketing} onCheckedChange={setMarketing} />
+                      <Switch 
+                        checked={marketing} 
+                        onCheckedChange={(val) => {
+                          setMarketing(val);
+                          updatePreferences({ marketingEmailsEnabled: val });
+                        }} 
+                      />
                     </div>
                   </div>
                 </DialogContent>
@@ -315,16 +421,40 @@ const CustomerProfile = () => {
               </div>
             </div>
 
-            {/* Activity Summary */}
             <div className="space-y-6">
-               <h2 className="text-xl font-heading font-black text-white uppercase tracking-wider flex items-center gap-3">
-                 <Heart size={20} className="text-gold" />
-                 Kitchen Selection
-               </h2>
-               <div className="py-12 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-surface/30">
-                  <p className="text-muted-foreground font-body text-sm">Your favorite kitchens will appear here as you explore the bazaar.</p>
-                  <Button onClick={() => navigate("/customer/kitchens")} variant="link" className="text-gold mt-2 font-bold uppercase tracking-widest text-[10px]">Explore Now</Button>
-               </div>
+                <h2 className="text-xl font-heading font-black text-white uppercase tracking-wider flex items-center gap-3">
+                  <Heart size={20} className="text-gold" />
+                  Kitchen Selection
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {favsLoading ? (
+                    [1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-dark-surface/50 animate-pulse border border-white/5" />)
+                  ) : favoriteVendors.length > 0 ? (
+                    favoriteVendors.map((vendor) => (
+                      <Card 
+                        key={vendor.id} 
+                        className="bg-dark-surface border-white/5 hover:border-gold/20 transition-all cursor-pointer overflow-hidden group"
+                        onClick={() => navigate(`/customer/kitchens/${vendor.id}`)}
+                      >
+                        <div className="flex items-center p-4 gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-dark-deep border border-white/5 overflow-hidden shrink-0">
+                            <img src={vendor.imageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={vendor.businessName} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-bold text-white truncate group-hover:text-gold transition-colors">{vendor.businessName}</h4>
+                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{vendor.cuisineType}</p>
+                          </div>
+                          <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="py-12 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-surface/30 col-span-full">
+                      <p className="text-muted-foreground font-body text-sm">Your favorite kitchens will appear here as you explore the bazaar.</p>
+                      <Button onClick={() => navigate("/customer/kitchens")} variant="link" className="text-gold mt-2 font-bold uppercase tracking-widest text-[10px]">Explore Now</Button>
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
 
@@ -381,9 +511,16 @@ const CustomerProfile = () => {
                               className="w-full h-12 border-gold/20 text-gold text-[10px] font-black tracking-widest flex gap-2"
                              >
                                 <MapPin size={14} />
-                                USE CURRENT LOCATION
+                                 USE CURRENT LOCATION
                              </Button>
-                             <Button className="w-full bg-gold text-background font-black tracking-widest uppercase">SAVE ADDRESS</Button>
+                             <Button 
+                               onClick={handleSaveAddress}
+                               disabled={isSaving}
+                               className="w-full bg-gold text-background font-black tracking-widest uppercase"
+                             >
+                               {isSaving ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
+                               SAVE ADDRESS
+                             </Button>
                           </div>
                         </div>
                       </DialogContent>
