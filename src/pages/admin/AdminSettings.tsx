@@ -97,10 +97,10 @@ const AdminSettings = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Rider Base Commission ($)</Label>
+                      <Label className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Rider Base Commission (₦)</Label>
                        <div className="flex gap-2">
                         <Input defaultValue="3.50" className="bg-dark-deep border-gold/10 focus:border-gold font-bold text-white h-12" />
-                        <div className="h-12 w-12 rounded-lg bg-dark-deep border border-gold/10 flex items-center justify-center font-black text-sm text-gold">$</div>
+                        <div className="h-12 w-12 rounded-lg bg-dark-deep border border-gold/10 flex items-center justify-center font-black text-sm text-gold">₦</div>
                       </div>
                     </div>
                   </div>

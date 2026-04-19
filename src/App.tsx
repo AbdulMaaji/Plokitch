@@ -27,15 +27,20 @@ import KitchenDetail from "./pages/customer/KitchenDetail.tsx";
 import Marketplace from "./pages/customer/Marketplace.tsx";
 import LiveTrack from "./pages/customer/LiveTrack.tsx";
 import CustomerProfile from "./pages/customer/CustomerProfile.tsx";
+import Cart from "./pages/customer/Cart.tsx";
+import Checkout from "./pages/customer/Checkout.tsx";
+
+import { CartProvider } from "./context/CartContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+      <CartProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth/login" element={<Login />} />
@@ -69,12 +74,15 @@ const App = () => (
           <Route path="/customer/marketplace" element={<Marketplace />} />
           <Route path="/customer/track" element={<LiveTrack />} />
           <Route path="/customer/track/:orderId" element={<LiveTrack />} />
+          <Route path="/customer/cart" element={<Cart />} />
+          <Route path="/customer/checkout" element={<Checkout />} />
           <Route path="/customer/profile" element={<CustomerProfile />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

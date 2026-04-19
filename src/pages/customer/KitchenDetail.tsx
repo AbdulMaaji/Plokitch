@@ -19,118 +19,66 @@ import {
 } from "lucide-react";
 import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const KitchenDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [selectedDish, setSelectedDish] = useState<any>(null);
+  const [kitchenData, setKitchenData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data based on the ID or defaults
-  const kitchenData: any = useMemo(() => {
-    const kitchens: any = {
-      "chef-andre-l'aube": {
-        name: "Chef Andre L'Aube",
-        cuisine: "French Contemporary",
-        rating: 4.9,
-        reviews: 128,
-        dist: "0.8 miles",
-        time: "30-45 min",
-        image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop",
-        bio: "Michelin-trained chef Andre brings the sophistication of Parisian ateliers to your doorstep. Every dish is a masterpiece of precision and flavor.",
-        specialty: "Sous-vide Techniques",
-        tag: "Michelin Trained",
-        dishes: [
-          {
-            id: 1,
-            name: "Smoked Wagyu Short Rib",
-            chef: "Chef Andre L'Aube",
-            chefBio: "Classical French techniques meet wood-fired passion. Andre has been at the forefront of artisan grilling for a decade.",
-            price: "₦45,000",
-            rating: 4.9,
-            image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-            tag: "Hero Dish",
-            description: "Low-and-slow smoked wagyu beef, glazed with a reduction of local berries and aged balsamic. Served with truffle-infused root vegetables.",
-            ingredients: ["Wagyu Beef", "Local Wild Berries", "25yr Balsamic", "Black Truffle"],
-            prepTime: "45 mins"
-          },
-          {
-            id: 5,
-            name: "Duck Confit Parmentier",
-            chef: "Chef Andre L'Aube",
-            chefBio: "Classical French techniques meet wood-fired passion.",
-            price: "₦32,000",
-            rating: 4.8,
-            image: "https://images.unsplash.com/photo-1514516369414-78177d7e1c90?q=80&w=800&auto=format&fit=crop",
-            tag: "Classic",
-            description: "Shredded duck leg confit topped with creamy potato purée and a crust of aged Comté.",
-            ingredients: ["Duck Leg", "Yukon Gold Potatoes", "Comté Cheese", "Red Wine Jus"],
-            prepTime: "35 mins"
-          }
-        ]
-      },
-      "sienna's-organic-kitchen": {
-        name: "Sienna's Organic Kitchen",
-        cuisine: "Farm-to-Table",
-        rating: 4.8,
-        reviews: 94,
-        dist: "1.5 miles",
-        time: "20-35 min",
-        image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=800&auto=format&fit=crop",
-        bio: "Dedicated to local farmers and sustainable practices. Sienna's kitchen is a celebration of the earth's bounty, served fresh and vibrant.",
-        specialty: "Seasonal Foraging",
-        tag: "Local Hero",
-        dishes: [
-          {
-            id: 2,
-            name: "Bluefin Tuna Tartare",
-            chef: "Sienna's Organic Kitchen",
-            chefBio: "Sustainability first. Sienna works directly with coastal fishermen to bring the freshest catch to the Gombe high-end market.",
-            price: "₦28,500",
-            rating: 4.7,
-            image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop",
-            tag: "Fresh Catch",
-            description: "Freshly caught bluefin tuna, diced with citrus zest, capers, and served over a bed of avocado mousse with gold-leaf garnishes.",
-            ingredients: ["Bluefin Tuna", "Avocado", "Meyer Lemon", "Capers"],
-            prepTime: "20 mins"
-          }
-        ]
-      },
-      "the-truffle-house": {
-        name: "The Truffle House",
-        cuisine: "Fine Dining",
-        rating: 5.0,
-        reviews: 56,
-        dist: "2.1 miles",
-        time: "45-60 min",
-        image: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?q=80&w=800&auto=format&fit=crop",
-        bio: "An exclusive culinary destination focusing on the world's rarest truffles. Each dish is an exploration of aroma and luxury.",
-        specialty: "Truffle Infusions",
-        tag: "Exclusive",
-        dishes: [
-          {
-            id: 3,
-            name: "Wild Truffle Pasta",
-            chef: "The Truffle House",
-            chefBio: "Forging through secret forests. The Truffle House is dedicated to the world's most aromatic and rare fungi selections.",
-            price: "₦34,000",
-            rating: 5.0,
-            image: "https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=800&auto=format&fit=crop",
-            tag: "Signature",
-            description: "Hand-rolled pappardelle tossed in a creamy parmesan emulsion, topped with generous shavings of seasonal black truffles.",
-            ingredients: ["Fresh Pasta", "Pecorino Romano", "Black Truffle", "Grass-fed Butter"],
-            prepTime: "30 mins"
-          }
-        ]
+  useEffect(() => {
+    const fetchKitchenDetail = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/vendors/${id}`);
+        const data = await res.json();
+        if (data.success) {
+          const k = data.data;
+          setKitchenData({
+            ...k,
+            name: k.businessName,
+            cuisine: k.cuisineType,
+            bio: k.description,
+            time: k.deliveryTime || "25-35 min",
+            image: k.imageUrl || "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop",
+            tag: k.tag || "Verified Artisan",
+            dishes: k.menuItems.map((item: any) => ({
+              ...item,
+              chef: k.businessName,
+              image: item.imageUrl || "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop"
+            }))
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch kitchen details:", error);
+      } finally {
+        setLoading(false);
       }
     };
-
-    // Robust matching
-    const normalizedId = id?.toLowerCase() || "";
-    if (normalizedId.includes("andre")) return kitchens["chef-andre-l'aube"];
-    if (normalizedId.includes("sienna")) return kitchens["sienna's-organic-kitchen"];
-    if (normalizedId.includes("truffle")) return kitchens["the-truffle-house"];
-    
-    return kitchens["chef-andre-l'aube"];
+    if (id) fetchKitchenDetail();
   }, [id]);
+
+  if (loading) {
+    return (
+      <DashboardLayout role="customer">
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!kitchenData) {
+    return (
+      <DashboardLayout role="customer">
+        <div className="text-center py-20">
+          <h2 className="text-2xl font-black text-white uppercase tracking-widest">Atelier Not Found</h2>
+          <Button onClick={() => navigate('/customer/kitchens')} variant="link" className="text-gold mt-4">Return to Discovery</Button>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout role="customer">

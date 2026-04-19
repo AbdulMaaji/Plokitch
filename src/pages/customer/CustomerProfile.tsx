@@ -89,11 +89,30 @@ const CustomerProfile = () => {
     }
   };
 
-  const orderHistory = [
-    { id: "ORD-9921", chef: "Chef Andre L'Aube", date: "April 15, 2024", total: "$112.50", status: "Delivered" },
-    { id: "ORD-9882", chef: "Sienna's Organic", date: "April 10, 2024", total: "$45.00", status: "Delivered" },
-    { id: "ORD-9750", chef: "The Truffle House", date: "March 28, 2024", total: "$89.20", status: "Delivered" },
-  ];
+  const [orderHistory, setOrderHistory] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!session?.session?.token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/orders`, {
+          headers: { 'Authorization': `Bearer ${session.session.token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setOrderHistory(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch order history:", error);
+      } finally {
+        setOrdersLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [session]);
 
   return (
     <DashboardLayout role="customer">
@@ -213,32 +232,45 @@ const CustomerProfile = () => {
                  <Button variant="ghost" className="text-gold font-bold text-xs uppercase tracking-widest">VIEW ALL</Button>
               </div>
               <div className="space-y-4">
-                {orderHistory.map((order) => (
-                  <Card key={order.id} className="bg-dark-surface border-white/5 hover:border-gold/20 transition-all group overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                           <div className="w-12 h-12 rounded-xl bg-dark-deep border border-white/5 flex items-center justify-center text-gold">
-                              <ShoppingBag size={20} />
-                           </div>
-                           <div>
-                              <h4 className="text-lg font-bold text-white group-hover:text-gold transition-colors">{order.chef}</h4>
-                              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{order.date} • {order.id}</p>
-                           </div>
+                {ordersLoading ? (
+                  [1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-dark-surface/50 border border-white/5 animate-pulse" />)
+                ) : orderHistory.length > 0 ? (
+                  orderHistory.map((order) => (
+                    <Card key={order.id} className="bg-dark-surface border-white/5 hover:border-gold/20 transition-all group overflow-hidden">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-dark-deep border border-white/5 flex items-center justify-center text-gold">
+                                <ShoppingBag size={20} />
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-bold text-white group-hover:text-gold transition-colors">
+                                  {order.vendor?.businessName || "Chef's Kitchen"}
+                                </h4>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+                                  {new Date(order.createdAt).toLocaleDateString()} • {order.id.slice(0, 8).toUpperCase()}
+                                </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-8">
+                            <div className="text-right">
+                                <p className="text-lg font-black text-white">₦{Number(order.totalPrice).toLocaleString()}</p>
+                                <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5 text-[9px] uppercase font-black">{order.status}</Badge>
+                            </div>
+                            <Button size="icon" variant="ghost" className="h-10 w-10 text-muted-foreground hover:text-white" onClick={() => navigate(`/customer/track/${order.id}`)}>
+                                <ChevronRight size={20} />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-8">
-                           <div className="text-right">
-                              <p className="text-lg font-black text-white">{order.total}</p>
-                              <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5 text-[9px] uppercase font-black">{order.status}</Badge>
-                           </div>
-                           <Button size="icon" variant="ghost" className="h-10 w-10 text-muted-foreground hover:text-white">
-                              <ChevronRight size={20} />
-                           </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="py-12 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-surface/30">
+                    <ShoppingBag size={40} className="mx-auto text-gold/20 mb-4" />
+                    <p className="text-muted-foreground font-body">Your culinary journey is just beginning. Explore our kitchens to place your first order!</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -273,7 +305,7 @@ const CustomerProfile = () => {
                   { icon: Bell, label: "Notification Settings" },
                   { icon: User, label: "Support & Help" },
                 ].map((item) => (
-                  <Dialog open={isAddressOpen} onOpenChange={setIsAddressOpen}>
+                  <Dialog key={item.label} open={isAddressOpen} onOpenChange={setIsAddressOpen}>
                     <DialogTrigger asChild>
                       <Button 
                         key={item.label} 

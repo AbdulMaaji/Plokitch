@@ -38,15 +38,38 @@ const fastify = Fastify({
 await fastify.register(fastifySensible);
 
 await fastify.register(fastifyCors, {
-  origin: [
-    process.env.CLIENT_ORIGIN ?? "http://localhost:8080",
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:8080",
-    "http://192.168.1.174:8080",
-  ],
+  origin: (origin, cb) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) {
+      cb(null, true);
+      return;
+    }
+
+    const allowedOrigins = [
+      process.env.CLIENT_ORIGIN,
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:8080",
+      "http://localhost:8081",
+    ].filter(Boolean);
+
+    const hostname = new URL(origin).hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1" || allowedOrigins.includes(origin)) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Not allowed by CORS"), false);
+  },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  allowedHeaders: [
+    "Content-Type", 
+    "Authorization", 
+    "X-Requested-With", 
+    "Cookie",
+    "x-better-auth-session"
+  ],
+  exposedHeaders: ["set-cookie"],
   credentials: true,
   maxAge: 86400,
 });

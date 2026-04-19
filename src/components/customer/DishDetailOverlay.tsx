@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "@/context/CartContext";
 
 interface DishDetailOverlayProps {
   dish: any;
@@ -20,6 +21,7 @@ interface DishDetailOverlayProps {
 
 const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
   const navigate = useNavigate();
+  const { addItem } = useCart();
 
   if (!dish) return null;
 
@@ -79,7 +81,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
                 <TrendingUp size={24} />
               </div>
               <div>
-                <p className="text-sm font-black text-gold uppercase tracking-widest font-heading">{dish.price}</p>
+                <p className="text-sm font-black text-gold uppercase tracking-widest font-heading">₦{Number(dish.price).toLocaleString()}</p>
                 <div className="flex items-center gap-1 text-white/60 text-sm mt-1">
                   <Star size={14} className="fill-gold text-gold" />
                   <span className="font-bold text-white">{dish.rating}</span>
@@ -89,7 +91,14 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
                 </div>
               </div>
             </div>
-            <Button size="lg" className="h-14 px-10 bg-gold hover:bg-gold-light text-background font-black rounded-xl shadow-lg shadow-gold/20 flex gap-3">
+            <Button 
+              size="lg" 
+              onClick={() => {
+                addItem(dish);
+                onClose();
+              }}
+              className="h-14 px-10 bg-gold hover:bg-gold-light text-background font-black rounded-xl shadow-lg shadow-gold/20 flex gap-3"
+            >
               <ShoppingCart size={20} />
               ADD TO BASKET
             </Button>
@@ -125,10 +134,10 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
                     className="p-0 h-auto text-gold text-xs font-black uppercase tracking-widest flex gap-2 items-center"
                     onClick={() => {
                       onClose();
-                      navigate(`/customer/kitchens/${dish.chef.toLowerCase().replace(/\s+/g, '-')}`);
+                      navigate(`/customer/kitchens`);
                     }}
                    >
-                      View Full Profile <ChevronRight size={14} />
+                      Browse Kitchens <ChevronRight size={14} />
                    </Button>
                 </div>
              </div>

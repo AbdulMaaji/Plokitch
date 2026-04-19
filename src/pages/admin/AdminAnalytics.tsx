@@ -16,10 +16,10 @@ import { Button } from "@/components/ui/button";
 
 const AdminAnalytics = () => {
   const platformStats = [
-    { title: "Gross GMV", value: "$1.24M", trend: "+24.5%", pos: true, icon: TrendingUp },
+    { title: "Gross GMV", value: "₦1.24M", trend: "+24.5%", pos: true, icon: TrendingUp },
     { title: "Active Users", value: "12,402", trend: "+12.1%", pos: true, icon: Users },
     { title: "Growth Rate", value: "18.5%", trend: "+5.2%", pos: true, icon: Zap },
-    { title: "Acquisition Cost", value: "$4.20", trend: "-1.10", pos: true, icon: Target },
+    { title: "Acquisition Cost", value: "₦4.20", trend: "-1.10", pos: true, icon: Target },
   ];
 
   return (
@@ -97,10 +97,10 @@ const AdminAnalytics = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {[
-                { name: "Chef Andre L'Aube", revenue: "$142,500", rating: "4.98", trend: "+12%" },
-                { name: "Sienna's Organic", revenue: "$98,200", rating: "4.85", trend: "+15%" },
-                { name: "The Truffle House", revenue: "$85,400", rating: "5.00", trend: "+5%" },
-                { name: "Fusion Hub", revenue: "$72,100", rating: "4.72", trend: "+8%" },
+                { name: "Chef Andre L'Aube", revenue: "₦142,500", rating: "4.98", trend: "+12%" },
+                { name: "Sienna's Organic", revenue: "₦98,200", rating: "4.85", trend: "+15%" },
+                { name: "The Truffle House", revenue: "₦85,400", rating: "5.00", trend: "+5%" },
+                { name: "Fusion Hub", revenue: "₦72,100", rating: "4.72", trend: "+8%" },
               ].map((kitchen, idx) => (
                 <div key={kitchen.name} className="flex items-center justify-between p-4 rounded-xl bg-dark-deep/40 border border-gold/5 hover:border-gold/20 transition-all">
                   <div className="flex items-center gap-4">

@@ -23,6 +23,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useChefData } from "@/hooks/useChefData";
+import { uploadImage } from "@/lib/upload";
+import { Loader2 } from "lucide-react";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 interface Dish {
   id: number;
@@ -35,19 +40,14 @@ interface Dish {
 }
 
 const ChefMenu = () => {
-  const [menuItems, setMenuItems] = useState<Dish[]>([
-    { id: 1, name: "Truffle Salmon Glaze", category: "Mains", price: "45000", stock: 12, active: true },
-    { id: 2, name: "Wild Mushroom Risotto", category: "Mains", price: "32000", stock: 8, active: true },
-    { id: 3, name: "Artisan Bread Pack", category: "Sides", price: "12000", stock: 25, active: true },
-    { id: 4, name: "Lava Cake Central", category: "Desserts", price: "18000", stock: 5, active: false },
-    { id: 5, name: "Kaltu Zobo Fusion", category: "Drinks", price: "8000", stock: 50, active: true },
-  ]);
-
+  const { myVendor, menuItems, loading, refreshData, session } = useChefData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingDish, setEditingDish] = useState<Dish | null>(null);
+  const [editingDish, setEditingDish] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<Partial<Dish>>({
@@ -56,6 +56,7 @@ const ChefMenu = () => {
     price: "",
     stock: 0,
     active: true,
+    imageUrl: "",
   });
 
   const categories = ["All", "Mains", "Sides", "Desserts", "Drinks"];
@@ -66,59 +67,141 @@ const ChefMenu = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleAddDish = () => {
-    if (!formData.name || !formData.price) {
-      toast.error("Required fields missing", { description: "Please provide a name and price for the dish." });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddDish = async () => {
+    if (!formData.name || !formData.price || !myVendor) {
+      toast.error("Required fields missing");
       return;
     }
 
-    const newDish: Dish = {
-      id: Math.max(...menuItems.map(d => d.id), 0) + 1,
-      name: formData.name || "",
-      category: formData.category || "Mains",
-      price: formData.price || "0",
-      stock: Number(formData.stock) || 0,
-      active: formData.active ?? true,
-    };
+    setIsUploading(true);
+    let finalImageUrl = formData.imageUrl;
 
-    setMenuItems([...menuItems, newDish]);
-    setIsAddDialogOpen(false);
-    resetForm();
-    toast.success("Dish added to menu", { description: `${newDish.name} is now available in your catalog.` });
+    try {
+      if (selectedFile) {
+        finalImageUrl = await uploadImage(selectedFile);
+      }
+
+      const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}/menu`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({
+          ...formData,
+          imageUrl: finalImageUrl,
+          category: formData.category?.toLowerCase(),
+          price: formData.price.toString()
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Dish added to menu");
+        refreshData();
+        setIsAddDialogOpen(false);
+        resetForm();
+      }
+    } catch (error) {
+      toast.error("Failed to add dish");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleUpdateDish = () => {
-    if (!editingDish || !formData.name || !formData.price) return;
+  const handleUpdateDish = async () => {
+    if (!editingDish || !formData.name || !formData.price || !myVendor) return;
 
-    const updatedItems = menuItems.map(item => 
-      item.id === editingDish.id 
-        ? { ...item, ...formData as Dish } 
-        : item
-    );
+    setIsUploading(true);
+    let finalImageUrl = formData.imageUrl;
 
-    setMenuItems(updatedItems);
-    setIsEditDialogOpen(false);
-    setEditingDish(null);
-    resetForm();
-    toast.success("Dish updated", { description: "Your changes have been saved successfully." });
+    try {
+      if (selectedFile) {
+        finalImageUrl = await uploadImage(selectedFile);
+      }
+
+      const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}/menu/${editingDish.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({
+          ...formData,
+          imageUrl: finalImageUrl,
+          category: formData.category?.toLowerCase()
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Dish updated");
+        refreshData();
+        setIsEditDialogOpen(false);
+        setEditingDish(null);
+        resetForm();
+      }
+    } catch (error) {
+      toast.error("Failed to update dish");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleDeleteDish = (id: number) => {
-    setMenuItems(menuItems.filter(item => item.id !== id));
-    toast.success("Dish removed", { description: "The item has been deleted from your catalog." });
+  const handleDeleteDish = async (id: string) => {
+    if (!myVendor) return;
+    try {
+      const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}/menu/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.session?.token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Dish removed");
+        refreshData();
+      }
+    } catch (error) {
+      toast.error("Failed to delete dish");
+    }
   };
 
-  const toggleStatus = (id: number) => {
-    setMenuItems(menuItems.map(item => 
-      item.id === id ? { ...item, active: !item.active } : item
-    ));
-    const dish = menuItems.find(i => i.id === id);
-    toast.info(dish?.active ? "Dish hidden" : "Dish is now live");
+  const toggleStatus = async (id: string, currentStatus: boolean) => {
+    if (!myVendor) return;
+    try {
+      const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}/menu/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({ isAvailable: !currentStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(currentStatus ? "Dish hidden" : "Dish is now live");
+        refreshData();
+      }
+    } catch (error) {
+      toast.error("Failed to toggle status");
+    }
   };
 
-  const openEditDialog = (dish: Dish) => {
+  const openEditDialog = (dish: any) => {
     setEditingDish(dish);
     setFormData(dish);
+    setImagePreview(dish.imageUrl);
     setIsEditDialogOpen(true);
   };
 
@@ -129,7 +212,10 @@ const ChefMenu = () => {
       price: "",
       stock: 0,
       active: true,
+      imageUrl: "",
     });
+    setSelectedFile(null);
+    setImagePreview(null);
   };
 
   return (
@@ -153,10 +239,31 @@ const ChefMenu = () => {
               </DialogHeader>
               <div className="space-y-6 py-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-black tracking-widest text-gold/60">Product Image (Placeholder)</Label>
-                  <div className="w-full h-32 rounded-xl border border-dashed border-gold/20 bg-dark-deep flex flex-col items-center justify-center text-muted-foreground gap-2 cursor-pointer hover:bg-gold/5 transition-colors">
-                    <ImageIcon size={24} />
-                    <span className="text-[10px] font-bold">UPLOAD HIGH-RES PREVIEW</span>
+                  <Label className="text-[10px] uppercase font-black tracking-widest text-gold/60">Product Image (High Res)</Label>
+                  <input 
+                    type="file" 
+                    id="dish-upload" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <div 
+                    onClick={() => document.getElementById('dish-upload')?.click()}
+                    className="w-full h-40 rounded-xl border border-dashed border-gold/20 bg-dark-deep flex flex-col items-center justify-center text-muted-foreground gap-2 cursor-pointer hover:bg-gold/5 transition-all overflow-hidden relative group"
+                  >
+                    {imagePreview ? (
+                      <>
+                        <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Change Photo</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon size={24} />
+                        <span className="text-[10px] font-bold">UPLOAD HIGH-RES PREVIEW</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -214,8 +321,19 @@ const ChefMenu = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleAddDish} className="w-full bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest h-12">
-                  CONFIRM ADDITION
+                <Button 
+                  disabled={isUploading}
+                  onClick={handleAddDish} 
+                  className="w-full bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest h-12"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      PREPARING ASSETS...
+                    </>
+                  ) : (
+                    "CONFIRM ADDITION"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -254,13 +372,17 @@ const ChefMenu = () => {
               <div className="h-48 bg-dark-deep relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-transparent to-transparent z-10" />
                 <div className="absolute top-4 right-4 z-20">
-                  <Badge className={`uppercase text-[10px] font-black tracking-widest px-3 py-1 border-none shadow-xl ${item.active ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                    {item.active ? 'LIVE' : 'HIDDEN'}
+                  <Badge className={`uppercase text-[10px] font-black tracking-widest px-3 py-1 border-none shadow-xl ${item.isAvailable ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
+                    {item.isAvailable ? 'LIVE' : 'HIDDEN'}
                   </Badge>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
-                  <SlidersHorizontal size={80} className="text-gold" />
-                </div>
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                    <SlidersHorizontal size={80} className="text-gold" />
+                  </div>
+                )}
               </div>
               <CardContent className="p-8">
                 <div className="flex justify-between items-start mb-6">
@@ -273,9 +395,9 @@ const ChefMenu = () => {
 
                 <div className="flex items-center justify-between border-t border-gold/5 pt-6 mt-2">
                   <div className="space-y-1">
-                    <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">Inventory</p>
-                    <p className={`text-sm font-bold ${item.stock < 10 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                      {item.stock} UNITS LEFT
+                    <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">Pricing</p>
+                    <p className="text-sm font-bold text-emerald-500">
+                      ₦{Number(item.price).toLocaleString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -297,8 +419,8 @@ const ChefMenu = () => {
                     </Button>
                     <div className="ml-2 pl-4 border-l border-gold/10">
                       <Switch 
-                        checked={item.active} 
-                        onCheckedChange={() => toggleStatus(item.id)}
+                        checked={item.isAvailable} 
+                        onCheckedChange={() => toggleStatus(item.id, item.isAvailable)}
                         className="data-[state=checked]:bg-gold" 
                       />
                     </div>
@@ -326,7 +448,35 @@ const ChefMenu = () => {
               <DialogTitle className="text-2xl font-black uppercase tracking-wider text-gold">Edit Culinary Item</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 py-4">
-               <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] uppercase font-black tracking-widest text-gold/60">Update Photo</Label>
+                <input 
+                  type="file" 
+                  id="dish-upload-edit" 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                <div 
+                  onClick={() => document.getElementById('dish-upload-edit')?.click()}
+                  className="w-full h-40 rounded-xl border border-dashed border-gold/20 bg-dark-deep flex flex-col items-center justify-center text-muted-foreground gap-2 cursor-pointer hover:bg-gold/5 transition-all overflow-hidden relative group"
+                >
+                  {imagePreview ? (
+                    <>
+                      <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                         <span className="text-[10px] font-black text-white uppercase tracking-widest">Change Photo</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon size={24} />
+                      <span className="text-[10px] font-bold">REPLACE PHOTO</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
                   <Label className="text-[10px] uppercase font-black tracking-widest text-gold/60">Dish Name</Label>
                   <Input 
@@ -371,8 +521,19 @@ const ChefMenu = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleUpdateDish} className="w-full bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest h-12">
-                UPDATE ITEM DETAILS
+              <Button 
+                disabled={isUploading}
+                onClick={handleUpdateDish} 
+                className="w-full bg-gold hover:bg-gold-light text-background font-black uppercase tracking-widest h-12"
+              >
+                {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      OPTIMIZING...
+                    </>
+                  ) : (
+                    "UPDATE ITEM DETAILS"
+                  )}
               </Button>
             </DialogFooter>
           </DialogContent>

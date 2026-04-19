@@ -13,18 +13,68 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
+import { useChefData } from "@/hooks/useChefData";
+import { toast } from "sonner";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const ChefDashboard = () => {
-  const activeOrders = [
-    { id: "ORD-9921", customer: "Sophia Chen", items: "Truffle Salmon Glaze x2", status: "Preparing", time: "10m left", urgency: "high" },
-    { id: "ORD-9922", customer: "Marcus Wright", items: "Artisan Sourdough Pizza", status: "Ready", time: "Waiting for Rider", urgency: "medium" },
-    { id: "ORD-9923", customer: "Elena Rodriguez", items: "Wild Mushroom Risotto", status: "Pending", time: "Incoming", urgency: "low" },
+  const { myVendor, activeOrders, loading, refreshData, session } = useChefData();
+
+  const handleUpdateStatus = async (orderId: string, currentStatus: string) => {
+    const nextStatus = currentStatus === 'preparing' ? 'ready' : 'completed';
+    try {
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({ status: nextStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Order marked as ${nextStatus.toUpperCase()}`);
+        refreshData();
+      }
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const revenue = activeOrders
+    .filter(o => o.status === 'completed')
+    .reduce((sum, o) => sum + parseFloat(o.totalAmount), 0);
+  
+  const stats = [
+    { title: "Daily Revenue", value: `₦${revenue.toLocaleString()}`, icon: TrendingUp, color: "text-emerald-500" },
+    { title: "Active Orders", value: activeOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length.toString(), icon: ShoppingBag, color: "text-gold" },
   ];
 
-  const stats = [
-    { title: "Daily Revenue", value: "$428.50", icon: TrendingUp, color: "text-emerald-500" },
-    { title: "Orders Today", value: "24", icon: ShoppingBag, color: "text-gold" },
-  ];
+  if (loading) {
+    return (
+      <DashboardLayout role="chef">
+        <div className="h-[60vh] flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!myVendor) {
+    return (
+      <DashboardLayout role="chef">
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6">
+          <div className="w-20 h-20 bg-gold/5 rounded-full flex items-center justify-center border border-gold/10">
+            <ShoppingBag size={40} className="text-gold/20" />
+          </div>
+          <h2 className="text-2xl font-black text-white uppercase tracking-widest">No Kitchen Active</h2>
+          <p className="text-muted-foreground max-w-sm">You haven't set up your kitchen identity yet. Go to settings to start your artisan journey.</p>
+          <Button className="bg-gold text-background font-black px-10 rounded-xl h-12">OPEN SETTINGS</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout role="chef">
@@ -34,7 +84,7 @@ const ChefDashboard = () => {
             <h1 className="text-3xl md:text-4xl font-heading font-black text-white">Kitchen Orders</h1>
             <p className="text-muted-foreground text-sm flex items-center gap-2 mt-1">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              Your kitchen is live in Gombe Central
+              Your kitchen ({myVendor.businessName}) is live in {myVendor.location?.city}
             </p>
           </div>
           <div className="flex gap-2">
@@ -59,13 +109,11 @@ const ChefDashboard = () => {
 
           <TabsContent value="active" className="mt-0">
             <div className="grid grid-cols-1 gap-4">
-              {activeOrders.map((order) => (
+              {activeOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').map((order) => (
                 <Card key={order.id} className="bg-dark-surface border-gold/10 hover:border-gold/30 transition-all group overflow-hidden">
                   <div className="flex flex-col md:flex-row">
-                    {/* Status Indicator Bar */}
                     <div className={`w-1.5 self-stretch ${
-                      order.urgency === 'high' ? 'bg-red-500' : 
-                      order.urgency === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                      order.status === 'pending' ? 'bg-amber-500' : 'bg-gold'
                     }`} />
                     
                     <CardContent className="flex-1 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -75,11 +123,12 @@ const ChefDashboard = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-black text-gold uppercase tracking-widest">{order.id}</span>
-                            {order.urgency === 'high' && <AlertCircle size={14} className="text-red-500" />}
+                            <span className="text-xs font-black text-gold uppercase tracking-widest">ORD-{order.id.slice(0, 4)}</span>
                           </div>
-                          <h3 className="text-lg font-bold text-white">{order.items}</h3>
-                          <p className="text-xs text-muted-foreground font-medium">Customer: {order.customer}</p>
+                          <h3 className="text-lg font-bold text-white">
+                            {order.items.map((i: any) => `${i.name} x${i.quantity}`).join(", ")}
+                          </h3>
+                          <p className="text-xs text-muted-foreground font-medium">Customer: {order.customer?.name}</p>
                         </div>
                       </div>
 
@@ -87,24 +136,20 @@ const ChefDashboard = () => {
                         <div className="flex flex-col items-center md:items-end flex-1 md:flex-none">
                           <Badge variant="outline" className={`
                             px-4 py-1 text-[10px] font-black uppercase tracking-widest mb-2
-                            ${order.status === 'Preparing' ? 'border-amber-500/30 text-amber-500 bg-amber-500/5' : ''}
-                            ${order.status === 'Ready' ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5' : ''}
-                            ${order.status === 'Pending' ? 'border-blue-500/30 text-blue-500 bg-blue-500/5' : ''}
+                            ${order.status === 'preparing' ? 'border-amber-500/30 text-amber-500 bg-amber-500/5' : ''}
+                            ${order.status === 'ready' ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5' : ''}
+                            ${order.status === 'pending' ? 'border-blue-500/30 text-blue-500 bg-blue-500/5' : ''}
                           `}>
                             {order.status}
                           </Badge>
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Clock size={12} />
-                            {order.time}
-                          </div>
                         </div>
                         
                         <div className="flex gap-2 w-full md:w-auto">
-                          <Button className="flex-1 md:flex-none bg-gold hover:bg-gold-light text-background font-black h-10 px-6">
-                            MARK {order.status === 'Preparing' ? 'READY' : 'PICKED UP'}
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-white">
-                            <MoreVertical size={20} />
+                          <Button 
+                            onClick={() => handleUpdateStatus(order.id, order.status)}
+                            className="flex-1 md:flex-none bg-gold hover:bg-gold-light text-background font-black h-10 px-6"
+                          >
+                            MARK {order.status === 'pending' ? 'PREPARING' : order.status === 'preparing' ? 'READY' : 'PICKED UP'}
                           </Button>
                         </div>
                       </div>
@@ -112,6 +157,11 @@ const ChefDashboard = () => {
                   </div>
                 </Card>
               ))}
+              {activeOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length === 0 && (
+                <div className="py-20 text-center border border-dashed border-gold/10 rounded-3xl">
+                  <p className="text-muted-foreground font-body">No pending kitchen tasks. Take a breath.</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

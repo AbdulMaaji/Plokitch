@@ -32,9 +32,9 @@ const ActiveDeliveries = () => {
   ];
 
   const history = [
-    { id: "DEL-409", customer: "Elena R.", date: "Today, 1:45 PM", status: "Completed", payout: "$8.50" },
-    { id: "DEL-408", customer: "Marcus W.", date: "Today, 11:30 AM", status: "Completed", payout: "$12.20" },
-    { id: "DEL-407", customer: "Aisha K.", date: "Yesterday", status: "Completed", payout: "$9.00" },
+    { id: "DEL-409", customer: "Elena R.", date: "Today, 1:45 PM", status: "Completed", payout: "₦8.50" },
+    { id: "DEL-408", customer: "Marcus W.", date: "Today, 11:30 AM", status: "Completed", payout: "₦12.20" },
+    { id: "DEL-407", customer: "Aisha K.", date: "Yesterday", status: "Completed", payout: "₦9.00" },
   ];
 
   return (

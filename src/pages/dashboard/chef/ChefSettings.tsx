@@ -19,14 +19,93 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { Locate, Map as MapIcon, Globe } from "lucide-react";
+import { useChefData } from "@/hooks/useChefData";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const ChefSettings = () => {
+  const { myVendor, session, refreshData, loading } = useChefData();
+  const { location: geo, getLocation } = useGeolocation();
   const [activeTab, setActiveTab] = useState("Kitchen Identity");
 
+  // Local Form States
+  const [personalForm, setPersonalForm] = useState({
+    name: session?.user?.name || "",
+    phone: session?.user?.phone || "",
+  });
+
+  const [vendorForm, setVendorForm] = useState({
+    businessName: myVendor?.businessName || "",
+    cuisineType: myVendor?.cuisineType || "",
+    description: myVendor?.description || "",
+    location: myVendor?.location || { address: "", city: "Gombe", state: "Gombe", lat: 10.2897, lng: 11.1673 },
+  });
+
+  // Sync state when data loads
+  useState(() => {
+    if (session?.user) {
+      setPersonalForm({
+        name: session.user.name || "",
+        phone: session.user.phone || "",
+      });
+    }
+    if (myVendor) {
+      setVendorForm({
+        businessName: myVendor.businessName || "",
+        cuisineType: myVendor.cuisineType || "",
+        description: myVendor.description || "",
+        location: myVendor.location || { address: "", city: "Gombe", state: "Gombe", lat: 10.2897, lng: 11.1673 },
+      });
+    }
+  });
+
+  const handlePersonalSave = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify(personalForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Profile Updated");
+        refreshData();
+      }
+    } catch (error) {
+      toast.error("Update Failed");
+    }
+  };
+
+  const handleVendorSave = async () => {
+    if (!myVendor) return;
+    try {
+      const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify(vendorForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Kitchen Profile Updated");
+        refreshData();
+      }
+    } catch (error) {
+      toast.error("Update Failed");
+    }
+  };
+
   const handleSave = () => {
-    toast.success("Settings updated", {
-      description: "Your kitchen presence and preferences have been synchronized.",
-    });
+    if (activeTab === "Personal Profile") {
+      handlePersonalSave();
+    } else {
+      handleVendorSave();
+    }
   };
 
   const navItems = [
@@ -101,16 +180,25 @@ const ChefSettings = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label className="text-xs font-black text-gold uppercase tracking-widest">Kitchen Name</Label>
-                        <Input defaultValue="Chef Andre L'Aube" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                        <Input 
+                          value={vendorForm.businessName}
+                          onChange={(e) => setVendorForm({...vendorForm, businessName: e.target.value})}
+                          className="bg-dark-deep border-gold/10 focus:border-gold" 
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-xs font-black text-gold uppercase tracking-widest">Cuisine Speciality</Label>
-                        <Input defaultValue="French Contemporary" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                        <Input 
+                          value={vendorForm.cuisineType}
+                          onChange={(e) => setVendorForm({...vendorForm, cuisineType: e.target.value})}
+                          className="bg-dark-deep border-gold/10 focus:border-gold" 
+                        />
                       </div>
                       <div className="md:col-span-2 space-y-2">
                         <Label className="text-xs font-black text-gold uppercase tracking-widest">Kitchen Bio</Label>
                         <Textarea 
-                          defaultValue="Established in 2021, we focus on the fusion of classical French techniques with local Nigerian botanicals. Every dish is a story of craft and flavour."
+                          value={vendorForm.description}
+                          onChange={(e) => setVendorForm({...vendorForm, description: e.target.value})}
                           className="bg-dark-deep border-gold/10 focus:border-gold min-h-[120px]" 
                         />
                       </div>
@@ -152,16 +240,21 @@ const ChefSettings = () => {
                         <div className="grid grid-cols-1 gap-6">
                           <div className="space-y-2">
                             <Label className="text-xs font-black text-gold uppercase tracking-widest">Street Address</Label>
-                            <Input placeholder="123 Culina Street" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                            <Input 
+                              value={vendorForm.location.address}
+                              onChange={(e) => setVendorForm({...vendorForm, location: {...vendorForm.location, address: e.target.value}})}
+                              placeholder="123 Culina Street" 
+                              className="bg-dark-deep border-gold/10 focus:border-gold" 
+                            />
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label className="text-xs font-black text-gold uppercase tracking-widest">City</Label>
-                              <Input placeholder="Gombe" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                              <Input value={vendorForm.location.city} readOnly className="bg-dark-deep border-gold/10 focus:border-gold" />
                             </div>
                             <div className="space-y-2">
                               <Label className="text-xs font-black text-gold uppercase tracking-widest">State</Label>
-                              <Input placeholder="Gombe" className="bg-dark-deep border-gold/10 focus:border-gold" />
+                              <Input value={vendorForm.location.state} readOnly className="bg-dark-deep border-gold/10 focus:border-gold" />
                             </div>
                           </div>
                         </div>
@@ -169,9 +262,19 @@ const ChefSettings = () => {
                         <div className="pt-6 border-t border-gold/5 flex gap-4">
                            <Button 
                             variant="outline" 
-                            onClick={() => {
+                            onClick={async () => {
                               toast.info("Geolocation initialized", { description: "Fetching your kitchen's precise coordinates..." });
-                              // Geolocation logic handled below in coordinates section
+                              const pos = await getLocation();
+                              if (pos) {
+                                setVendorForm({
+                                  ...vendorForm,
+                                  location: {
+                                    ...vendorForm.location,
+                                    lat: pos.lat,
+                                    lng: pos.lng
+                                  }
+                                });
+                              }
                             }}
                             className="h-12 border-gold/20 text-gold text-[10px] font-black tracking-widest flex gap-2"
                            >
@@ -194,11 +297,11 @@ const ChefSettings = () => {
                     <div className="p-6 rounded-2xl bg-gold/5 border border-gold/10 grid grid-cols-2 gap-8">
                        <div className="space-y-1">
                           <p className="text-[10px] text-gold font-black uppercase tracking-widest">Latitude</p>
-                          <p className="text-sm font-bold text-white font-mono">10.2897</p>
+                          <p className="text-sm font-bold text-white font-mono">{vendorForm.location.lat}</p>
                        </div>
                        <div className="space-y-1">
                           <p className="text-[10px] text-gold font-black uppercase tracking-widest">Longitude</p>
-                          <p className="text-sm font-bold text-white font-mono">11.1673</p>
+                          <p className="text-sm font-bold text-white font-mono">{vendorForm.location.lng}</p>
                        </div>
                     </div>
                   </CardContent>

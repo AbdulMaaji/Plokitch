@@ -167,7 +167,7 @@ const RiderDashboard = () => {
               </div>
               <div className="mr-4">
                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Earnings Today</p>
-                <p className="text-lg font-bold text-white">$142.80</p>
+                <p className="text-lg font-bold text-white">₦142.80</p>
               </div>
             </div>
           </div>
@@ -203,7 +203,7 @@ const RiderDashboard = () => {
                       <div key={order.id} className="focus:bg-gold/10 rounded-xl p-4 border border-gold/5 hover:border-gold/20 transition-all block bg-dark-deep/30">
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-sm font-black text-white">{order.vendor?.name || "Ready Order"}</span>
-                          <span className="font-bold text-gold">₦{order.totalAmount}</span>
+                          <span className="font-bold text-gold">${order.totalAmount}</span>
                         </div>
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-3 uppercase tracking-wider font-bold">
                           <MapPin size={10} className="text-gold" />

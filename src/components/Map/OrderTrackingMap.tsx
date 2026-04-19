@@ -35,8 +35,8 @@ interface OrderTrackingMapProps {
 // Dark tile layer URL
 // ─────────────────────────────────────────────
 
-const DARK_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
+const SATELLITE_TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const TILE_ATTRIBUTION = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 
 // ─────────────────────────────────────────────
 // Default center — Gombe, Nigeria
@@ -139,8 +139,8 @@ const OrderTrackingMap = ({
         className="w-full h-full"
         style={{ background: "#0a0a0a" }}
       >
-        {/* Dark tile layer */}
-        <TileLayer url={DARK_TILE_URL} attribution={TILE_ATTRIBUTION} />
+        {/* Satellite tile layer */}
+        <TileLayer url={SATELLITE_TILE_URL} attribution={TILE_ATTRIBUTION} />
 
         {/* Auto-fit or recenter */}
         {center ? (

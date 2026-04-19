@@ -61,7 +61,7 @@ const AdminPanel = () => {
                 <Badge className="bg-emerald-500/10 text-emerald-500 border-none">+24%</Badge>
               </div>
               <p className="text-muted-foreground text-xs font-bold uppercase tracking-tighter">Gross GMV</p>
-              <h3 className="text-2xl font-black text-white mt-1">$1.24M</h3>
+              <h3 className="text-2xl font-black text-white mt-1">₦1.24M</h3>
             </CardContent>
           </Card>
           <Card className="bg-dark-surface border-gold/10">

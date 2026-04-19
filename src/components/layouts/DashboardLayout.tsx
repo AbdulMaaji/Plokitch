@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { useCart } from "@/context/CartContext";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -57,6 +58,7 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const { itemCount } = useCart();
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
 
   // Update role if pageRole changes
@@ -94,10 +96,6 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
         toast.success("New Delivery Available!", {
           description: "High payout delivery nearby. Accept now?",
           action: { label: "Accept", onClick: () => navigate("/dashboard/rider") },
-        });
-      } else if (role === "customer") {
-        toast.message("Order Update", {
-          description: "Your meal is being prepared by Chef Andre.",
         });
       }
     }, 5000);
@@ -257,13 +255,27 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
+            {role === "customer" && (
+              <button 
+                onClick={() => navigate("/customer/cart")}
+                className="relative text-muted-foreground hover:text-gold transition-colors p-2"
+              >
+                <ShoppingBag size={20} />
+                {itemCount > 0 && (
+                  <span className="absolute top-0 right-0 w-4 h-4 bg-gold text-background text-[10px] font-black rounded-full flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </button>
+            )}
             <button className="relative text-muted-foreground hover:text-gold transition-colors p-2">
               <Bell size={20} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-gold rounded-full" />
             </button>
             <div className="flex items-center gap-3 pl-3 md:pl-6 border-l border-gold/10">
               <div className="text-right hidden sm:block">
-                <p className="text-[10px] font-bold text-gold uppercase tracking-widest">{role}</p>
+                <p className="text-sm font-black text-white capitalize leading-none mb-1">{session?.user?.name || role}</p>
+                <p className="text-[10px] font-bold text-gold uppercase tracking-widest opacity-80">{role}</p>
               </div>
 
               <DropdownMenu>

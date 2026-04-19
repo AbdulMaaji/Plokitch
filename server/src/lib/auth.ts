@@ -27,10 +27,12 @@ export const auth = betterAuth({
 
   // ── Trusted Origins ───────────────────────────────────────
   trustedOrigins: [
-    process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
+    process.env.CLIENT_ORIGIN,
     "http://localhost:5173",
     "http://localhost:3000",
-  ],
+    "http://localhost:8080",
+    "http://localhost:8081",
+  ].filter(Boolean) as string[],
 
   // ── Authentication Methods ────────────────────────────────
   emailAndPassword: {

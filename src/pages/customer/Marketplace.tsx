@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -12,8 +12,7 @@ import {
   X,
   Star,
   Clock,
-  ChevronLeft,
-  Share2
+  ChefHat
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,71 +20,52 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDish, setSelectedDish] = useState<any>(null);
+  const [selectedDish, setSelectedDish] = useState<any | null>(null);
+  const [dishes, setDishes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const dishes = [
-    {
-      id: 1,
-      name: "Smoked Wagyu Short Rib",
-      chef: "Chef Andre L.",
-      chefBio: "Classical French techniques meet wood-fired passion. Andre has been at the forefront of artisan grilling for a decade.",
-      price: "₦45,000",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-      tag: "Trending",
-      description: "Low-and-slow smoked wagyu beef, glazed with a reduction of local berries and aged balsamic. Served with truffle-infused root vegetables.",
-      ingredients: ["Wagyu Beef", "Local Wild Berries", "25yr Balsamic", "Black Truffle", "Organic Root Veg"],
-      prepTime: "45 mins"
-    },
-    {
-      id: 2,
-      name: "Bluefin Tuna Tartare",
-      chef: "Sienna's Organic",
-      chefBio: "Sustainability first. Sienna works directly with coastal fishermen to bring the freshest catch to the Gombe high-end market.",
-      price: "₦28,500",
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop",
-      tag: "Limited",
-      description: "Freshly caught bluefin tuna, diced with citrus zest, capers, and served over a bed of avocado mousse with gold-leaf garnishes.",
-      ingredients: ["Bluefin Tuna", "Avocado", "Meyer Lemon", "Capers", "Edible 24k Gold"],
-      prepTime: "20 mins"
-    },
-    {
-      id: 3,
-      name: "Wild Truffle Pasta",
-      chef: "The Truffle House",
-      chefBio: "Forging through secret forests. The Truffle House is dedicated to the world's most aromatic and rare fungi selections.",
-      price: "₦34,000",
-      rating: 5.0,
-      image: "https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=800&auto=format&fit=crop",
-      tag: "Seasonal",
-      description: "Hand-rolled pappardelle tossed in a creamy parmesan emulsion, topped with generous shavings of seasonal black truffles.",
-      ingredients: ["Fresh Pasta", "Pecorino Romano", "Black Truffle", "Grass-fed Butter", "Sea Salt"],
-      prepTime: "30 mins"
-    },
-    {
-      id: 4,
-      name: "Hand-crafted Sourdough",
-      chef: "Artisan Bakery",
-      chefBio: "Master of fermentation. Our head baker uses a 50-year-old starter to create loaves with unmatched depth and texture.",
-      price: "₦12,000",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop",
-      tag: "Popular",
-      description: "A 48-hour fermented sourdough loaf with a dark, crackling crust and a moist, airy crumb. Perfect with cultured butter.",
-      ingredients: ["Heirloom Wheat", "Spring Water", "Ancient Starter", "Maldon Salt"],
-      prepTime: "15 mins"
-    }
-  ];
+  useEffect(() => {
+    const fetchMarketplace = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/vendors`);
+        const data = await res.json();
+        if (data.success) {
+          const allDishes = data.data.flatMap((vendor: any) => 
+            vendor.menuItems.map((item: any) => ({
+              ...item,
+              chef: vendor.businessName,
+              chefId: vendor.id,
+              chefBio: vendor.description,
+              rating: item.rating || "4.9",
+              reviews: vendor.totalReviews || 0,
+              time: vendor.deliveryTime || "25-35 min",
+              image: item.imageUrl || "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
+              prepTime: item.prepTime || "30-45 mins",
+              tag: item.tag || "Artisan Choice",
+              ingredients: Array.isArray(item.ingredients) ? item.ingredients : []
+            }))
+          );
+          setDishes(allDishes);
+        }
+      } catch (error) {
+        console.error("Failed to fetch marketplace:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMarketplace();
+  }, []);
 
   const filteredDishes = useMemo(() => {
     return dishes.filter(dish => 
       dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dish.chef.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [searchQuery, dishes]);
 
   return (
     <DashboardLayout role="customer">
@@ -125,50 +105,49 @@ const Marketplace = () => {
                 {searchQuery ? `Search Results (${filteredDishes.length})` : "Top Rated Selections"}
               </h2>
             </div>
-            {!searchQuery && (
-              <Button variant="ghost" className="text-gold font-bold hover:bg-gold/5">View all <ChevronRight size={16} /></Button>
-            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <AnimatePresence>
-              {filteredDishes.map((dish) => (
-                <motion.div
-                  layout
-                  key={dish.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card 
-                    onClick={() => setSelectedDish(dish)}
-                    className="bg-dark-surface border-gold/10 overflow-hidden group hover:border-gold/30 transition-all duration-300 rounded-2xl flex flex-col cursor-pointer hover:translate-y-[-4px]"
-                  >
-                    <div className="relative h-48">
-                      <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute top-3 left-3">
-                        <Badge className="bg-dark-deep/80 backdrop-blur-md border border-gold/20 text-gold text-[8px] font-black uppercase tracking-widest">{dish.tag}</Badge>
-                      </div>
-                    </div>
-                    <CardContent className="p-6 flex-1 flex flex-col">
-                      <div className="flex-1">
-                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">{dish.chef}</p>
-                        <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-gold transition-colors">{dish.name}</h3>
-                      </div>
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gold/5">
-                        <span className="text-xl font-black text-gold font-heading">{dish.price}</span>
-                        <div className="flex items-center gap-1 text-gold/60 text-xs font-bold">
-                          <Star size={12} className="fill-gold/60" />
-                          {dish.rating}
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-[450px] rounded-[2.5rem] bg-dark-surface/50 border border-gold/5 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20 animate-in fade-in duration-700">
+              <AnimatePresence>
+                {filteredDishes.map((dish) => (
+                  <motion.div key={dish.id} layout exit={{ opacity: 0, scale: 0.9 }}>
+                    <Card 
+                      className="bg-dark-surface border-gold/10 hover:border-gold/30 transition-all cursor-pointer group overflow-hidden rounded-[2.5rem] shadow-2xl"
+                      onClick={() => setSelectedDish(dish)}
+                    >
+                      <div className="relative h-64 overflow-hidden">
+                        <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-4 right-4">
+                          <Badge className="bg-dark-deep/80 backdrop-blur-md text-gold border-gold/20">{dish.tag}</Badge>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ChefHat size={14} className="text-gold" />
+                          <span className="text-xs font-bold text-muted-foreground">{dish.chef}</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2 leading-tight">{dish.name}</h3>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xl font-black text-white">₦{Number(dish.price).toLocaleString()}</p>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold bg-dark-deep/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-gold/10">
+                            <Clock size={12} className="text-gold" />
+                            {dish.time}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
           
           {filteredDishes.length === 0 && (
             <div className="py-20 text-center">

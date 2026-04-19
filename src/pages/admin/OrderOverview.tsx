@@ -24,11 +24,11 @@ import { Input } from "@/components/ui/input";
 
 const OrderOverview = () => {
   const globalOrders = [
-    { id: "ORD-9921", customer: "Sophia Chen", chef: "Chef Andre", amount: "$112.50", status: "In Transit", priority: "High" },
-    { id: "ORD-9922", customer: "Marcus Wright", chef: "Elena's Kitchen", amount: "$45.00", status: "Preparing", priority: "Medium" },
-    { id: "ORD-9923", customer: "Elena R.", chef: "Pasta Palace", amount: "$78.20", status: "Delivered", priority: "Normal" },
-    { id: "ORD-9924", customer: "David Smith", chef: "Chef Andre", amount: "$92.00", status: "Ready for Pickup", priority: "High" },
-    { id: "ORD-9925", customer: "Aisha Khan", chef: "Kaltu Bites", amount: "$54.00", status: "Cancelled", priority: "Low" },
+    { id: "ORD-9921", customer: "Sophia Chen", chef: "Chef Andre", amount: "₦112.50", status: "In Transit", priority: "High" },
+    { id: "ORD-9922", customer: "Marcus Wright", chef: "Elena's Kitchen", amount: "₦45.00", status: "Preparing", priority: "Medium" },
+    { id: "ORD-9923", customer: "Elena R.", chef: "Pasta Palace", amount: "₦78.20", status: "Delivered", priority: "Normal" },
+    { id: "ORD-9924", customer: "David Smith", chef: "Chef Andre", amount: "₦92.00", status: "Ready for Pickup", priority: "High" },
+    { id: "ORD-9925", customer: "Aisha Khan", chef: "Kaltu Bites", amount: "₦54.00", status: "Cancelled", priority: "Low" },
   ];
 
   return (
