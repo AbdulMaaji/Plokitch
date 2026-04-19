@@ -22,7 +22,9 @@ const Kitchens = () => {
   const navigate = useNavigate();
   const [chefs, setChefs] = useState<any[]>([]);
   const [activeOrder, setActiveOrder] = useState<any>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const { data: session } = authClient.useSession();
 
   useEffect(() => {
@@ -48,6 +50,16 @@ const Kitchens = () => {
             setActiveOrder(active);
           }
         }
+        // Fetch favorites
+        if (session?.session?.token) {
+          const favsRes = await fetch(`${API_URL}/api/favorites`, {
+            headers: { 'Authorization': `Bearer ${session.session.token}` }
+          });
+          const favsData = await favsRes.json();
+          if (favsData.success) {
+            setFavorites(favsData.data.map((v: any) => v.id));
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -56,6 +68,32 @@ const Kitchens = () => {
     };
     fetchData();
   }, [session]);
+
+  const toggleFavorite = async (vendorId: string) => {
+    if (!session?.session?.token) {
+      toast.error("Please log in to save favorites");
+      return;
+    }
+    try {
+      setTogglingId(vendorId);
+      const res = await fetch(`${API_URL}/api/favorites/${vendorId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.session.token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.favorited) {
+          setFavorites(prev => [...prev, vendorId]);
+        } else {
+          setFavorites(prev => prev.filter(id => id !== vendorId));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   return (
     <DashboardLayout role="customer">
@@ -110,6 +148,23 @@ const Kitchens = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-transparent to-transparent opacity-80" />
                   <Badge className="absolute top-6 left-6 bg-dark-deep/60 backdrop-blur-md border border-white/10 text-gold font-bold">{chef.tag || "Verified Kitchen"}</Badge>
                   
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    disabled={togglingId === chef.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(chef.id);
+                    }}
+                    className={`absolute top-6 right-6 h-10 w-10 rounded-full backdrop-blur-md border transition-all z-20 ${
+                      favorites.includes(chef.id) 
+                        ? 'bg-red-500 border-red-500 text-white' 
+                        : 'bg-dark-deep/40 border-white/10 text-white hover:bg-red-500/20 hover:text-red-500'
+                    }`}
+                  >
+                    <Heart size={20} className={favorites.includes(chef.id) ? "fill-current" : ""} />
+                  </Button>
+
                   {/* Floating Chef Avatar */}
                   <div className="absolute -bottom-4 left-8 w-12 h-12 rounded-full border-4 border-dark-surface overflow-hidden shadow-xl z-20 bg-dark-deep">
                     {chef.user?.image ? (

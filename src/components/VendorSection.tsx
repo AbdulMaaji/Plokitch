@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { TrendingUp, Store, Wallet, Users } from "lucide-react";
 import SectionDivider from "./SectionDivider";
 

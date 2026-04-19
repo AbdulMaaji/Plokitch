@@ -50,9 +50,11 @@ const CustomerProfile = () => {
   const [newAddress, setNewAddress] = useState({ street: "", city: "Gombe", state: "Gombe", lat: "", lng: "" });
   const [isUploading, setIsUploading] = useState(false);
   
-  // Settings mock state
+  // Settings persistence state
   const [notifications, setNotifications] = useState(true);
   const [marketing, setMarketing] = useState(false);
+  const [favoriteVendors, setFavoriteVendors] = useState<any[]>([]);
+  const [favsLoading, setFavsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -61,6 +63,11 @@ const CustomerProfile = () => {
         phone: user.phone || "",
         image: user.image || ""
       });
+      // @ts-ignore
+      setNotifications(user.pushNotificationsEnabled ?? true);
+      // @ts-ignore
+      setMarketing(user.marketingEmailsEnabled ?? false);
+      
       if (user.address) {
         try {
           const addr = typeof user.address === 'string' ? JSON.parse(user.address) : user.address;
@@ -166,6 +173,35 @@ const CustomerProfile = () => {
     fetchOrders();
   }, [session]);
 
+  useEffect(() => {
+    const fetchFavs = async () => {
+      if (!session?.session?.token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/favorites`, {
+          headers: { 'Authorization': `Bearer ${session.session.token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setFavoriteVendors(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch favorites:", error);
+      } finally {
+        setFavsLoading(false);
+      }
+    };
+    fetchFavs();
+  }, [session]);
+
+  const updatePreferences = async (updates: { pushNotificationsEnabled?: boolean, marketingEmailsEnabled?: boolean }) => {
+    try {
+      const { error } = await authClient.updateUser(updates as any);
+      if (error) toast.error("Failed to save settings");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <DashboardLayout role="customer">
       <div className="space-y-10 max-w-6xl mx-auto">
@@ -270,19 +306,31 @@ const CustomerProfile = () => {
                     <DialogTitle className="text-2xl font-black font-heading text-gold">Settings</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-6 py-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
                       <div className="space-y-0.5">
                         <Label className="text-base font-bold">Push Notifications</Label>
                         <p className="text-sm text-muted-foreground">Receive order updates and alerts.</p>
                       </div>
-                      <Switch checked={notifications} onCheckedChange={setNotifications} />
+                      <Switch 
+                        checked={notifications} 
+                        onCheckedChange={(val) => {
+                          setNotifications(val);
+                          updatePreferences({ pushNotificationsEnabled: val });
+                        }} 
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label className="text-base font-bold">Marketing Emails</Label>
                         <p className="text-sm text-muted-foreground">Get exclusive deals and offers.</p>
                       </div>
-                      <Switch checked={marketing} onCheckedChange={setMarketing} />
+                      <Switch 
+                        checked={marketing} 
+                        onCheckedChange={(val) => {
+                          setMarketing(val);
+                          updatePreferences({ marketingEmailsEnabled: val });
+                        }} 
+                      />
                     </div>
                   </div>
                 </DialogContent>
@@ -344,16 +392,40 @@ const CustomerProfile = () => {
               </div>
             </div>
 
-            {/* Activity Summary */}
             <div className="space-y-6">
-               <h2 className="text-xl font-heading font-black text-white uppercase tracking-wider flex items-center gap-3">
-                 <Heart size={20} className="text-gold" />
-                 Kitchen Selection
-               </h2>
-               <div className="py-12 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-surface/30">
-                  <p className="text-muted-foreground font-body text-sm">Your favorite kitchens will appear here as you explore the bazaar.</p>
-                  <Button onClick={() => navigate("/customer/kitchens")} variant="link" className="text-gold mt-2 font-bold uppercase tracking-widest text-[10px]">Explore Now</Button>
-               </div>
+                <h2 className="text-xl font-heading font-black text-white uppercase tracking-wider flex items-center gap-3">
+                  <Heart size={20} className="text-gold" />
+                  Kitchen Selection
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {favsLoading ? (
+                    [1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-dark-surface/50 animate-pulse border border-white/5" />)
+                  ) : favoriteVendors.length > 0 ? (
+                    favoriteVendors.map((vendor) => (
+                      <Card 
+                        key={vendor.id} 
+                        className="bg-dark-surface border-white/5 hover:border-gold/20 transition-all cursor-pointer overflow-hidden group"
+                        onClick={() => navigate(`/customer/kitchens/${vendor.id}`)}
+                      >
+                        <div className="flex items-center p-4 gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-dark-deep border border-white/5 overflow-hidden shrink-0">
+                            <img src={vendor.imageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={vendor.businessName} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-bold text-white truncate group-hover:text-gold transition-colors">{vendor.businessName}</h4>
+                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{vendor.cuisineType}</p>
+                          </div>
+                          <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="py-12 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-surface/30 col-span-full">
+                      <p className="text-muted-foreground font-body text-sm">Your favorite kitchens will appear here as you explore the bazaar.</p>
+                      <Button onClick={() => navigate("/customer/kitchens")} variant="link" className="text-gold mt-2 font-bold uppercase tracking-widest text-[10px]">Explore Now</Button>
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
 
