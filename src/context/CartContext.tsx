@@ -8,6 +8,7 @@ export interface CartItem {
   numericPrice: number; // 45000
   image: string;
   chef: string;
+  vendorId: string; // Added to support DB relations
   quantity: number;
 }
 
@@ -70,6 +71,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           numericPrice,
           image: dish.image,
           chef: dish.chef,
+          vendorId: dish.vendorId,
           quantity: 1,
         },
       ];

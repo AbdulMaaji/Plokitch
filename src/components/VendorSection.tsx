@@ -131,12 +131,12 @@ const VendorSection = () => {
           transition={{ duration: 0.5 }}
           className="text-center mt-14"
         >
-          <a
-            href="#join"
+          <Link
+            to="/auth/register"
             className="inline-block px-10 py-4 bg-gold text-background font-body font-semibold text-sm tracking-wider uppercase hover:bg-gold-light transition-all duration-300"
           >
             Join as a Chef →
-          </a>
+          </Link>
           <p className="mt-3 text-xs text-muted-foreground font-body">No setup fees. Start accepting orders right away.</p>
         </motion.div>
       </div>

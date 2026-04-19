@@ -33,10 +33,20 @@ const Login = () => {
 
     if (data) {
       toast.success("Welcome back!");
-      // Determine dashboard route based on role...
-      // Since we just log in, we could route to a default or check session next.
-      // Assuming customer default for now.
-      navigate("/customer");
+      
+      // Better Auth returns user in the data object
+      // Using type assertion as role is an additional field
+      const role = (data.user as any)?.role || "customer";
+      
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "chef") {
+        navigate("/dashboard/chef");
+      } else if (role === "rider") {
+        navigate("/dashboard/rider");
+      } else {
+        navigate("/customer");
+      }
     }
   };
 

@@ -59,6 +59,13 @@ export const user = pgTable("user", {
   role: userRoleEnum("role").notNull().default("customer"),
   phone: text("phone"),
   isActive: boolean("is_active").notNull().default(true),
+  address: jsonb("address").$type<{
+    street: string;
+    city: string;
+    state: string;
+    lat?: number;
+    lng?: number;
+  }>(),
 });
 
 export const session = pgTable("session", {

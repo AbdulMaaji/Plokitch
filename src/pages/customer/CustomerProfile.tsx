@@ -61,8 +61,37 @@ const CustomerProfile = () => {
         phone: user.phone || "",
         image: user.image || ""
       });
+      if (user.address) {
+        try {
+          const addr = typeof user.address === 'string' ? JSON.parse(user.address) : user.address;
+          setNewAddress(addr);
+        } catch (e) {
+          console.error("Failed to parse address:", e);
+        }
+      }
     }
   }, [user]);
+
+  const handleSaveAddress = async () => {
+    try {
+      setIsSaving(true);
+      const { data, error } = await authClient.updateUser({
+        // @ts-ignore
+        address: JSON.stringify(newAddress)
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to save address");
+      } else {
+        toast.success("Address saved successfully!");
+        setIsAddressOpen(false);
+      }
+    } catch (err) {
+      toast.error("Something went wrong saving address");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -381,9 +410,16 @@ const CustomerProfile = () => {
                               className="w-full h-12 border-gold/20 text-gold text-[10px] font-black tracking-widest flex gap-2"
                              >
                                 <MapPin size={14} />
-                                USE CURRENT LOCATION
+                                 USE CURRENT LOCATION
                              </Button>
-                             <Button className="w-full bg-gold text-background font-black tracking-widest uppercase">SAVE ADDRESS</Button>
+                             <Button 
+                               onClick={handleSaveAddress}
+                               disabled={isSaving}
+                               className="w-full bg-gold text-background font-black tracking-widest uppercase"
+                             >
+                               {isSaving ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
+                               SAVE ADDRESS
+                             </Button>
                           </div>
                         </div>
                       </DialogContent>

@@ -51,6 +51,7 @@ const KitchenDetail = () => {
             dishes: k.menuItems.map((item: any) => ({
               ...item,
               chef: k.businessName,
+              vendorId: k.id, // Ensure vendorId is available for the order
               image: item.imageUrl || "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop"
             }))
           });

@@ -40,6 +40,7 @@ const Dishes = () => {
             vendor.menuItems.map((item: any) => ({
               ...item,
               chef: vendor.businessName,
+              vendorId: vendor.id, // Consistently use vendorId for the order relation
               chefId: vendor.id,
               chefBio: vendor.description,
               rating: item.rating || "4.9",

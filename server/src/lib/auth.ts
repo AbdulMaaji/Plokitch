@@ -63,6 +63,11 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      address: {
+        type: "string", // Better-auth handles complex objects as JSON stringified in some contexts, but here we just need to tell it it exists. 
+        required: false,
+        input: true,
+      }
     },
   },
 

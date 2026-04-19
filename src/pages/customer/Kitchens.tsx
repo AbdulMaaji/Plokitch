@@ -13,34 +13,78 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { authClient } from "@/lib/auth-client";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const Kitchens = () => {
   const navigate = useNavigate();
   const [chefs, setChefs] = useState<any[]>([]);
+  const [activeOrder, setActiveOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { data: session } = authClient.useSession();
 
   useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/vendors`);
-        const data = await res.json();
-        if (data.success) {
-          setChefs(data.data);
+        // Fetch vendors
+        const vendorsRes = await fetch(`${API_URL}/api/vendors`);
+        const vendorsData = await vendorsRes.json();
+        if (vendorsData.success) {
+          setChefs(vendorsData.data);
+        }
+
+        // Fetch active orders if logged in
+        if (session?.session?.token) {
+          const ordersRes = await fetch(`${API_URL}/api/orders`, {
+            headers: { 'Authorization': `Bearer ${session.session.token}` }
+          });
+          const ordersData = await ordersRes.json();
+          if (ordersData.success) {
+            const active = ordersData.data.find((o: any) => 
+              !['completed', 'cancelled'].includes(o.status)
+            );
+            setActiveOrder(active);
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch kitchens:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchVendors();
-  }, []);
+    fetchData();
+  }, [session]);
 
   return (
     <DashboardLayout role="customer">
       <div className="space-y-10">
+        {activeOrder && (
+          <motion.div 
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="relative"
+          >
+            <Card className="bg-gold border-none shadow-2xl rounded-3xl overflow-hidden cursor-pointer" onClick={() => navigate(`/customer/track/${activeOrder.id}`)}>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-background/10 backdrop-blur-md flex items-center justify-center text-background border border-background/10">
+                    <Clock className="animate-pulse" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-background uppercase tracking-tight">Active Order in Progress</h3>
+                    <p className="text-xs font-bold text-background/60 uppercase tracking-widest">Status: {activeOrder.status} • Tap to track live</p>
+                  </div>
+                </div>
+                <Button className="bg-background text-gold hover:bg-background/90 font-black rounded-xl px-6 h-12 shadow-xl shadow-black/5">
+                  TRACK LIVE
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         <header>
           <Badge className="bg-gold text-background border-none mb-2 font-black uppercase tracking-widest text-[8px] md:text-[10px]">Chef Discovery</Badge>
           <h1 className="text-3xl md:text-4xl font-heading font-black text-white">The Kitchen Collective</h1>
