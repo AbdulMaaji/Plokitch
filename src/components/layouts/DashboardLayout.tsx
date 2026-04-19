@@ -84,24 +84,6 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
 
   const allowedRoles = getAllowedRoles();
 
-  // Simulated real-time notifications
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (role === "chef") {
-        toast.info("New Order Received!", {
-          description: "ORD-9921: Truffle Salmon Glaze x2",
-          action: { label: "View", onClick: () => navigate("/dashboard/chef") },
-        });
-      } else if (role === "rider") {
-        toast.success("New Delivery Available!", {
-          description: "High payout delivery nearby. Accept now?",
-          action: { label: "Accept", onClick: () => navigate("/dashboard/rider") },
-        });
-      }
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [role, navigate]);
 
   const menuItems = {
     chef: [

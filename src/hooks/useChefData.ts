@@ -54,8 +54,11 @@ export const useChefData = () => {
       }
 
     } catch (error) {
-      // Suppress network errors if they are just 404s we already handled, or real failures
-      console.error("Chef data sync status:", error);
+      // Quietly handle network failures (e.g. server down during dev)
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        return;
+      }
+      console.error("Chef data sync error:", error);
     } finally {
       setLoading(false);
     }

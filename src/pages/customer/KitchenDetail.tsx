@@ -42,6 +42,8 @@ const KitchenDetail = () => {
             bio: k.description,
             time: k.deliveryTime || "25-35 min",
             image: k.imageUrl || "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop",
+            chefImage: k.owner?.image,
+            chefName: k.owner?.name,
             tag: k.tag || "Verified Artisan",
             dishes: k.menuItems.map((item: any) => ({
               ...item,
@@ -154,12 +156,21 @@ const KitchenDetail = () => {
           {/* Detailed Info */}
           <div className="lg:col-span-1 space-y-8">
             <Card className="bg-dark-surface border-gold/10 rounded-[2rem] p-8 space-y-6">
-               <div className="space-y-3">
-                  <h3 className="text-sm font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2">
-                    <Info size={16} />
-                    Chef's Philosophy
-                  </h3>
-                  <p className="text-white/70 leading-relaxed font-body italic">
+               <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border-2 border-gold/20 overflow-hidden bg-dark-deep">
+                      {kitchenData.chefImage ? (
+                        <img src={kitchenData.chefImage} alt={kitchenData.chefName} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-full h-full p-2 text-gold/30" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-gold uppercase tracking-[0.2em]">The Artisan</h3>
+                      <p className="text-white text-xs font-bold">{kitchenData.chefName}</p>
+                    </div>
+                  </div>
+                  <p className="text-white/70 leading-relaxed font-body italic border-l-2 border-gold/20 pl-4 py-1">
                     "{kitchenData.bio}"
                   </p>
                </div>
