@@ -120,18 +120,18 @@ const OrderTrackingMap = ({
   // Collect all valid points for auto-fitting
   const allPoints = useMemo(() => {
     const pts: LatLng[] = [];
-    if (kitchenLocation) pts.push(kitchenLocation);
-    if (riderLocation) pts.push(riderLocation);
-    if (deliveryLocation) pts.push(deliveryLocation);
+    if (kitchenLocation?.lat && kitchenLocation?.lng) pts.push(kitchenLocation);
+    if (riderLocation?.lat && riderLocation?.lng) pts.push(riderLocation);
+    if (deliveryLocation?.lat && deliveryLocation?.lng) pts.push(deliveryLocation);
     return pts;
   }, [kitchenLocation, riderLocation, deliveryLocation]);
 
   // Route polyline coordinates (kitchen → rider → destination)
   const routeCoords = useMemo(() => {
     const coords: [number, number][] = [];
-    if (kitchenLocation) coords.push([kitchenLocation.lat, kitchenLocation.lng]);
-    if (riderLocation) coords.push([riderLocation.lat, riderLocation.lng]);
-    if (deliveryLocation) coords.push([deliveryLocation.lat, deliveryLocation.lng]);
+    if (kitchenLocation?.lat && kitchenLocation?.lng) coords.push([kitchenLocation.lat, kitchenLocation.lng]);
+    if (riderLocation?.lat && riderLocation?.lng) coords.push([riderLocation.lat, riderLocation.lng]);
+    if (deliveryLocation?.lat && deliveryLocation?.lng) coords.push([deliveryLocation.lat, deliveryLocation.lng]);
     return coords;
   }, [kitchenLocation, riderLocation, deliveryLocation]);
 

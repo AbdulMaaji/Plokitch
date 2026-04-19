@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { authClient, useSession } from "@/lib/auth-client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -38,9 +39,27 @@ import { useNavigate } from "react-router-dom";
 import { uploadImage } from "@/lib/upload";
 
 const CustomerProfile = () => {
-  const navigate = useNavigate();
-  const { data: session, isPending } = useSession();
-  const user = session?.user;
+  const { data: session, isPending: isSessionPending } = useSession();
+  const queryClient = useQueryClient();
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+  // Fetch full user profile from our own API
+  const { data: fullUser, isLoading: isUserLoading } = useQuery({
+    queryKey: ["full-user"],
+    queryFn: async () => {
+      if (!session?.session?.token) return null;
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        headers: { "Authorization": `Bearer ${session.session.token}` }
+      });
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: !!session?.session?.token,
+  });
+
+  const user = fullUser || session?.user;
+  const isPending = isSessionPending || isUserLoading;
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -82,17 +101,21 @@ const CustomerProfile = () => {
   const handleSaveAddress = async () => {
     try {
       setIsSaving(true);
-      const { data, error } = await authClient.updateUser({
-        // @ts-ignore
-        address: JSON.stringify(newAddress)
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({ address: newAddress })
       });
+      
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to save address");
 
-      if (error) {
-        toast.error(error.message || "Failed to save address");
-      } else {
-        toast.success("Address saved successfully!");
-        setIsAddressOpen(false);
-      }
+      toast.success("Address saved successfully!");
+      queryClient.invalidateQueries({ queryKey: ["full-user"] });
+      setIsAddressOpen(false);
     } catch (err) {
       toast.error("Something went wrong saving address");
     } finally {
@@ -118,19 +141,25 @@ const CustomerProfile = () => {
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
-      const { data, error } = await authClient.updateUser({
-        name: editForm.name,
-        // @ts-ignore
-        phone: editForm.phone,
-        image: editForm.image,
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          phone: editForm.phone,
+          image: editForm.image,
+        })
       });
       
-      if (error) {
-         toast.error(error.message || "Failed to update profile");
-      } else {
-         toast.success("Profile updated successfully!");
-         setIsEditOpen(false);
-      }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update profile");
+      
+      toast.success("Profile updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["full-user"] });
+      setIsEditOpen(false);
     } catch (err) {
       toast.error("Something went wrong");
     } finally {

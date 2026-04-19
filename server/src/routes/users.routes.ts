@@ -23,6 +23,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           role: true,
           phone: true,
           image: true,
+          address: true,
           isActive: true,
           createdAt: true,
         },
@@ -42,7 +43,12 @@ export async function userRoutes(fastify: FastifyInstance) {
     { preHandler: [requireAuth] },
     async (request, reply) => {
       const session = (request as any).session;
-      const body = request.body as { name?: string; phone?: string; image?: string };
+      const body = request.body as { 
+        name?: string; 
+        phone?: string; 
+        image?: string;
+        address?: any;
+      };
 
       const updated = await db
         .update(user)
@@ -50,6 +56,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           ...(body.name && { name: body.name }),
           ...(body.phone !== undefined && { phone: body.phone }),
           ...(body.image !== undefined && { image: body.image }),
+          ...(body.address !== undefined && { address: body.address }),
           updatedAt: new Date(),
         })
         .where(eq(user.id, session.user.id))
@@ -60,6 +67,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           role: user.role,
           phone: user.phone,
           image: user.image,
+          address: user.address,
         });
 
       return reply.send({ success: true, data: updated[0] });

@@ -53,12 +53,15 @@ export async function riderRoutes(fastify: FastifyInstance) {
         });
       }
 
+      fastify.log.info({ userId: session.user.id }, "Creating new rider profile");
+ 
       const [profile] = await db
         .insert(riderProfile)
         .values({
           userId: session.user.id,
-          vehicleType: body.vehicleType,
-          plateNumber: body.plateNumber,
+          vehicleType: body.vehicleType || "Bicycle",
+          plateNumber: body.plateNumber || "N/A",
+          isAvailable: true,
         })
         .returning();
 

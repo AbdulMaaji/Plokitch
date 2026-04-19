@@ -39,6 +39,46 @@ const RiderDashboard = () => {
   const { data: session } = authClient.useSession();
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+
+  // Check if rider has a profile; if not, create one
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ["rider-profile"],
+    queryFn: async () => {
+      if (!session?.session?.token) return null;
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/riders/me`, {
+        headers: { "Authorization": `Bearer ${session.session.token}` }
+      });
+      if (res.status === 404) return null;
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: !!session?.session?.token,
+  });
+
+  const initProfile = useMutation({
+    mutationFn: async () => {
+      if (!session?.session?.token) throw new Error("Not authenticated");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/riders`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.session.token}`
+        },
+        body: JSON.stringify({ vehicleType: "Bicycle" }), // Default
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rider-profile"] });
+    }
+  });
+
+  useEffect(() => {
+    if (!isProfileLoading && session && !profile && !initProfile.isPending) {
+      console.log("No rider profile found, initializing...");
+      initProfile.mutate();
+    }
+  }, [profile, isProfileLoading, session, initProfile]);
   
   const { data: myOrders } = useQuery({
     queryKey: ["my-orders"],
@@ -61,7 +101,10 @@ const RiderDashboard = () => {
   });
 
   const activeOrder = useMemo(() => {
-    return myOrders?.find(o => o.status === "picking" || o.status === "delivering");
+    // If we have any order that's being picked up or delivered, that's our focus
+    const ongoing = myOrders?.find(o => o.status === "picking" || o.status === "delivering");
+    if (ongoing) return ongoing;
+    return null;
   }, [myOrders]);
 
   useEffect(() => {
@@ -139,7 +182,10 @@ const RiderDashboard = () => {
       return json.data;
     },
     onSuccess: (data) => {
-      toast.success(`Order status: ${data.status.toUpperCase()}`);
+      console.log("Status updated successfully:", data);
+      toast.success(`Order set to ${data.status.toUpperCase()}`, {
+        description: data.status === 'delivering' ? "Customer notified. Start your travel." : "Payment released. Great job!"
+      });
       queryClient.invalidateQueries({ queryKey: ["my-orders"] });
       if (data.status === 'completed') {
         setActiveOrderId(null);

@@ -63,11 +63,6 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
-      address: {
-        type: "string",
-        required: false,
-        input: true,
-      },
       pushNotificationsEnabled: {
         type: "boolean",
         required: false,
