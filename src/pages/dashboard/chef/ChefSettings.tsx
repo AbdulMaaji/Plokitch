@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -9,7 +9,11 @@ import {
   Shield, 
   CreditCard,
   Save,
-  Camera
+  Camera,
+  Locate, 
+  Map as MapIcon, 
+  Globe, 
+  Loader2 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +22,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { Locate, Map as MapIcon, Globe } from "lucide-react";
 import { useChefData } from "@/hooks/useChefData";
+import { uploadImage } from "@/lib/upload";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -27,37 +31,81 @@ const ChefSettings = () => {
   const { myVendor, session, refreshData, loading } = useChefData();
   const { location: geo, getLocation } = useGeolocation();
   const [activeTab, setActiveTab] = useState("Kitchen Identity");
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Refs for file inputs
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const kitchenInputRef = useRef<HTMLInputElement>(null);
 
   // Local Form States
   const [personalForm, setPersonalForm] = useState({
-    name: session?.user?.name || "",
-    phone: session?.user?.phone || "",
+    name: "",
+    phone: "",
+    image: "",
   });
 
   const [vendorForm, setVendorForm] = useState({
-    businessName: myVendor?.businessName || "",
-    cuisineType: myVendor?.cuisineType || "",
-    description: myVendor?.description || "",
-    location: myVendor?.location || { address: "", city: "Gombe", state: "Gombe", lat: 10.2897, lng: 11.1673 },
+    businessName: "",
+    cuisineType: "",
+    description: "",
+    imageUrl: "",
+    isActive: false,
+    location: { address: "", city: "Gombe", state: "Gombe", lat: 10.2897, lng: 11.1673 },
   });
 
-  // Sync state when data loads
-  useState(() => {
+  // Sync data when loaded
+  useEffect(() => {
     if (session?.user) {
       setPersonalForm({
         name: session.user.name || "",
         phone: session.user.phone || "",
+        image: session.user.image || "",
       });
     }
+  }, [session]);
+
+  useEffect(() => {
     if (myVendor) {
       setVendorForm({
         businessName: myVendor.businessName || "",
         cuisineType: myVendor.cuisineType || "",
         description: myVendor.description || "",
+        imageUrl: myVendor.imageUrl || "",
+        isActive: myVendor.isActive || false,
         location: myVendor.location || { address: "", city: "Gombe", state: "Gombe", lat: 10.2897, lng: 11.1673 },
       });
     }
-  });
+  }, [myVendor]);
+
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const url = await uploadImage(file, "avatars");
+      setPersonalForm(prev => ({ ...prev, image: url }));
+      toast.success("Profile photo prepared. Save to commit changes.");
+    } catch (error) {
+      toast.error("Photo upload failed");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleKitchenImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const url = await uploadImage(file, "kitchens");
+      setVendorForm(prev => ({ ...prev, imageUrl: url }));
+      toast.success("Kitchen cover prepared. Save to commit changes.");
+    } catch (error) {
+      toast.error("Kitchen photo failed");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handlePersonalSave = async () => {
     try {
@@ -79,8 +127,30 @@ const ChefSettings = () => {
     }
   };
 
+  const handleVendorCreate = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/vendors`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify(vendorForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Kitchen Profile Created! You are now live.");
+        refreshData();
+      } else {
+        toast.error(data.error || "Creation Failed");
+      }
+    } catch (error) {
+      toast.error("Network Error");
+    }
+  };
+
   const handleVendorSave = async () => {
-    if (!myVendor) return;
+    if (!myVendor) return handleVendorCreate();
     try {
       const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}`, {
         method: "PATCH",
@@ -127,9 +197,10 @@ const ChefSettings = () => {
           </div>
           <Button 
             onClick={handleSave}
+            disabled={isUploading}
             className="bg-gold hover:bg-gold-light text-background font-black tracking-[0.2em] px-10 h-12 shadow-lg shadow-gold/20"
           >
-            <Save size={18} className="mr-2" />
+            {isUploading ? <Loader2 size={18} className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
             SAVE CHANGES
           </Button>
         </header>
@@ -165,15 +236,35 @@ const ChefSettings = () => {
                   <CardContent className="space-y-6">
                     <div className="flex items-center gap-6 pb-6 border-b border-gold/5">
                       <div className="w-24 h-24 rounded-2xl bg-dark-deep border border-gold/20 flex items-center justify-center relative group overflow-hidden">
-                        <Store className="text-gold/20 w-12 h-12" />
-                        <div className="absolute inset-0 bg-dark-deep/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        {vendorForm.imageUrl ? (
+                          <img src={vendorForm.imageUrl} className="w-full h-full object-cover" alt="Kitchen" />
+                        ) : (
+                          <Store className="text-gold/20 w-12 h-12" />
+                        )}
+                        <label 
+                          onClick={() => kitchenInputRef.current?.click()}
+                          className="absolute inset-0 bg-dark-deep/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
                           <Camera className="text-white w-6 h-6" />
-                        </div>
+                          <input 
+                            ref={kitchenInputRef}
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*" 
+                            onChange={handleKitchenImageUpload} 
+                          />
+                        </label>
                       </div>
                       <div className="space-y-2">
                         <p className="text-sm font-bold text-white uppercase tracking-widest">Kitchen Cover Photo</p>
                         <p className="text-xs text-muted-foreground">Minimalist high-res images of your workspace perform best. Max 5MB.</p>
-                        <Button variant="outline" className="h-9 border-gold/20 text-gold text-[10px] font-black tracking-widest">UPLOAD NEW PHOTO</Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => kitchenInputRef.current?.click()}
+                          className="h-9 border-gold/20 text-gold text-[10px] font-black tracking-widest"
+                        >
+                          UPLOAD NEW PHOTO
+                        </Button>
                       </div>
                     </div>
 
@@ -211,12 +302,16 @@ const ChefSettings = () => {
                     <CardTitle className="text-xl font-heading font-black text-white uppercase tracking-wider">Availability</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-6 rounded-2xl bg-gold/5 border border-gold/10">
                       <div>
-                        <p className="text-sm font-bold text-white uppercase tracking-widest">Instant Ordering</p>
-                        <p className="text-xs text-muted-foreground">Allow customers to order without pre-approval</p>
+                        <p className="text-sm font-bold text-white uppercase tracking-widest">Publicly Visible</p>
+                        <p className="text-xs text-muted-foreground">Switch ON to show your kitchen and dishes in the artisan catalog</p>
                       </div>
-                      <Switch defaultChecked className="data-[state=checked]:bg-gold" />
+                      <Switch 
+                        checked={vendorForm.isActive} 
+                        onCheckedChange={(val) => setVendorForm({...vendorForm, isActive: val})} 
+                        className="data-[state=checked]:bg-gold" 
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
@@ -356,13 +451,69 @@ const ChefSettings = () => {
                  </CardContent>
               </Card>
             ) : (
-              <Card className="bg-dark-surface border-gold/10 p-20 flex flex-col items-center justify-center text-center animate-in fade-in duration-500">
-                <div className="w-16 h-16 rounded-full bg-gold/5 border border-gold/10 flex items-center justify-center text-gold/20 mb-6">
-                  <Shield size={32} />
-                </div>
-                <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">{activeTab}</h3>
-                <p className="text-xs text-muted-foreground max-w-[250px] mx-auto">This setting module is currently being optimized for high-performance culinary operations.</p>
-              </Card>
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <Card className="bg-dark-surface border-gold/10">
+                   <CardHeader>
+                      <CardTitle className="text-xl font-heading font-black text-white uppercase tracking-wider">Personal Profile</CardTitle>
+                   </CardHeader>
+                   <CardContent className="space-y-8">
+                      <div className="flex items-center gap-8">
+                         <div className="relative group">
+                            <div className="w-24 h-24 rounded-full border-4 border-gold/20 bg-dark-deep overflow-hidden flex items-center justify-center">
+                               {personalForm.image ? (
+                                  <img src={personalForm.image} className="w-full h-full object-cover" alt="Profile" />
+                               ) : (
+                                  <User size={40} className="text-gold/20" />
+                               )}
+                            </div>
+                            <label 
+                              onClick={() => profileInputRef.current?.click()}
+                              className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                            >
+                               <Camera size={20} className="text-white" />
+                               <input 
+                                ref={profileInputRef}
+                                type="file" 
+                                className="hidden" 
+                                accept="image/*" 
+                                onChange={handleProfileImageUpload} 
+                               />
+                            </label>
+                         </div>
+                         <div className="space-y-2">
+                            <h4 className="text-sm font-bold text-white uppercase tracking-widest">Profile Identity</h4>
+                            <p className="text-xs text-muted-foreground">This helps customers and riders recognize you.</p>
+                            <Button 
+                              variant="ghost" 
+                              onClick={() => profileInputRef.current?.click()}
+                              className="h-8 text-[10px] font-black text-gold hover:bg-gold/5"
+                            >
+                              CHANGE PHOTO
+                            </Button>
+                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="space-y-2">
+                            <Label className="text-xs font-black text-gold uppercase tracking-widest">Full Name</Label>
+                            <Input 
+                              value={personalForm.name}
+                              onChange={(e) => setPersonalForm({...personalForm, name: e.target.value})}
+                              className="bg-dark-deep border-gold/10 focus:border-gold" 
+                            />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-xs font-black text-gold uppercase tracking-widest">Phone Number</Label>
+                            <Input 
+                              value={personalForm.phone}
+                              onChange={(e) => setPersonalForm({...personalForm, phone: e.target.value})}
+                              className="bg-dark-deep border-gold/10 focus:border-gold" 
+                            />
+                         </div>
+                      </div>
+                   </CardContent>
+                </Card>
+              </div>
             )}
           </div>
         </div>

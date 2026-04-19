@@ -16,26 +16,57 @@ import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
 import { GOMBE_CENTER } from "@/hooks/useOrderLocation";
 import type { LatLng } from "@/components/Map/OrderTrackingMap";
 
+import { useState, useEffect } from "react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const ActiveDeliveries = () => {
   const navigate = useNavigate();
-  const activeDeliveries = [
-    { 
-      id: "DEL-410", 
-      chef: "Chef Andre L'Aube", 
-      customer: "Sophia Chen", 
-      pickup: "Sector A, Gombe", 
-      dropoff: "GRA Extension, Gombe", 
-      status: "On the way", 
-      time: "12 mins left",
-      urgent: true
-    },
-  ];
+  const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { data: session } = authClient.useSession();
 
-  const history = [
-    { id: "DEL-409", customer: "Elena R.", date: "Today, 1:45 PM", status: "Completed", payout: "₦8.50" },
-    { id: "DEL-408", customer: "Marcus W.", date: "Today, 11:30 AM", status: "Completed", payout: "₦12.20" },
-    { id: "DEL-407", customer: "Aisha K.", date: "Yesterday", status: "Completed", payout: "₦9.00" },
-  ];
+  useEffect(() => {
+    const fetchDeliveries = async () => {
+      if (!session?.session?.token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/orders`, {
+          headers: { 'Authorization': `Bearer ${session.session.token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          const all = data.data;
+          setActiveDeliveries(all.filter((o: any) => ["picking", "delivering"].includes(o.status)).map((o: any) => ({
+            id: `DEL-${o.id.slice(0, 4)}`,
+            realId: o.id,
+            chef: o.vendor?.businessName || "Artisan Kitchen",
+            customer: o.customer?.name || "Customer",
+            pickup: o.vendor?.location?.address || "Gombe",
+            dropoff: o.deliveryAddress?.street || "Gombe",
+            status: o.status === 'picking' ? "At Kitchen" : "On the way",
+            time: "15 mins est.",
+            urgent: false
+          })));
+          
+          setHistory(all.filter((o: any) => o.status === 'completed').map((o: any) => ({
+             id: `DEL-${o.id.slice(0, 4)}`,
+             customer: o.customer?.name || "Customer",
+             date: new Date(o.deliveredAt || o.updatedAt).toLocaleString(),
+             status: "Completed",
+             payout: `₦${(Number(o.totalAmount) * 0.1).toFixed(2)}` // Simulated 10% delivery fee
+          })));
+        }
+      } catch (error) {
+        toast.error("Failed to fetch deliveries");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDeliveries();
+  }, [session]);
 
   return (
     <DashboardLayout role="rider">

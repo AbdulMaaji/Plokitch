@@ -22,7 +22,7 @@ import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-const Marketplace = () => {
+const Dishes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDish, setSelectedDish] = useState<any | null>(null);
   const [dishes, setDishes] = useState<any[]>([]);
@@ -74,10 +74,10 @@ const Marketplace = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-gold font-black uppercase tracking-[0.3em] text-[8px] md:text-[10px]">
               <Flame size={14} className="fill-gold" />
-              Global Bazaar
+              Kitchen Catalog
             </div>
-            <h1 className="text-3xl md:text-4xl font-heading font-black text-white">Culinary Marketplace</h1>
-            <p className="text-muted-foreground text-xs md:text-sm font-body">Browse exceptional dishes from all local kitchens in one place.</p>
+            <h1 className="text-3xl md:text-4xl font-heading font-black text-white">Artisan Dishes</h1>
+            <p className="text-muted-foreground text-xs md:text-sm font-body">Browse exceptional recipes from local home kitchens.</p>
           </div>
           <div className="flex gap-2 md:gap-4">
             <div className="relative group flex-1 lg:min-w-[300px]">
@@ -181,4 +181,4 @@ const Marketplace = () => {
   );
 };
 
-export default Marketplace;
+export default Dishes;

@@ -34,17 +34,22 @@ const HeroSection = () => {
             Plokitch connects you with the best home chefs in Gombe. Real kitchens, real recipes, real flavour — delivered fast and reliably every time.
           </p>
           <div className="flex flex-wrap gap-4 mt-8">
-            <a
-              href="#order"
-              className="px-8 py-3.5 border border-gold text-gold text-sm font-body font-medium tracking-wider uppercase hover:bg-gold hover:text-background transition-all duration-300"
-            >
-              Order Food Now
-            </a>
             <Link
-              to="/auth/register"
-              className="px-8 py-3.5 bg-gold text-background text-sm font-body font-medium tracking-wider uppercase hover:bg-gold-light transition-all duration-300 shadow-lg shadow-gold/20"
+              to="/customer/kitchens"
+              className="px-8 py-3.5 bg-gold text-background text-sm font-body font-black tracking-widest uppercase hover:bg-gold-light transition-all duration-300 shadow-lg shadow-gold/20"
             >
-              Join Now
+              Explore Kitchens
+            </Link>
+            <Link
+              to="/dishes"
+              className="px-8 py-3.5 border border-gold text-gold text-sm font-body font-black tracking-widest uppercase hover:bg-gold/5 transition-all duration-300"
+            >
+              Browse Dishes
+            </Link>
+          </div>
+          <div className="mt-6">
+            <Link to="/auth/register" className="text-muted-foreground hover:text-gold text-xs font-bold uppercase tracking-[0.2em] transition-colors">
+              ARE YOU A CHEF? <span className="text-gold underline ml-2">JOIN THE COLLECTIVE</span>
             </Link>
           </div>
 

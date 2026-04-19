@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "sonner";
 
 export interface GeolocationState {
   lat: number | null;
@@ -105,6 +106,24 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     setState((prev) => ({ ...prev, isTracking: false }));
   }, []);
 
+  const getLocation = useCallback((): Promise<{ lat: number; lng: number } | null> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        toast.error("Geolocation is not supported by your browser.");
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => {
+          console.error("Geolocation error:", err);
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+  }, []);
+
   useEffect(() => {
     if (opts.autoStart) {
       startTracking();
@@ -117,5 +136,5 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { ...state, startTracking, stopTracking };
+  return { ...state, startTracking, stopTracking, getLocation };
 }

@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { bearer } from "better-auth/plugins";
 import { db } from "../db/index.js";
 import * as schema from "../db/schema.js";
 
@@ -8,6 +9,7 @@ if (!process.env.BETTER_AUTH_SECRET) {
 }
 
 export const auth = betterAuth({
+  plugins: [bearer()],
   // ── Database ──────────────────────────────────────────────
   database: drizzleAdapter(db, {
     provider: "pg",

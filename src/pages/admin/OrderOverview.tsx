@@ -22,14 +22,45 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
+import { useState, useEffect } from "react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const OrderOverview = () => {
-  const globalOrders = [
-    { id: "ORD-9921", customer: "Sophia Chen", chef: "Chef Andre", amount: "₦112.50", status: "In Transit", priority: "High" },
-    { id: "ORD-9922", customer: "Marcus Wright", chef: "Elena's Kitchen", amount: "₦45.00", status: "Preparing", priority: "Medium" },
-    { id: "ORD-9923", customer: "Elena R.", chef: "Pasta Palace", amount: "₦78.20", status: "Delivered", priority: "Normal" },
-    { id: "ORD-9924", customer: "David Smith", chef: "Chef Andre", amount: "₦92.00", status: "Ready for Pickup", priority: "High" },
-    { id: "ORD-9925", customer: "Aisha Khan", chef: "Kaltu Bites", amount: "₦54.00", status: "Cancelled", priority: "Low" },
-  ];
+  const [globalOrders, setGlobalOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { data: session } = authClient.useSession();
+
+  useEffect(() => {
+    const fetchAllOrders = async () => {
+      if (!session?.session?.token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/orders`, {
+          headers: { 'Authorization': `Bearer ${session.session.token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setGlobalOrders(data.data.map((o: any) => ({
+            id: `ORD-${o.id.slice(0, 4)}`,
+            realId: o.id,
+            customer: o.customer?.name || "Customer",
+            chef: o.vendor?.businessName || "Chef",
+            amount: `₦${Number(o.totalAmount).toLocaleString()}`,
+            status: o.status.charAt(0).toUpperCase() + o.status.slice(1).replace("_", " "),
+            priority: o.status === "pending" ? "High" : "Normal",
+            location: o.deliveryAddress?.city || "Gombe"
+          })));
+        }
+      } catch (error) {
+        toast.error("Failed to fetch order stream");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllOrders();
+  }, [session]);
 
   return (
     <DashboardLayout role="admin">

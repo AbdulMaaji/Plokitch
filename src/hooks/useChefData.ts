@@ -23,20 +23,26 @@ export const useChefData = () => {
           "Authorization": `Bearer ${session.session.token}`
         }
       });
-      const vendorData = await vendorRes.json();
       
-      if (vendorData.success) {
-        setMyVendor(vendorData.data);
-        
-        // 2. Fetch Menu Items for this vendor
-        const menuRes = await fetch(`${API_URL}/api/vendors/${vendorData.data.id}/menu`);
-        const menuData = await menuRes.json();
-        if (menuData.success) {
-          setMenuItems(menuData.data);
+      if (vendorRes.ok) {
+        const vendorData = await vendorRes.json();
+        if (vendorData.success) {
+          setMyVendor(vendorData.data);
+          
+          // 2. Fetch Menu Items ONLY if vendor exists
+          const menuRes = await fetch(`${API_URL}/api/vendors/${vendorData.data.id}/menu`);
+          const menuData = await menuRes.json();
+          if (menuData.success) {
+            setMenuItems(menuData.data);
+          }
         }
+      } else if (vendorRes.status === 404) {
+        // Safe state for new chefs
+        setMyVendor(null);
+        setMenuItems([]);
       }
-
-      // 3. Fetch Orders (Role-based filtering handled by backend)
+      
+      // 3. Fetch Orders (Generic)
       const ordersRes = await fetch(`${API_URL}/api/orders`, {
         headers: {
           "Authorization": `Bearer ${session.session.token}`
@@ -48,8 +54,8 @@ export const useChefData = () => {
       }
 
     } catch (error) {
-      console.error("Error fetching chef data:", error);
-      toast.error("Failed to sync kitchen data");
+      // Suppress network errors if they are just 404s we already handled, or real failures
+      console.error("Chef data sync status:", error);
     } finally {
       setLoading(false);
     }

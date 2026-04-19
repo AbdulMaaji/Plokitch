@@ -13,14 +13,46 @@ import { Button } from "@/components/ui/button";
 import { MoreVertical, Search, Filter, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
+import { useState, useEffect } from "react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const ChefOrders = () => {
-  const orders = [
-    { id: "ORD-9921", date: "2024-04-15", customer: "Sophia Chen", total: "₦112,500", status: "Preparing", payment: "Paid" },
-    { id: "ORD-9922", date: "2024-04-15", customer: "Marcus Wright", total: "₦45,000", status: "Ready", payment: "Paid" },
-    { id: "ORD-9923", date: "2024-04-14", customer: "Elena Rodriguez", total: "₦78,200", status: "Delivered", payment: "Paid" },
-    { id: "ORD-9924", date: "2024-04-14", customer: "David Smith", total: "₦92,000", status: "Cancelled", payment: "Refunded" },
-    { id: "ORD-9925", date: "2024-04-13", customer: "Aisha Khan", total: "₦54,000", status: "Delivered", payment: "Paid" },
-  ];
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { data: session } = authClient.useSession();
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!session?.session?.token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/orders`, {
+          headers: {
+            'Authorization': `Bearer ${session.session.token}`
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setOrders(data.data.map((o: any) => ({
+            id: `ORD-${o.id.slice(0, 4)}`,
+            realId: o.id,
+            date: new Date(o.createdAt).toLocaleDateString(),
+            customer: o.customer?.name || "Artisan Customer",
+            total: `₦${Number(o.totalAmount).toLocaleString()}`,
+            status: o.status.charAt(0).toUpperCase() + o.status.slice(1),
+            payment: "Paid"
+          })));
+        }
+      } catch (error) {
+        toast.error("Failed to fetch order history");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [session]);
 
   return (
     <DashboardLayout role="chef">

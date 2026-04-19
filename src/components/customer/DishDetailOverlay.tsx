@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
 interface DishDetailOverlayProps {
   dish: any;
@@ -22,8 +24,24 @@ interface DishDetailOverlayProps {
 const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { data: session } = authClient.useSession();
 
   if (!dish) return null;
+
+  const handleAddToCart = () => {
+    if (!session) {
+      toast.info("Artisan Bazaar", {
+        description: "Please sign in to start your culinary collection.",
+      });
+      navigate("/auth/login");
+      return;
+    }
+    addItem(dish);
+    onClose();
+    toast.success("Added to Basket", {
+      description: `${dish.name} has been added.`
+    });
+  };
 
   return (
     <AnimatePresence>
@@ -93,10 +111,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
             </div>
             <Button 
               size="lg" 
-              onClick={() => {
-                addItem(dish);
-                onClose();
-              }}
+              onClick={handleAddToCart}
               className="h-14 px-10 bg-gold hover:bg-gold-light text-background font-black rounded-xl shadow-lg shadow-gold/20 flex gap-3"
             >
               <ShoppingCart size={20} />

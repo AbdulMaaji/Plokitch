@@ -22,14 +22,44 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
+import { useState, useEffect } from "react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const UserManagement = () => {
-  const users = [
-    { id: "USR-001", name: "Chef Alessandro", role: "Chef", joined: "2024-01-12", status: "Active", verified: true },
-    { id: "USR-002", name: "Marco Polo", role: "Rider", joined: "2024-02-01", status: "Inactive", verified: true },
-    { id: "USR-003", name: "Elena Gilbert", role: "Chef", joined: "2024-02-15", status: "Active", verified: false },
-    { id: "USR-004", name: "Sophia Chen", role: "Customer", joined: "2024-03-01", status: "Active", verified: true },
-    { id: "USR-005", name: "David Miller", role: "Rider", joined: "2024-03-10", status: "Suspended", verified: true },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { data: session } = authClient.useSession();
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!session?.session?.token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/users`, {
+          headers: { 'Authorization': `Bearer ${session.session.token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setUsers(data.data.map((u: any) => ({
+            id: `USR-${u.id.slice(0, 3).toUpperCase()}`,
+            realId: u.id,
+            name: u.name || "Anonymous",
+            role: u.role.charAt(0).toUpperCase() + u.role.slice(1),
+            joined: new Date(u.createdAt).toLocaleDateString(),
+            status: u.isActive ? "Active" : "Inactive",
+            verified: u.role === 'chef' // Simulated verification for chefs
+          })));
+        }
+      } catch (error) {
+        toast.error("Failed to fetch user directory");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [session]);
 
   return (
     <DashboardLayout role="admin">

@@ -44,6 +44,7 @@ const ChefMenu = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDish, setEditingDish] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -80,8 +81,17 @@ const ChefMenu = () => {
   };
 
   const handleAddDish = async () => {
-    if (!formData.name || !formData.price || !myVendor) {
-      toast.error("Required fields missing");
+    if (!myVendor) {
+      toast.error("Set up your Kitchen Profile in Settings first", {
+        description: "You need an active kitchen identity to add dishes."
+      });
+      return;
+    }
+
+    if (!formData.name || !formData.price) {
+      toast.error("Required fields missing", {
+        description: "Please provide both a name and a price for your dish."
+      });
       return;
     }
 

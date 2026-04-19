@@ -172,8 +172,8 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
           )}
         </div>
 
-        {/* Role Switcher (For Test Only) */}
-        {isSidebarOpen && allowedRoles.length > 1 && (
+        {/* Role Switcher (Admin Only) */}
+        {isSidebarOpen && userRole === "admin" && (
           <div className="px-4 mb-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -341,8 +341,8 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
             )}
           </Link>
         ))}
-        {/* Role Switcher in Mobile Nav */}
-        {allowedRoles.length > 1 && (
+        {/* Role Switcher in Mobile Nav (Admin Only) */}
+        {userRole === "admin" && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex flex-col items-center gap-1 flex-1 py-2 px-1 text-muted-foreground">
