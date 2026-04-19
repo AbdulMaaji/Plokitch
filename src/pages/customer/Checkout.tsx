@@ -18,16 +18,34 @@ import { useCart } from "@/context/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { authClient } from "@/lib/auth-client";
+import { authClient, useSession } from "@/lib/auth-client";
+import { useQuery } from "@tanstack/react-query";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { totalAmount, clearCart, items } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("card");
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending: isSessionLoading } = useSession();
   
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+  // Fetch full user profile from our own API
+  const { data: fullUser, isLoading: isUserLoading } = useQuery({
+    queryKey: ["full-user"],
+    queryFn: async () => {
+      if (!session?.session?.token) return null;
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        headers: { "Authorization": `Bearer ${session.session.token}` }
+      });
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: !!session?.session?.token,
+  });
+
+  const user = fullUser || session?.user;
+  const loading = isSessionLoading || isUserLoading;
 
   const formattedTotal = new Intl.NumberFormat('en-NG', {
     style: 'currency',
@@ -35,8 +53,8 @@ const Checkout = () => {
     minimumFractionDigits: 0
   }).format(totalAmount).replace('NGN', '₦');
   
-  const savedAddress = session?.user?.address ? 
-    (typeof session.user.address === 'string' ? JSON.parse(session.user.address) : session.user.address) 
+  const savedAddress = user?.address ? 
+    (typeof user.address === 'string' ? JSON.parse(user.address) : user.address) 
     : null;
 
   const handlePlaceOrder = async () => {
@@ -273,13 +291,18 @@ const Checkout = () => {
 
                 <Button 
                   onClick={handlePlaceOrder}
-                  disabled={isProcessing || items.length === 0 || !savedAddress}
+                  disabled={isProcessing || items.length === 0 || !savedAddress || loading}
                   className="w-full h-16 bg-gold hover:bg-gold-light text-background font-black rounded-2xl shadow-xl shadow-gold/20 text-lg gap-3 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessing ? (
                     <>
                       <Loader2 size={24} className="animate-spin" />
                       SECURELY PAYING...
+                    </>
+                  ) : loading ? (
+                    <>
+                      <Loader2 size={24} className="animate-spin" />
+                      LOADING PROFILE...
                     </>
                   ) : !savedAddress ? (
                     "PLEASE SET ADDRESS"

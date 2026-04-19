@@ -41,6 +41,7 @@ import { uploadImage } from "@/lib/upload";
 const CustomerProfile = () => {
   const { data: session, isPending: isSessionPending } = useSession();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -180,7 +181,7 @@ const CustomerProfile = () => {
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 
   useEffect(() => {
     const fetchOrders = async () => {

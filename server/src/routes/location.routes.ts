@@ -33,7 +33,7 @@ export async function locationRoutes(fastify: FastifyInstance) {
 
       // Get rider's current location and name if a rider is assigned
       let riderLocation: { lat: number; lng: number } | null = null;
-      let riderName: string | null = null;
+      let riderInfo: { name: string | null; image: string | null } | null = null;
       
       if (orderData.riderId) {
         const rider = await db.query.riderProfile.findFirst({
@@ -42,6 +42,7 @@ export async function locationRoutes(fastify: FastifyInstance) {
             user: {
               columns: {
                 name: true,
+                image: true,
               }
             }
           }
@@ -49,9 +50,10 @@ export async function locationRoutes(fastify: FastifyInstance) {
         if (rider?.currentLocation) {
           riderLocation = rider.currentLocation;
         }
-        if (rider?.user?.name) {
-          riderName = rider.user.name;
-        }
+        riderInfo = {
+          name: rider?.user?.name || null,
+          image: rider?.user?.image || null,
+        };
       }
 
       // Kitchen location from vendor
@@ -85,6 +87,9 @@ export async function locationRoutes(fastify: FastifyInstance) {
           rider: riderLocation,
           delivery: deliveryLocation,
           riderId: orderData.riderId,
+          riderInfo,
+          items: orderData.items || [],
+          totalAmount: orderData.totalAmount || "0",
         },
       });
     }
