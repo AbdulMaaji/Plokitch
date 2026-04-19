@@ -64,6 +64,15 @@ const Kitchens = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark-surface via-transparent to-transparent opacity-80" />
                   <Badge className="absolute top-6 left-6 bg-dark-deep/60 backdrop-blur-md border border-white/10 text-gold font-bold">{chef.tag || "Verified Kitchen"}</Badge>
+                  
+                  {/* Floating Chef Avatar */}
+                  <div className="absolute -bottom-4 left-8 w-12 h-12 rounded-full border-4 border-dark-surface overflow-hidden shadow-xl z-20 bg-dark-deep">
+                    {chef.owner?.image ? (
+                      <img src={chef.owner.image} alt={chef.owner.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-full h-full p-2 text-gold/20" />
+                    )}
+                  </div>
                 </div>
                 <CardContent className="p-8">
                   <div className="flex justify-between items-start mb-4">

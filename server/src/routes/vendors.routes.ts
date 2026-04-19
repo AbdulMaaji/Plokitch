@@ -21,6 +21,12 @@ export async function vendorRoutes(fastify: FastifyInstance) {
     const vendors = await db.query.vendor.findMany({
       where: eq(vendor.isActive, true),
       with: {
+        owner: {
+          columns: {
+            name: true,
+            image: true,
+          }
+        },
         menuItems: {
           where: eq(menuItem.isAvailable, true),
           limit: 4,
@@ -66,6 +72,12 @@ export async function vendorRoutes(fastify: FastifyInstance) {
     const vendorData = await db.query.vendor.findFirst({
       where: eq(vendor.id, id),
       with: {
+        owner: {
+          columns: {
+            name: true,
+            image: true,
+          }
+        },
         menuItems: {
           where: eq(menuItem.isAvailable, true),
           orderBy: (m, { desc }) => [desc(m.isFeatured), desc(m.rating)],
@@ -103,6 +115,8 @@ export async function vendorRoutes(fastify: FastifyInstance) {
           lng?: number;
         };
         deliveryTime?: string;
+        imageUrl?: string;
+        isActive?: boolean;
       };
 
       // Check if vendor already exists for this user
@@ -128,6 +142,8 @@ export async function vendorRoutes(fastify: FastifyInstance) {
           specialty: body.specialty,
           location: body.location,
           deliveryTime: body.deliveryTime ?? "30-45 min",
+          imageUrl: body.imageUrl,
+          isActive: body.isActive ?? false,
         })
         .returning();
 
