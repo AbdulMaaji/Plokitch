@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 
 const ChefAnalytics = () => {
   const stats = [
-    { title: "Revenue", value: "$4,285.00", trend: "+12.5%", pos: true, icon: CircleDollarSign },
+    { title: "Revenue", value: "₦4,285.00", trend: "+12.5%", pos: true, icon: CircleDollarSign },
     { title: "Total Orders", value: "124", trend: "+5.2%", pos: true, icon: ShoppingBag },
     { title: "Customer Return", value: "68%", trend: "-2.1%", pos: false, icon: Users },
     { title: "Avg. Prep Time", value: "18m", trend: "-4m", pos: true, icon: Clock },
@@ -82,10 +82,10 @@ const ChefAnalytics = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {[
-                { name: "Truffle Salmon", orders: 48, revenue: "$2,160" },
-                { name: "Wild Risotto", orders: 32, revenue: "$1,024" },
-                { name: "Lava Cake", orders: 24, revenue: "$432" },
-                { name: "Artisan Bread", orders: 20, revenue: "$240" },
+                { name: "Truffle Salmon", orders: 48, revenue: "₦2,160" },
+                { name: "Wild Risotto", orders: 32, revenue: "₦1,024" },
+                { name: "Lava Cake", orders: 24, revenue: "₦432" },
+                { name: "Artisan Bread", orders: 20, revenue: "₦240" },
               ].map((item) => (
                 <div key={item.name} className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">

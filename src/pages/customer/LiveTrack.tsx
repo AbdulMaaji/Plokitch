@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -9,18 +10,57 @@ import {
   Phone, 
   MessageSquare,
   Navigation,
-  ExternalLink
+  ExternalLink,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
+import { useTrackRider } from "@/hooks/useRealtimeLocation";
+import type { LatLng } from "@/components/Map/OrderTrackingMap";
+
+import { useParams } from "react-router-dom";
+import { useOrderLocation, GOMBE_CENTER } from "@/hooks/useOrderLocation";
+
+// We keep a demo ID just for fallback if hitting /track without an ID
+// But ideally, the user should be routed to /track/:orderId
+const DEMO_ORDER_ID = "demo-order-9921";
 
 const LiveTrack = () => {
+  const { orderId } = useParams<{ orderId: string }>();
+  const activeOrderId = orderId || DEMO_ORDER_ID;
+
+  const { data: orderLoc, isLoading } = useOrderLocation(activeOrderId);
+  const { riderPosition, isConnected } = useTrackRider(activeOrderId);
+
+  const currentRiderPos: LatLng = riderPosition
+    ? { lat: riderPosition.lat, lng: riderPosition.lng }
+    : orderLoc?.rider || GOMBE_CENTER;
+
+  const currentKitchenPos: LatLng = orderLoc?.kitchen || GOMBE_CENTER;
+  const currentDeliveryPos: LatLng = orderLoc?.delivery || { lat: GOMBE_CENTER.lat - 0.01, lng: GOMBE_CENTER.lng - 0.01 };
+
+  const getStatusStep = (status: string) => {
+    const statusMap: Record<string, number> = {
+      pending: 0,
+      confirmed: 1,
+      preparing: 1,
+      ready: 2,
+      picking: 3,
+      delivering: 3,
+      completed: 4,
+    };
+    return statusMap[status] || 0;
+  };
+
+  const currentStepIndex = getStatusStep(orderLoc?.status || "pending");
+
   const steps = [
-    { title: "Order Confirmed", status: "complete", time: "12:30 PM", icon: CheckCircle2 },
-    { title: "Chef Preparing", status: "complete", time: "12:45 PM", icon: ChefHat },
-    { title: "Rider En-route", status: "active", time: "1:05 PM (Estimated)", icon: Bike },
-    { title: "Delivered", status: "pending", time: "-", icon: MapPin },
+    { title: "Order Confirmed", status: currentStepIndex >= 1 ? "complete" : "pending", time: "Confirmed", icon: CheckCircle2 },
+    { title: "Chef Preparing", status: currentStepIndex === 1 ? "active" : currentStepIndex > 1 ? "complete" : "pending", time: "In Kitchen", icon: ChefHat },
+    { title: "Rider En-route", status: currentStepIndex === 3 ? "active" : currentStepIndex > 3 ? "complete" : "pending", time: "On the way", icon: Bike },
+    { title: "Delivered", status: currentStepIndex >= 4 ? "complete" : "pending", time: "Enjoy!", icon: MapPin },
   ];
 
   return (
@@ -29,19 +69,38 @@ const LiveTrack = () => {
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <h1 className="text-4xl font-heading font-black text-white">Live Track</h1>
-            <p className="text-muted-foreground font-body">Order #ORD-9921 • Delivery from Chef Andre L'Aube</p>
+            <p className="text-muted-foreground font-body">Order #{activeOrderId.split('-').pop()} • Delivery</p>
           </div>
-          <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-6 py-2 text-sm font-black uppercase tracking-widest h-fit">
-            Arriving in 12 mins
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge className={`${isConnected ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'} border px-4 py-2 text-xs font-black uppercase tracking-widest h-fit flex items-center gap-2`}>
+              {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
+              {isConnected ? "Live" : "Offline"}
+            </Badge>
+            <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-6 py-2 text-sm font-black uppercase tracking-widest h-fit">
+              Arriving in 12 mins
+            </Badge>
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Map Section */}
           <Card className="lg:col-span-2 bg-dark-surface border-gold/10 overflow-hidden relative min-h-[500px] rounded-[2.5rem]">
-            <OrderTrackingMap className="rounded-[2.5rem]" />
+            {isLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-dark-deep">
+                <p className="text-gold font-bold animate-pulse uppercase tracking-widest text-xs">Locating Order...</p>
+              </div>
+            ) : (
+              <OrderTrackingMap
+                className="w-full h-full min-h-[500px]"
+                kitchenLocation={currentKitchenPos}
+                riderLocation={currentRiderPos}
+                deliveryLocation={currentDeliveryPos}
+                showLabels={true}
+                showRoute={true}
+              />
+            )}
 
-            <div className="absolute bottom-10 left-10 p-6 bg-dark-deep/80 backdrop-blur-xl border border-gold/20 rounded-2xl flex items-center gap-6 max-w-sm">
+            <div className="absolute bottom-10 left-10 p-6 bg-dark-deep/80 backdrop-blur-xl border border-gold/20 rounded-2xl flex items-center gap-6 max-w-sm z-[600]">
               <div className="w-16 h-16 rounded-full bg-dark-surface border border-gold/10 overflow-hidden">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Rider" alt="Rider" />
               </div>
@@ -89,17 +148,15 @@ const LiveTrack = () => {
             <Card className="bg-dark-surface border-gold/10 p-6 rounded-[2rem]">
               <h4 className="text-sm font-black text-white uppercase tracking-widest mb-4">Order Details</h4>
               <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Truffle Salmon Glaze x2</span>
-                  <span className="text-white font-bold">₦90,000</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Artisan Bread Pack</span>
-                  <span className="text-white font-bold">₦12,000</span>
-                </div>
+                {orderLoc?.items?.map((item: any, i: number) => (
+                  <div key={i} className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">{item.name} x{item.quantity}</span>
+                    <span className="text-white font-bold">${item.price * item.quantity}</span>
+                  </div>
+                ))}
                 <div className="pt-4 border-t border-gold/5 flex justify-between items-center">
                   <span className="text-gold font-black uppercase tracking-widest text-xs">Total</span>
-                  <span className="text-2xl font-black text-white font-heading">₦112,500</span>
+                  <span className="text-2xl font-black text-white font-heading">${orderLoc?.totalAmount || '0'}</span>
                 </div>
               </div>
               <Button variant="ghost" className="w-full mt-6 text-gold font-bold hover:bg-gold/5 flex items-center justify-center gap-2">

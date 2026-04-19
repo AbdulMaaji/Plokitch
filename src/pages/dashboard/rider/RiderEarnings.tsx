@@ -99,7 +99,7 @@ const RiderEarnings = () => {
                 <div className="w-20 h-20 bg-gold rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-gold/40">
                   <TrendingUp size={32} className="text-background" />
                 </div>
-                <p className="text-xs text-muted-foreground mb-6 leading-relaxed">Complete <span className="text-gold font-bold">12 more</span> deliveries this week to unlock a $50 weekend bonus.</p>
+                <p className="text-xs text-muted-foreground mb-6 leading-relaxed">Complete <span className="text-gold font-bold">12 more</span> deliveries this week to unlock a ₦50 weekend bonus.</p>
                 <div className="h-2 bg-dark-deep rounded-full overflow-hidden mb-8">
                   <div className="h-full bg-gold w-[70%]" />
                 </div>

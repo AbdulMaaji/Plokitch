@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { bearer } from "better-auth/plugins";
 import { db } from "../db/index.js";
 import * as schema from "../db/schema.js";
 
@@ -8,6 +9,7 @@ if (!process.env.BETTER_AUTH_SECRET) {
 }
 
 export const auth = betterAuth({
+  plugins: [bearer()],
   // ── Database ──────────────────────────────────────────────
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -27,10 +29,12 @@ export const auth = betterAuth({
 
   // ── Trusted Origins ───────────────────────────────────────
   trustedOrigins: [
-    process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
+    process.env.CLIENT_ORIGIN,
     "http://localhost:5173",
     "http://localhost:3000",
-  ],
+    "http://localhost:8080",
+    "http://localhost:8081",
+  ].filter(Boolean) as string[],
 
   // ── Authentication Methods ────────────────────────────────
   emailAndPassword: {

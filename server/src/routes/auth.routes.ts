@@ -18,6 +18,8 @@ export async function authRoutes(fastify: FastifyInstance) {
         );
 
         const headers = fromNodeHeaders(request.headers);
+        // Important: Remove content-length as the new Request will calculate its own from the stringified body
+        headers.delete("content-length");
 
         const req = new Request(url.toString(), {
           method: request.method,
@@ -37,10 +39,10 @@ export async function authRoutes(fastify: FastifyInstance) {
         const body = await response.text();
         return reply.send(body || null);
       } catch (error) {
-        fastify.log.error({ err: error }, "Auth handler error");
+        fastify.log.error(error, "CRITICAL Auth handler error");
         return reply.status(500).send({
           success: false,
-          error: "Internal authentication error",
+          error: error instanceof Error ? error.message : "Internal authentication error",
           code: "AUTH_FAILURE",
         });
       }

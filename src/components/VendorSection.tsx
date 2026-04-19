@@ -75,10 +75,10 @@ const VendorSection = () => {
             <div className="bg-card border border-border/60 rounded-2xl p-8">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center text-gold font-heading font-bold text-2xl">
-                  A
+                  Y
                 </div>
                 <div>
-                  <p className="font-heading font-semibold text-lg">Chef Aisha</p>
+                  <p className="font-heading font-semibold text-lg">Your Culinary Atelier</p>
                   <p className="text-sm text-muted-foreground font-body">Gombe, Nigeria</p>
                   <div className="flex gap-0.5 mt-1">
                     {[1,2,3,4,5].map(i => (
@@ -89,26 +89,26 @@ const VendorSection = () => {
                   </div>
                 </div>
                 <span className="ml-auto text-xs font-body bg-emerald-900/30 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                  Active
+                  LIVE NOW
                 </span>
               </div>
 
               <div className="space-y-3 mb-6">
-                <p className="text-xs text-muted-foreground font-body uppercase tracking-widest">Today's earnings</p>
+                <p className="text-xs text-muted-foreground font-body uppercase tracking-widest">Real-time Dashboard</p>
                 <div className="flex items-end gap-2">
-                  <span className="text-4xl font-heading font-bold text-gold">₦18,400</span>
-                  <span className="text-emerald-400 text-sm font-body mb-1">+23% vs yesterday</span>
+                  <span className="text-4xl font-heading font-bold text-gold">₦24,800</span>
+                  <span className="text-emerald-400 text-sm font-body mb-1">Today's Revenue</span>
                 </div>
               </div>
 
               <div className="space-y-2">
                 {[
-                  { dish: "Jollof Rice × 4", status: "Delivered", color: "text-emerald-400" },
-                  { dish: "Masa × 2", status: "In progress", color: "text-amber-400" },
-                  { dish: "Tuwo Shinkafa × 3", status: "New order", color: "text-gold" },
-                ].map((order) => (
+                  { dish: "Signature Artisan Pot × 3", status: "Delivered", color: "text-emerald-400" },
+                  { dish: "Specialty Grain × 2", status: "In progress", color: "text-amber-400" },
+                  { dish: "New Discovery Order", status: "New order", color: "text-gold" },
+                ].map((order, i) => (
                   <div
-                    key={order.dish}
+                    key={i}
                     className="flex items-center justify-between p-3 rounded-lg bg-background/40 border border-border/20"
                   >
                     <span className="text-sm font-body text-foreground/80">{order.dish}</span>

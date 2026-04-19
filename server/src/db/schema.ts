@@ -183,7 +183,14 @@ export const order = pgTable("order", {
     city: string;
     state: string;
     instructions?: string;
+    lat?: number;
+    lng?: number;
   }>(),
+  // Explicit coordinate columns for map queries
+  pickupLat: decimal("pickup_lat", { precision: 10, scale: 7 }),
+  pickupLng: decimal("pickup_lng", { precision: 10, scale: 7 }),
+  deliveryLat: decimal("delivery_lat", { precision: 10, scale: 7 }),
+  deliveryLng: decimal("delivery_lng", { precision: 10, scale: 7 }),
   paymentStatus: text("payment_status").notNull().default("unpaid"),
   paymentRef: text("payment_ref"),
   notes: text("notes"),

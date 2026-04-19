@@ -34,6 +34,31 @@ export async function vendorRoutes(fastify: FastifyInstance) {
     return reply.send({ success: true, data: vendors, limit, offset });
   });
 
+  // GET /api/vendors/me — get current user's kitchen profile
+  fastify.get(
+    "/api/vendors/me",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const session = (request as any).session;
+      const vendorData = await db.query.vendor.findFirst({
+        where: eq(vendor.userId, session.user.id),
+        with: {
+          menuItems: true,
+        },
+      });
+
+      if (!vendorData) {
+        return reply.status(404).send({
+          success: false,
+          error: "You haven't set up a kitchen yet",
+          code: "NOT_FOUND",
+        });
+      }
+
+      return reply.send({ success: true, data: vendorData });
+    }
+  );
+
   // GET /api/vendors/:id — get single vendor with menu (public)
   fastify.get("/api/vendors/:id", async (request, reply) => {
     const { id } = request.params as { id: string };

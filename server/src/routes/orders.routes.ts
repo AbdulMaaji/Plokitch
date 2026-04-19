@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { db } from "../db/index.js";
 import { order, vendor } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, inArray } from "drizzle-orm";
 import { requireAuth, requireRole } from "../middleware/auth.middleware.js";
 
 /**
@@ -49,6 +49,21 @@ export async function orderRoutes(fastify: FastifyInstance) {
         .returning();
 
       return reply.status(201).send({ success: true, data: newOrder });
+    }
+  );
+
+  // GET /api/orders/available — list orders ready for pickup (riders)
+  fastify.get(
+    "/api/orders/available",
+    { preHandler: [requireAuth, requireRole("rider")] },
+    async (request, reply) => {
+      const orders = await db.query.order.findMany({
+        where: and(eq(order.status, "ready"), eq(order.riderId, null)),
+        with: { customer: true, vendor: true },
+        orderBy: (o, { desc }) => [desc(o.createdAt)],
+      });
+
+      return reply.send({ success: true, data: orders });
     }
   );
 
@@ -170,6 +185,25 @@ export async function orderRoutes(fastify: FastifyInstance) {
           | "cancelled";
         riderId?: string;
       };
+
+      // Constraint: Rider can only have one active delivery
+      if (body.status === "picking" || body.status === "delivering") {
+        const riderId = body.riderId || session.user.id;
+        const activeOrder = await db.query.order.findFirst({
+          where: and(
+            eq(order.riderId, riderId),
+            inArray(order.status, ["picking", "delivering"])
+          ),
+        });
+
+        if (activeOrder && activeOrder.id !== id) {
+          return reply.status(400).send({
+            success: false,
+            error: "You already have an active delivery. Complete it first.",
+            code: "RIDER_BUSY",
+          });
+        }
+      }
 
       const [updated] = await db
         .update(order)
