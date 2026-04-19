@@ -16,7 +16,8 @@ import {
   UtensilsCrossed,
   Award,
   Zap,
-  User
+  User,
+  ChefHat
 } from "lucide-react";
 import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
 import { DISH_CATEGORIES } from "@/constants/categories";

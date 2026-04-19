@@ -12,6 +12,12 @@ export interface OrderLocationData {
   rider: LatLng | null;
   delivery: LatLng | null;
   riderId: string | null;
+  riderInfo?: {
+    name: string | null;
+    image: string | null;
+  } | null;
+  items?: any[];
+  totalAmount?: string;
 }
 
 export function useOrderLocation(orderId?: string | null) {
