@@ -74,7 +74,7 @@ const App = () => (
           <Route path="/customer" element={<Navigate to="/customer/kitchens" replace />} />
           <Route path="/customer/kitchens" element={<Kitchens />} />
           <Route path="/restaurants" element={<Restaurants />} />
-          <Route path="/customer/kitchens/:id" element={<KitchenDetail />} />
+          <Route path="/customer/kitchens/:idOrSlug" element={<KitchenDetail />} />
           <Route path="/dishes" element={<Dishes />} />
           <Route path="/customer/marketplace" element={<Navigate to="/dishes" replace />} />
           <Route path="/customer/track" element={<LiveTrack />} />

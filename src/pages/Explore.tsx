@@ -43,7 +43,9 @@ const Explore = () => {
             vendor.menuItems.map((item: any) => ({
               ...item,
               chefId: vendor.id,
+              vendorId: vendor.id,
               chef: vendor.businessName,
+              chefSlug: vendor.slug,
               chefBio: vendor.description,
               image: item.imageUrl, // No fallback here, handled in JSX
               rating: item.rating || "4.9",
@@ -189,7 +191,7 @@ const Explore = () => {
                   >
                     <Card 
                       className="h-full bg-dark-surface border-gold/10 hover:border-gold/40 transition-all rounded-[2.5rem] overflow-hidden group cursor-pointer"
-                      onClick={() => navigate(`/customer/kitchens/${k.id}`)}
+                      onClick={() => navigate(`/customer/kitchens/${k.slug || k.id}`)}
                     >
                       <div className="h-64 relative overflow-hidden bg-dark-deep">
                         {k.imageUrl ? (

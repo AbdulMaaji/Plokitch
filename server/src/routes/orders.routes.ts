@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { db } from "../db/index.js";
 import { order, vendor } from "../db/schema.js";
-import { eq, and, or, inArray } from "drizzle-orm";
+import { eq, and, or, inArray, isNull } from "drizzle-orm";
 import { requireAuth, requireRole } from "../middleware/auth.middleware.js";
 
 /**
@@ -29,6 +29,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
           instructions?: string;
         };
         notes?: string;
+        isPriority?: boolean;
       };
 
       const totalAmount = body.items
@@ -45,6 +46,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
           deliveryAddress: body.deliveryAddress,
           notes: body.notes,
           status: "pending",
+          isPriority: body.isPriority ?? false,
         })
         .returning();
 
@@ -58,7 +60,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     { preHandler: [requireAuth, requireRole("rider")] },
     async (request, reply) => {
       const orders = await db.query.order.findMany({
-        where: and(eq(order.status, "ready"), eq(order.riderId, null)),
+        where: and(eq(order.status, "ready"), isNull(order.riderId)),
         with: { customer: true, vendor: true },
         orderBy: (o, { desc }) => [desc(o.createdAt)],
       });
@@ -108,7 +110,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
           with: { customer: true },
           limit,
           offset,
-          orderBy: (o, { desc }) => [desc(o.createdAt)],
+          orderBy: (o, { desc }) => [desc(o.isPriority), desc(o.createdAt)],
         });
       } else if (role === "rider") {
         orders = await db.query.order.findMany({

@@ -36,7 +36,7 @@ interface OrderTrackingMapProps {
 // ─────────────────────────────────────────────
 
 const SATELLITE_TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-const TILE_ATTRIBUTION = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+const TILE_ATTRIBUTION = "";
 
 // ─────────────────────────────────────────────
 // Default center — Gombe, Nigeria
@@ -143,7 +143,7 @@ const OrderTrackingMap = ({
         center={[mapCenter.lat, mapCenter.lng]}
         zoom={zoom ?? DEFAULT_ZOOM}
         zoomControl={true}
-        attributionControl={true}
+        attributionControl={false}
         className="w-full h-full"
         style={{ background: "#0a0a0a" }}
       >
