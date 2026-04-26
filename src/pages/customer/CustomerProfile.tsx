@@ -435,7 +435,7 @@ const CustomerProfile = () => {
                       <Card 
                         key={vendor.id} 
                         className="bg-dark-surface border-white/5 hover:border-gold/20 transition-all cursor-pointer overflow-hidden group"
-                        onClick={() => navigate(`/customer/kitchens/${vendor.id}`)}
+                        onClick={() => navigate(`/${vendor.slug || vendor.id}`)}
                       >
                         <div className="flex items-center p-4 gap-4">
                           <div className="w-12 h-12 rounded-xl bg-dark-deep border border-white/5 overflow-hidden shrink-0">

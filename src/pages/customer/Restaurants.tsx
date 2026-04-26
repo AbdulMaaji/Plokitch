@@ -131,7 +131,7 @@ const Restaurants = () => {
                   >
                     <Card 
                       className="bg-dark-surface border-gold/10 hover:border-gold/40 transition-all duration-500 rounded-[3rem] overflow-hidden group cursor-pointer shadow-2xl"
-                      onClick={() => navigate(`/customer/kitchens/${k.id}`)}
+                      onClick={() => navigate(`/${k.slug || k.id}`)}
                     >
                       <div className="h-72 relative overflow-hidden bg-dark-deep">
                         {k.imageUrl ? (

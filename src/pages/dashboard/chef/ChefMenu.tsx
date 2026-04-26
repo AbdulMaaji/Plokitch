@@ -38,6 +38,7 @@ interface Dish {
   stock: number;
   active: boolean;
   description?: string;
+  imageUrl?: string;
 }
 
 const ChefMenu = () => {
@@ -214,8 +215,16 @@ const ChefMenu = () => {
 
   const openEditDialog = (dish: any) => {
     setEditingDish(dish);
-    setFormData(dish);
-    setImagePreview(dish.imageUrl);
+    setFormData({
+      name: dish.name || "",
+      category: dish.category || "mains",
+      price: dish.price || "",
+      stock: dish.stock ?? 0,
+      active: dish.isAvailable ?? true,
+      description: dish.description || "",
+      imageUrl: dish.imageUrl || "",
+    });
+    setImagePreview(dish.imageUrl || null);
     setIsEditDialogOpen(true);
   };
 

@@ -31,6 +31,7 @@ import LiveTrack from "./pages/customer/LiveTrack.tsx";
 import CustomerProfile from "./pages/customer/CustomerProfile.tsx";
 import Cart from "./pages/customer/Cart.tsx";
 import Checkout from "./pages/customer/Checkout.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
 
 import { CartProvider } from "./context/CartContext";
 
@@ -44,44 +45,49 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Index />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/dishes" element={<Dishes />} />
+          <Route path="/restaurants" element={<Restaurants />} />
           
-          {/* Chef Routes */}
-          <Route path="/dashboard/chef" element={<ChefDashboard />} />
-          <Route path="/dashboard/chef/orders" element={<ChefOrders />} />
-          <Route path="/dashboard/chef/menu" element={<ChefMenu />} />
-          <Route path="/dashboard/chef/analytics" element={<ChefAnalytics />} />
-          <Route path="/dashboard/chef/settings" element={<ChefSettings />} />
+          {/* Chef Routes (auth-protected) */}
+          <Route path="/dashboard/chef" element={<ProtectedRoute requiredRole="chef"><ChefDashboard /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/orders" element={<ProtectedRoute requiredRole="chef"><ChefOrders /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/menu" element={<ProtectedRoute requiredRole="chef"><ChefMenu /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/analytics" element={<ProtectedRoute requiredRole="chef"><ChefAnalytics /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/settings" element={<ProtectedRoute requiredRole="chef"><ChefSettings /></ProtectedRoute>} />
           
-          {/* Rider Routes */}
-          <Route path="/dashboard/rider" element={<RiderDashboard />} />
-          <Route path="/dashboard/rider/active" element={<ActiveDeliveries />} />
-          <Route path="/dashboard/rider/earnings" element={<RiderEarnings />} />
-          <Route path="/dashboard/rider/settings" element={<RiderSettings />} />
+          {/* Rider Routes (auth-protected) */}
+          <Route path="/dashboard/rider" element={<ProtectedRoute requiredRole="rider"><RiderDashboard /></ProtectedRoute>} />
+          <Route path="/dashboard/rider/active" element={<ProtectedRoute requiredRole="rider"><ActiveDeliveries /></ProtectedRoute>} />
+          <Route path="/dashboard/rider/earnings" element={<ProtectedRoute requiredRole="rider"><RiderEarnings /></ProtectedRoute>} />
+          <Route path="/dashboard/rider/settings" element={<ProtectedRoute requiredRole="rider"><RiderSettings /></ProtectedRoute>} />
           
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/orders" element={<OrderOverview />} />
-          <Route path="/admin/analytics" element={<AdminAnalytics />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
+          {/* Admin Routes (auth-protected) */}
+          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminPanel /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
+          <Route path="/admin/orders" element={<ProtectedRoute requiredRole="admin"><OrderOverview /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><AdminAnalytics /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
           
-          {/* Customer Routes */}
+          {/* Customer Routes (auth-protected) */}
           <Route path="/customer" element={<Navigate to="/customer/kitchens" replace />} />
           <Route path="/customer/kitchens" element={<Kitchens />} />
-          <Route path="/restaurants" element={<Restaurants />} />
           <Route path="/customer/kitchens/:idOrSlug" element={<KitchenDetail />} />
-          <Route path="/dishes" element={<Dishes />} />
           <Route path="/customer/marketplace" element={<Navigate to="/dishes" replace />} />
-          <Route path="/customer/track" element={<LiveTrack />} />
-          <Route path="/customer/track/:orderId" element={<LiveTrack />} />
-          <Route path="/customer/cart" element={<Cart />} />
-          <Route path="/customer/checkout" element={<Checkout />} />
-          <Route path="/customer/profile" element={<CustomerProfile />} />
+          <Route path="/customer/track" element={<ProtectedRoute><LiveTrack /></ProtectedRoute>} />
+          <Route path="/customer/track/:orderId" element={<ProtectedRoute><LiveTrack /></ProtectedRoute>} />
+          <Route path="/customer/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="/customer/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="/customer/profile" element={<ProtectedRoute><CustomerProfile /></ProtectedRoute>} />
+          
+          {/* Top-level restaurant slug — e.g. /siennas-organic
+              MUST be LAST before the catch-all so named routes match first */}
+          <Route path="/:slug" element={<KitchenDetail />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

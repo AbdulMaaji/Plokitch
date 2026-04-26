@@ -206,7 +206,7 @@ const Kitchens = () => {
 
                   <Button 
                     className="w-full h-14 bg-gold hover:bg-gold-light text-background font-black tracking-[0.1em] group rounded-2xl"
-                    onClick={() => navigate(`/customer/kitchens/${chef.slug || chef.id}`)}
+                    onClick={() => navigate(`/${chef.slug || chef.id}`)}
                   >
                     VIEW FULL ATELIER
                     <ChevronRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />

@@ -27,7 +27,8 @@ import { toast } from "sonner";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const KitchenDetail = () => {
-  const { idOrSlug } = useParams();
+  const params = useParams();
+  const idOrSlug = params.idOrSlug || params.slug;
   const navigate = useNavigate();
   const [selectedDish, setSelectedDish] = useState<any>(null);
   const [kitchenData, setKitchenData] = useState<any>(null);
@@ -43,9 +44,10 @@ const KitchenDetail = () => {
         if (data.success) {
           const k = data.data;
           
-          // If the URL has a UUID but the vendor has a slug, redirect to slug
-          if (k.slug && idOrSlug === k.id) {
-            navigate(`/customer/kitchens/${k.slug}`, { replace: true });
+          // If accessed via UUID, redirect to the short top-level slug URL
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(idOrSlug || "");
+          if (k.slug && isUuid) {
+            navigate(`/${k.slug}`, { replace: true });
           }
 
           setKitchenData({
@@ -101,7 +103,7 @@ const KitchenDetail = () => {
       <DashboardLayout role="customer">
         <div className="text-center py-20">
           <h2 className="text-2xl font-black text-white uppercase tracking-widest">Atelier Not Found</h2>
-          <Button onClick={() => navigate('/customer/kitchens')} variant="link" className="text-gold mt-4">Return to Discovery</Button>
+          <Button onClick={() => navigate('/explore')} variant="link" className="text-gold mt-4">Return to Discovery</Button>
         </div>
       </DashboardLayout>
     )

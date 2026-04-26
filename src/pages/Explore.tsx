@@ -191,7 +191,7 @@ const Explore = () => {
                   >
                     <Card 
                       className="h-full bg-dark-surface border-gold/10 hover:border-gold/40 transition-all rounded-[2.5rem] overflow-hidden group cursor-pointer"
-                      onClick={() => navigate(`/customer/kitchens/${k.slug || k.id}`)}
+                      onClick={() => navigate(`/${k.slug || k.id}`)}
                     >
                       <div className="h-64 relative overflow-hidden bg-dark-deep">
                         {k.imageUrl ? (
