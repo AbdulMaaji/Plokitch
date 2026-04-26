@@ -20,12 +20,15 @@ interface CartContextType {
   clearCart: () => void;
   totalAmount: number;
   itemCount: number;
+  isPriority: boolean;
+  setIsPriority: (priority: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isPriority, setIsPriority] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -113,6 +116,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         clearCart,
         totalAmount,
         itemCount,
+        isPriority,
+        setIsPriority,
       }}
     >
       {children}

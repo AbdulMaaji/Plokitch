@@ -143,6 +143,7 @@ export const vendor = pgTable("vendor", {
   minOrder: decimal("min_order", { precision: 10, scale: 2 }).default("0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  slug: text("slug").unique(),
 });
 
 export const menuItem = pgTable("menu_item", {
@@ -207,6 +208,7 @@ export const order = pgTable("order", {
   deliveredAt: timestamp("delivered_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  isPriority: boolean("is_priority").default(false),
 });
 
 export const review = pgTable("review", {

@@ -29,6 +29,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
           instructions?: string;
         };
         notes?: string;
+        isPriority?: boolean;
       };
 
       const totalAmount = body.items
@@ -45,6 +46,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
           deliveryAddress: body.deliveryAddress,
           notes: body.notes,
           status: "pending",
+          isPriority: body.isPriority ?? false,
         })
         .returning();
 
@@ -108,7 +110,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
           with: { customer: true },
           limit,
           offset,
-          orderBy: (o, { desc }) => [desc(o.createdAt)],
+          orderBy: (o, { desc }) => [desc(o.isPriority), desc(o.createdAt)],
         });
       } else if (role === "rider") {
         orders = await db.query.order.findMany({

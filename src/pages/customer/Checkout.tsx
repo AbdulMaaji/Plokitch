@@ -23,7 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { totalAmount, clearCart, items } = useCart();
+  const { totalAmount, clearCart, items, isPriority } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("card");
   const { data: session, isPending: isSessionLoading } = useSession();
@@ -47,11 +47,14 @@ const Checkout = () => {
   const user = fullUser || session?.user;
   const loading = isSessionLoading || isUserLoading;
 
+  const surcharge = isPriority ? totalAmount * 0.15 : 0;
+  const finalAmount = totalAmount + surcharge;
+
   const formattedTotal = new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 0
-  }).format(totalAmount).replace('NGN', '₦');
+  }).format(finalAmount).replace('NGN', '₦');
   
   const savedAddress = user?.address ? 
     (typeof user.address === 'string' ? JSON.parse(user.address) : user.address) 
@@ -90,7 +93,8 @@ const Checkout = () => {
           state: "Gombe",
           instructions: "No instructions"
         },
-        notes: "Artisanal preparation requested."
+        notes: "Artisanal preparation requested.",
+        isPriority
       };
 
       const res = await fetch(`${API_URL}/api/orders`, {
@@ -280,8 +284,14 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground font-bold uppercase tracking-widest">
                     <span>Estimated Arrival</span>
-                    <span className="text-gold">30 - 45 MINS</span>
+                    <span className="text-gold">{isPriority ? "15 - 25 MINS" : "30 - 45 MINS"}</span>
                   </div>
+                  {isPriority && (
+                    <div className="flex justify-between text-xs text-gold font-bold uppercase tracking-widest">
+                      <span>Priority Surcharge (15%)</span>
+                      <span>₦{surcharge.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-end pt-4">

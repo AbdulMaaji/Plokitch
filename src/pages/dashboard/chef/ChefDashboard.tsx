@@ -64,7 +64,7 @@ const ChefDashboard = () => {
     .reduce((sum, o) => sum + parseFloat(o.totalAmount), 0);
   
   const stats = [
-    { title: "Daily Revenue", value: `₦${revenue.toLocaleString()}`, icon: TrendingUp, color: "text-emerald-500" },
+    { title: "Total Lifetime Orders", value: (myVendor?.totalOrders || 0).toString(), icon: ShoppingBag, color: "text-emerald-500" },
     { title: "Active Orders", value: activeOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length.toString(), icon: ShoppingBag, color: "text-gold" },
   ];
 
@@ -140,6 +140,9 @@ const ChefDashboard = () => {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-black text-gold uppercase tracking-widest">ORD-{order.id.slice(0, 4)}</span>
+                            {order.isPriority && (
+                              <Badge className="bg-white text-background border-none text-[8px] font-black px-2 py-0 animate-pulse">PRIORITY</Badge>
+                            )}
                           </div>
                           <h3 className="text-lg font-bold text-white">
                             {order.items.map((i: any) => `${i.name} x${i.quantity}`).join(", ")}

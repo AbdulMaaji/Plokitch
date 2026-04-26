@@ -21,24 +21,33 @@ import {
 } from "lucide-react";
 import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
 import { DISH_CATEGORIES } from "@/constants/categories";
+import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const KitchenDetail = () => {
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
   const navigate = useNavigate();
   const [selectedDish, setSelectedDish] = useState<any>(null);
   const [kitchenData, setKitchenData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const { isPriority, setIsPriority } = useCart() as any;
 
   useEffect(() => {
     const fetchKitchenDetail = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/vendors/${id}`);
+        const res = await fetch(`${API_URL}/api/vendors/${idOrSlug}`);
         const data = await res.json();
         if (data.success) {
           const k = data.data;
+          
+          // If the URL has a UUID but the vendor has a slug, redirect to slug
+          if (k.slug && idOrSlug === k.id) {
+            navigate(`/customer/kitchens/${k.slug}`, { replace: true });
+          }
+
           setKitchenData({
             ...k,
             name: k.businessName,
@@ -49,6 +58,9 @@ const KitchenDetail = () => {
             chefImage: k.user?.image,
             chefName: k.user?.name,
             tag: k.tag || "Verified Artisan",
+            totalOrders: k.totalOrders || 0,
+            totalReviews: k.totalReviews || 0,
+            specialty: k.cuisineType || "Signature Dishes",
             dishes: k.menuItems.map((item: any) => ({
               ...item,
               chef: k.businessName,
@@ -63,8 +75,8 @@ const KitchenDetail = () => {
         setLoading(false);
       }
     };
-    if (id) fetchKitchenDetail();
-  }, [id]);
+    if (idOrSlug) fetchKitchenDetail();
+  }, [idOrSlug, navigate]);
 
   const filteredDishes = useMemo(() => {
     if (!kitchenData) return [];
@@ -143,7 +155,7 @@ const KitchenDetail = () => {
                 <div className="flex flex-wrap items-center gap-6 text-white/80 font-bold">
                   <div className="flex items-center gap-2">
                     <Star size={18} className="text-gold fill-gold" />
-                    <span>{kitchenData.rating} ({kitchenData.reviews} reviews)</span>
+                    <span>{kitchenData.rating || "4.8"} ({kitchenData.totalReviews || kitchenData.reviews || "0"} reviews)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <UtensilsCrossed size={18} className="text-gold" />
@@ -164,7 +176,7 @@ const KitchenDetail = () => {
                  <div className="bg-dark-deep/80 backdrop-blur-md border border-gold/20 rounded-2xl p-4 flex flex-col items-center min-w-[100px]">
                     <ShoppingBag size={20} className="text-gold mb-1" />
                     <span className="text-[10px] uppercase font-black tracking-tighter text-muted-foreground">Orders</span>
-                    <span className="text-sm font-black text-white">450+</span>
+                    <span className="text-sm font-black text-white">{kitchenData.totalOrders}+</span>
                  </div>
               </div>
             </div>
@@ -206,9 +218,21 @@ const KitchenDetail = () => {
                </div>
 
                <div className="pt-6 border-t border-gold/5">
-                  <Button className="w-full h-14 bg-gradient-to-r from-gold to-gold-light text-background font-black rounded-xl">
-                    <Zap size={18} className="mr-2 fill-background" />
-                    PRIORITY BOOKING
+                  <Button 
+                    onClick={() => {
+                      setIsPriority(!isPriority);
+                      toast.success(isPriority ? "Priority Booking Disabled" : "Priority Booking Activated", {
+                        description: isPriority ? "Standard preparation speed resumed." : "Your order will be prioritized by the chef."
+                      });
+                    }}
+                    className={`w-full h-14 font-black rounded-xl transition-all ${
+                      isPriority 
+                        ? "bg-white text-background shadow-[0_0_20px_rgba(255,255,255,0.3)]" 
+                        : "bg-gradient-to-r from-gold to-gold-light text-background"
+                    }`}
+                  >
+                    <Zap size={18} className={`mr-2 ${isPriority ? "fill-background text-background" : "fill-background"}`} />
+                    {isPriority ? "PRIORITY ACTIVE" : "PRIORITY BOOKING"}
                   </Button>
                </div>
             </Card>
@@ -265,7 +289,13 @@ const KitchenDetail = () => {
                   <CardContent className="p-6 space-y-4">
                     <div className="flex justify-between items-start">
                        <h3 className="text-xl font-bold text-white group-hover:text-gold transition-colors">{dish.name}</h3>
-                       <span className="text-gold font-black font-heading">{dish.price}</span>
+                       <span className="text-gold font-black font-heading">
+                         {new Intl.NumberFormat('en-NG', {
+                           style: 'currency',
+                           currency: 'NGN',
+                           minimumFractionDigits: 0
+                         }).format(Number(dish.price)).replace('NGN', '₦')}
+                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 font-body leading-relaxed">
                        {dish.description}
