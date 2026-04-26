@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { Locate, Map as MapIcon, Navigation2 } from "lucide-react";
+import { ChangePasswordDialog } from "@/components/auth/ChangePasswordDialog";
 
 const RiderSettings = () => {
   const { data: session } = useSession();
@@ -232,6 +233,27 @@ const RiderSettings = () => {
                        </div>
                     </div>
                   </CardContent>
+                </Card>
+              </div>
+            ) : activeTab === "Security & Login" ? (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <Card className="bg-dark-surface border-gold/10">
+                   <CardHeader>
+                      <CardTitle className="text-lg font-heading font-black text-white uppercase tracking-wider">Account Security</CardTitle>
+                   </CardHeader>
+                   <CardContent className="space-y-6">
+                      <div className="flex items-center justify-between p-6 rounded-2xl bg-dark-deep border border-gold/10">
+                         <div className="space-y-1">
+                            <h4 className="text-sm font-bold text-white uppercase tracking-widest">Account Password</h4>
+                            <p className="text-xs text-muted-foreground">Keep your account secure by updating your password.</p>
+                         </div>
+                         <ChangePasswordDialog>
+                            <Button className="bg-gold text-background font-black tracking-widest uppercase hover:bg-gold-light">
+                              Update Password
+                            </Button>
+                         </ChangePasswordDialog>
+                      </div>
+                   </CardContent>
                 </Card>
               </div>
             ) : (

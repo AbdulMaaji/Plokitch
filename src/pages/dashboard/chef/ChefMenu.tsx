@@ -245,9 +245,40 @@ const ChefMenu = () => {
     <DashboardLayout role="chef">
       <div className="space-y-8">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
-          <div>
-            <h1 className="text-4xl font-heading font-black text-white">Culinary Catalog</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Manage your signature offerings and inventory</p>
+          <div className="flex items-center justify-between gap-6 w-full">
+            <div>
+              <h1 className="text-4xl font-heading font-black text-white">Culinary Catalog</h1>
+              <p className="text-muted-foreground mt-1 text-sm">Manage your signature offerings and inventory</p>
+            </div>
+            <div className="flex items-center gap-4 bg-dark-surface/50 p-4 rounded-2xl border border-gold/10 backdrop-blur-md">
+              <div className="text-right">
+                <p className="text-[10px] font-black text-gold uppercase tracking-widest">Priority Listing</p>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Boost visibility in discovery</p>
+              </div>
+              <Switch 
+                checked={myVendor?.isPriority || false}
+                onCheckedChange={async (val) => {
+                  if (!myVendor) return;
+                  try {
+                    const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}`, {
+                      method: 'PATCH',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session?.session?.token}`
+                      },
+                      body: JSON.stringify({ isPriority: val })
+                    });
+                    if (res.ok) {
+                      toast.success(val ? "Priority listing enabled" : "Priority listing disabled");
+                      refreshData();
+                    }
+                  } catch (e) {
+                    toast.error("Failed to update priority status");
+                  }
+                }}
+                className="data-[state=checked]:bg-gold"
+              />
+            </div>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>

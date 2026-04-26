@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, Lock, Mail } from "lucide-react";
@@ -107,18 +108,14 @@ const Login = () => {
                   <Label htmlFor="password" title="password" className="text-sm font-medium text-foreground/90">Password</Label>
                   <Link to="/auth/forgot-password" title="forgot password" className="text-xs text-gold hover:underline">Forgot password?</Link>
                 </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    placeholder="••••••••" 
-                    required 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 bg-dark-deep/50 border-gold/10 focus:border-gold transition-colors"
-                  />
-                </div>
+                <PasswordInput 
+                  id="password" 
+                  placeholder="••••••••" 
+                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-dark-deep/50 border-gold/10 focus:border-gold transition-colors"
+                />
               </div>
               <Button 
                 type="submit" 

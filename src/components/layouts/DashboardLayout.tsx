@@ -53,7 +53,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => {
   const { data: session } = authClient.useSession();
-  const userRole = session?.user?.role as "chef" | "rider" | "admin" | "customer" || pageRole;
+  const userRole = (session?.user as any)?.role as "chef" | "rider" | "admin" | "customer" || pageRole;
   
   const [role, setRole] = useState(pageRole);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

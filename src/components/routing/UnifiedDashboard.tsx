@@ -27,7 +27,7 @@ import CustomerProfile from "@/pages/customer/CustomerProfile";
 
 export const DashboardHome = () => {
   const { data: session } = authClient.useSession();
-  const role = session?.user?.role;
+  const role = (session?.user as any)?.role;
   
   if (role === 'chef') return <ChefDashboard />;
   if (role === 'rider') return <RiderDashboard />;
@@ -39,7 +39,7 @@ export const DashboardHome = () => {
 
 export const DashboardOrders = () => {
   const { data: session } = authClient.useSession();
-  const role = session?.user?.role;
+  const role = (session?.user as any)?.role;
   
   if (role === 'chef') return <ChefOrders />;
   if (role === 'rider') return <ActiveDeliveries />;
@@ -51,7 +51,7 @@ export const DashboardOrders = () => {
 
 export const DashboardAnalytics = () => {
   const { data: session } = authClient.useSession();
-  const role = session?.user?.role;
+  const role = (session?.user as any)?.role;
   
   if (role === 'chef') return <ChefAnalytics />;
   if (role === 'rider') return <RiderEarnings />;
@@ -63,7 +63,7 @@ export const DashboardAnalytics = () => {
 
 export const DashboardSettings = () => {
   const { data: session } = authClient.useSession();
-  const role = session?.user?.role;
+  const role = (session?.user as any)?.role;
   
   if (role === 'chef') return <ChefSettings />;
   if (role === 'rider') return <RiderSettings />;
@@ -75,7 +75,7 @@ export const DashboardSettings = () => {
 
 export const DashboardMenu = () => {
   const { data: session } = authClient.useSession();
-  const role = session?.user?.role;
+  const role = (session?.user as any)?.role;
   
   if (role === 'chef') return <ChefMenu />;
   if (role === 'admin') return <UserManagement />; // Admins see User Management here as a fallback or handle separately
@@ -84,7 +84,7 @@ export const DashboardMenu = () => {
 
 export const DashboardUsers = () => {
   const { data: session } = authClient.useSession();
-  const role = session?.user?.role;
+  const role = (session?.user as any)?.role;
   
   if (role === 'admin') return <UserManagement />;
   return <Navigate to="/dashboard" replace />;

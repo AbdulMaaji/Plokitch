@@ -37,6 +37,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { uploadImage } from "@/lib/upload";
+import { ChangePasswordDialog } from "@/components/auth/ChangePasswordDialog";
 
 const CustomerProfile = () => {
   const { data: session, isPending: isSessionPending } = useSession();
@@ -531,6 +532,7 @@ const CustomerProfile = () => {
                       <CreditCard size={18} />
                       Payment Methods
                    </Button>
+                   <ChangePasswordDialog />
                    <Button variant="ghost" className="w-full justify-start gap-4 h-14 text-muted-foreground hover:text-gold hover:bg-gold/5 font-bold uppercase tracking-widest text-[10px]">
                       <Bell size={18} />
                       Notification Settings

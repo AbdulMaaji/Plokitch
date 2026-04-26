@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useChefData } from "@/hooks/useChefData";
 import { uploadImage } from "@/lib/upload";
+import { ChangePasswordDialog } from "@/components/auth/ChangePasswordDialog";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -450,7 +451,28 @@ const ChefSettings = () => {
                     </div>
                  </CardContent>
               </Card>
-            ) : (
+            ) : activeTab === "Security" ? (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <Card className="bg-dark-surface border-gold/10">
+                   <CardHeader>
+                      <CardTitle className="text-xl font-heading font-black text-white uppercase tracking-wider">Security & Authentication</CardTitle>
+                   </CardHeader>
+                   <CardContent className="space-y-6">
+                      <div className="flex items-center justify-between p-6 rounded-2xl bg-dark-deep border border-gold/10">
+                         <div className="space-y-1">
+                            <h4 className="text-sm font-bold text-white uppercase tracking-widest">Account Password</h4>
+                            <p className="text-xs text-muted-foreground">Update your password to keep your account secure.</p>
+                         </div>
+                         <ChangePasswordDialog>
+                            <Button className="bg-gold text-background font-black tracking-widest uppercase hover:bg-gold-light">
+                              Change Password
+                            </Button>
+                         </ChangePasswordDialog>
+                      </div>
+                   </CardContent>
+                </Card>
+              </div>
+            ) : activeTab === "Personal Profile" ? (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <Card className="bg-dark-surface border-gold/10">
                    <CardHeader>
@@ -514,7 +536,15 @@ const ChefSettings = () => {
                    </CardContent>
                 </Card>
               </div>
-            )}
+            ) : activeTab === "Payout Methods" ? (
+              <Card className="bg-dark-surface border-gold/10 p-20 flex flex-col items-center justify-center text-center animate-in fade-in duration-500">
+                <div className="w-16 h-16 rounded-full bg-gold/5 border border-gold/10 flex items-center justify-center text-gold/20 mb-6">
+                  <CreditCard size={32} />
+                </div>
+                <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">{activeTab}</h3>
+                <p className="text-xs text-muted-foreground max-w-[250px] mx-auto">Our financial infrastructure is being optimized for faster, real-time settlements.</p>
+              </Card>
+            ) : null}
           </div>
         </div>
       </div>

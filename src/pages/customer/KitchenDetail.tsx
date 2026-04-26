@@ -22,6 +22,7 @@ import DishDetailOverlay from "@/components/customer/DishDetailOverlay";
 import { DISH_CATEGORIES } from "@/constants/categories";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { Helmet } from "react-helmet-async";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -101,12 +102,20 @@ const KitchenDetail = () => {
         <h2 className="text-2xl font-black text-white uppercase tracking-widest">Atelier Not Found</h2>
         <Button onClick={() => navigate('/explore')} variant="link" className="text-gold mt-4">Return to Discovery</Button>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background pt-8 px-4 md:px-8 pb-20">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background pb-32">
+      <Helmet>
+        <title>{kitchenData.name} - PlotKitch</title>
+        <meta name="description" content={kitchenData.bio || `Order delicious ${kitchenData.cuisine} from ${kitchenData.name} on PlotKitch.`} />
+        <meta property="og:title" content={`${kitchenData.name} - PlotKitch`} />
+        <meta property="og:description" content={kitchenData.bio || `Order delicious ${kitchenData.cuisine} from ${kitchenData.name} on PlotKitch.`} />
+        {kitchenData.image && <meta property="og:image" content={kitchenData.image} />}
+      </Helmet>
+      
+      <div className="max-w-7xl mx-auto space-y-8 pt-8 px-4 md:px-8">
         {/* Navigation & Actions */}
         <div className="flex items-center justify-between">
           <Button 

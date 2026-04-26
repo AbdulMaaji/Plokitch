@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, Mail, User, ChefHat, Bike, ShieldCheck } from "lucide-react";
@@ -22,6 +23,7 @@ const Register = () => {
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     restaurantName: "",
     location: "",
     vehicleType: "",
@@ -29,6 +31,12 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match. Please try again.");
+      return;
+    }
+
     setIsLoading(true);
 
     const name = `${formData.firstName} ${formData.lastName}`.trim();
@@ -244,17 +252,29 @@ const Register = () => {
                   </div>
                 )}
 
-                <div className="space-y-2 pt-2">
-                  <Label htmlFor="password" className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Password</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    placeholder="••••••••" 
-                    required 
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    className="bg-dark-deep/50 border-gold/10 focus:border-gold text-white" 
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Password</Label>
+                    <PasswordInput 
+                      id="password" 
+                      placeholder="••••••••" 
+                      required 
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      className="bg-dark-deep/50 border-gold/10 focus:border-gold text-white" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Confirm Password</Label>
+                    <PasswordInput 
+                      id="confirmPassword" 
+                      placeholder="••••••••" 
+                      required 
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                      className="bg-dark-deep/50 border-gold/10 focus:border-gold text-white" 
+                    />
+                  </div>
                 </div>
 
                 <Button 

@@ -12,6 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { useChefData } from "@/hooks/useChefData";
 import { useMemo } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
 
 const ChefAnalytics = () => {
   const { activeOrders, loading } = useChefData();
@@ -51,7 +60,11 @@ const ChefAnalytics = () => {
 
     // Mocking revenue history based on total revenue for visual effect
     const base = revenue / 12;
-    const revenueHistory = Array.from({ length: 12 }, () => Math.max(10, Math.min(100, Math.random() * 100)));
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const revenueHistory = months.map(month => ({
+      name: month,
+      revenue: Math.round(Math.max(100, Math.random() * 5000))
+    }));
 
     return {
       revenue,
@@ -111,17 +124,33 @@ const ChefAnalytics = () => {
             <CardHeader>
               <CardTitle className="text-xl font-heading font-black text-white uppercase tracking-wider">Revenue Stream</CardTitle>
             </CardHeader>
-            <CardContent>
-              {/* Mock Chart Area */}
-              <div className="absolute inset-x-0 bottom-0 top-24 px-6 flex items-end gap-2 pb-6">
-                {analytics.revenueHistory.map((h, i) => (
-                  <div key={i} className="flex-1 bg-gold/10 hover:bg-gold/40 transition-all rounded-t-lg group relative" style={{ height: `${h}%` }}>
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-background text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      ${Math.round(h * 10)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <CardContent className="h-[250px] w-full mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.revenueHistory} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#888" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false} 
+                  />
+                  <YAxis 
+                    stroke="#888" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={(value) => `₦${value}`}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(255, 215, 0, 0.05)' }}
+                    contentStyle={{ backgroundColor: '#111', borderColor: '#333', borderRadius: '8px', color: '#fff' }}
+                    itemStyle={{ color: '#FFD700', fontWeight: 'bold' }}
+                    formatter={(value) => [`₦${value}`, 'Revenue']}
+                  />
+                  <Bar dataKey="revenue" fill="#FFD700" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
