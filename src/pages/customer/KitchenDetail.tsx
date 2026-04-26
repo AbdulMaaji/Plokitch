@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -90,28 +89,24 @@ const KitchenDetail = () => {
 
   if (loading) {
     return (
-      <DashboardLayout role="customer">
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
-        </div>
-      </DashboardLayout>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+      </div>
     );
   }
 
   if (!kitchenData) {
     return (
-      <DashboardLayout role="customer">
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-black text-white uppercase tracking-widest">Atelier Not Found</h2>
-          <Button onClick={() => navigate('/explore')} variant="link" className="text-gold mt-4">Return to Discovery</Button>
-        </div>
-      </DashboardLayout>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-black text-white uppercase tracking-widest">Atelier Not Found</h2>
+        <Button onClick={() => navigate('/explore')} variant="link" className="text-gold mt-4">Return to Discovery</Button>
+      </div>
     )
   }
 
   return (
-    <DashboardLayout role="customer">
-      <div className="space-y-8 pb-20">
+    <div className="min-h-screen bg-background pt-8 px-4 md:px-8 pb-20">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Navigation & Actions */}
         <div className="flex items-center justify-between">
           <Button 
@@ -324,7 +319,7 @@ const KitchenDetail = () => {
         dish={selectedDish} 
         onClose={() => setSelectedDish(null)} 
       />
-    </DashboardLayout>
+    </div>
   );
 };
 

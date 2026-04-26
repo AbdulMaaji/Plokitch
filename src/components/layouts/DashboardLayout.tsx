@@ -88,24 +88,24 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
 
   const menuItems = {
     chef: [
-      { icon: LayoutDashboard, label: "Overview", href: "/dashboard/chef" },
-      { icon: ShoppingBag, label: "Orders", href: "/dashboard/chef/orders" },
-      { icon: Utensils, label: "My Menu", href: "/dashboard/chef/menu" },
-      { icon: PieChart, label: "Analytics", href: "/dashboard/chef/analytics" },
-      { icon: Settings, label: "Settings", href: "/dashboard/chef/settings" },
+      { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+      { icon: ShoppingBag, label: "Orders", href: "/dashboard/orders" },
+      { icon: Utensils, label: "My Menu", href: "/dashboard/menu" },
+      { icon: PieChart, label: "Analytics", href: "/dashboard/analytics" },
+      { icon: Settings, label: "Settings", href: "/dashboard/settings" },
     ],
     rider: [
-      { icon: LayoutDashboard, label: "Available Deliveries", href: "/dashboard/rider" },
-      { icon: Bike, label: "My Deliveries", href: "/dashboard/rider/active" },
-      { icon: PieChart, label: "Earnings", href: "/dashboard/rider/earnings" },
-      { icon: Settings, label: "Settings", href: "/dashboard/rider/settings" },
+      { icon: LayoutDashboard, label: "Available Deliveries", href: "/dashboard" },
+      { icon: Bike, label: "My Deliveries", href: "/dashboard/orders" },
+      { icon: PieChart, label: "Earnings", href: "/dashboard/analytics" },
+      { icon: Settings, label: "Settings", href: "/dashboard/settings" },
     ],
     admin: [
-      { icon: LayoutDashboard, label: "System Status", href: "/admin" },
-      { icon: Users, label: "User Management", href: "/admin/users" },
-      { icon: ShoppingBag, label: "Order Overview", href: "/admin/orders" },
-      { icon: PieChart, label: "Global Analytics", href: "/admin/analytics" },
-      { icon: Settings, label: "Platform Settings", href: "/admin/settings" },
+      { icon: LayoutDashboard, label: "System Status", href: "/dashboard" },
+      { icon: Users, label: "User Management", href: "/dashboard/users" },
+      { icon: ShoppingBag, label: "Order Overview", href: "/dashboard/orders" },
+      { icon: PieChart, label: "Global Analytics", href: "/dashboard/analytics" },
+      { icon: Settings, label: "Platform Settings", href: "/dashboard/settings" },
     ],
     customer: [
       { icon: Sparkles, label: "Discover", href: "/explore" },
@@ -122,9 +122,9 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
     setRole(newRole);
     // In a real app we'd navigate, for demo we just switch UI
     const paths = {
-      chef: "/dashboard/chef",
-      rider: "/dashboard/rider",
-      admin: "/admin",
+      chef: "/dashboard",
+      rider: "/dashboard",
+      admin: "/dashboard",
       customer: "/customer/kitchens"
     };
     navigate(paths[newRole]);

@@ -8,20 +8,14 @@ import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/auth/Login.tsx";
 import Register from "./pages/auth/Register.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
-import ChefDashboard from "./pages/dashboard/chef/ChefDashboard.tsx";
-import ChefOrders from "./pages/dashboard/chef/ChefOrders.tsx";
-import ChefMenu from "./pages/dashboard/chef/ChefMenu.tsx";
-import ChefAnalytics from "./pages/dashboard/chef/ChefAnalytics.tsx";
-import ChefSettings from "./pages/dashboard/chef/ChefSettings.tsx";
-import RiderDashboard from "./pages/dashboard/rider/RiderDashboard.tsx";
-import ActiveDeliveries from "./pages/dashboard/rider/ActiveDeliveries.tsx";
-import RiderEarnings from "./pages/dashboard/rider/RiderEarnings.tsx";
-import RiderSettings from "./pages/dashboard/rider/RiderSettings.tsx";
-import AdminPanel from "./pages/admin/AdminPanel.tsx";
-import UserManagement from "./pages/admin/UserManagement.tsx";
-import OrderOverview from "./pages/admin/OrderOverview.tsx";
-import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
-import AdminSettings from "./pages/admin/AdminSettings.tsx";
+import {
+  DashboardHome,
+  DashboardOrders,
+  DashboardMenu,
+  DashboardAnalytics,
+  DashboardSettings,
+  DashboardUsers
+} from "./components/routing/UnifiedDashboard.tsx";
 import Kitchens from "./pages/customer/Kitchens.tsx";
 import Restaurants from "./pages/customer/Restaurants.tsx";
 import KitchenDetail from "./pages/customer/KitchenDetail.tsx";
@@ -54,25 +48,13 @@ const App = () => (
           <Route path="/dishes" element={<Dishes />} />
           <Route path="/restaurants" element={<Restaurants />} />
           
-          {/* Chef Routes (auth-protected) */}
-          <Route path="/dashboard/chef" element={<ProtectedRoute requiredRole="chef"><ChefDashboard /></ProtectedRoute>} />
-          <Route path="/dashboard/chef/orders" element={<ProtectedRoute requiredRole="chef"><ChefOrders /></ProtectedRoute>} />
-          <Route path="/dashboard/chef/menu" element={<ProtectedRoute requiredRole="chef"><ChefMenu /></ProtectedRoute>} />
-          <Route path="/dashboard/chef/analytics" element={<ProtectedRoute requiredRole="chef"><ChefAnalytics /></ProtectedRoute>} />
-          <Route path="/dashboard/chef/settings" element={<ProtectedRoute requiredRole="chef"><ChefSettings /></ProtectedRoute>} />
-          
-          {/* Rider Routes (auth-protected) */}
-          <Route path="/dashboard/rider" element={<ProtectedRoute requiredRole="rider"><RiderDashboard /></ProtectedRoute>} />
-          <Route path="/dashboard/rider/active" element={<ProtectedRoute requiredRole="rider"><ActiveDeliveries /></ProtectedRoute>} />
-          <Route path="/dashboard/rider/earnings" element={<ProtectedRoute requiredRole="rider"><RiderEarnings /></ProtectedRoute>} />
-          <Route path="/dashboard/rider/settings" element={<ProtectedRoute requiredRole="rider"><RiderSettings /></ProtectedRoute>} />
-          
-          {/* Admin Routes (auth-protected) */}
-          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminPanel /></ProtectedRoute>} />
-          <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
-          <Route path="/admin/orders" element={<ProtectedRoute requiredRole="admin"><OrderOverview /></ProtectedRoute>} />
-          <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><AdminAnalytics /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
+          {/* Unified Dashboard Routes (auth-protected) */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+          <Route path="/dashboard/orders" element={<ProtectedRoute><DashboardOrders /></ProtectedRoute>} />
+          <Route path="/dashboard/menu" element={<ProtectedRoute><DashboardMenu /></ProtectedRoute>} />
+          <Route path="/dashboard/analytics" element={<ProtectedRoute><DashboardAnalytics /></ProtectedRoute>} />
+          <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardSettings /></ProtectedRoute>} />
+          <Route path="/dashboard/users" element={<ProtectedRoute><DashboardUsers /></ProtectedRoute>} />
           
           {/* Customer Routes (auth-protected) */}
           <Route path="/customer" element={<Navigate to="/customer/kitchens" replace />} />

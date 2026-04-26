@@ -10,11 +10,60 @@ import {
   CircleDollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useChefData } from "@/hooks/useChefData";
+import { useMemo } from "react";
 
 const ChefAnalytics = () => {
+  const { activeOrders, loading } = useChefData();
+
+  const analytics = useMemo(() => {
+    if (!activeOrders || activeOrders.length === 0) {
+      return {
+        revenue: 0,
+        totalOrders: 0,
+        popularItems: [],
+        revenueHistory: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // Mock flat history
+      };
+    }
+
+    const totalOrders = activeOrders.length;
+    const revenue = activeOrders.reduce((acc, order) => acc + Number(order.totalAmount || 0), 0);
+
+    const itemCounts: Record<string, { orders: number, revenue: number }> = {};
+    activeOrders.forEach(order => {
+      order.items.forEach((item: any) => {
+        if (!itemCounts[item.name]) {
+          itemCounts[item.name] = { orders: 0, revenue: 0 };
+        }
+        itemCounts[item.name].orders += item.quantity;
+        itemCounts[item.name].revenue += (item.price * item.quantity);
+      });
+    });
+
+    const popularItems = Object.entries(itemCounts)
+      .map(([name, data]) => ({
+        name,
+        orders: data.orders,
+        revenue: `₦${data.revenue.toLocaleString()}`
+      }))
+      .sort((a, b) => b.orders - a.orders)
+      .slice(0, 4);
+
+    // Mocking revenue history based on total revenue for visual effect
+    const base = revenue / 12;
+    const revenueHistory = Array.from({ length: 12 }, () => Math.max(10, Math.min(100, Math.random() * 100)));
+
+    return {
+      revenue,
+      totalOrders,
+      popularItems,
+      revenueHistory
+    };
+  }, [activeOrders]);
+
   const stats = [
-    { title: "Revenue", value: "₦4,285.00", trend: "+12.5%", pos: true, icon: CircleDollarSign },
-    { title: "Total Orders", value: "124", trend: "+5.2%", pos: true, icon: ShoppingBag },
+    { title: "Revenue", value: `₦${analytics.revenue.toLocaleString()}`, trend: "+12.5%", pos: true, icon: CircleDollarSign },
+    { title: "Total Orders", value: analytics.totalOrders.toString(), trend: "+5.2%", pos: true, icon: ShoppingBag },
     { title: "Customer Return", value: "68%", trend: "-2.1%", pos: false, icon: Users },
     { title: "Avg. Prep Time", value: "18m", trend: "-4m", pos: true, icon: Clock },
   ];
@@ -65,10 +114,10 @@ const ChefAnalytics = () => {
             <CardContent>
               {/* Mock Chart Area */}
               <div className="absolute inset-x-0 bottom-0 top-24 px-6 flex items-end gap-2 pb-6">
-                {[40, 60, 45, 80, 55, 90, 70, 85, 60, 95, 80, 100].map((h, i) => (
+                {analytics.revenueHistory.map((h, i) => (
                   <div key={i} className="flex-1 bg-gold/10 hover:bg-gold/40 transition-all rounded-t-lg group relative" style={{ height: `${h}%` }}>
                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-background text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      ${h * 10}
+                      ${Math.round(h * 10)}
                     </div>
                   </div>
                 ))}
@@ -81,12 +130,7 @@ const ChefAnalytics = () => {
               <CardTitle className="text-xl font-heading font-black text-white uppercase tracking-wider">Popular Items</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {[
-                { name: "Truffle Salmon", orders: 48, revenue: "₦2,160" },
-                { name: "Wild Risotto", orders: 32, revenue: "₦1,024" },
-                { name: "Lava Cake", orders: 24, revenue: "₦432" },
-                { name: "Artisan Bread", orders: 20, revenue: "₦240" },
-              ].map((item) => (
+              {analytics.popularItems.length > 0 ? analytics.popularItems.map((item) => (
                 <div key={item.name} className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gold/5 border border-gold/10 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-background transition-all">
@@ -99,7 +143,11 @@ const ChefAnalytics = () => {
                   </div>
                   <p className="text-sm font-black text-gold">{item.revenue}</p>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No orders yet to calculate popular items.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
