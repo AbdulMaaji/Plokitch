@@ -149,7 +149,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
                     className="p-0 h-auto text-gold text-xs font-black uppercase tracking-widest flex gap-2 items-center"
                     onClick={() => {
                       onClose();
-                      navigate(`/customer/kitchens/${dish.chefSlug || dish.chefId || dish.vendorId}`);
+                      navigate(`/${dish.chefSlug || dish.chefId || dish.vendorId}`);
                     }}
                    >
                       Visit the Atelier <ChevronRight size={14} />

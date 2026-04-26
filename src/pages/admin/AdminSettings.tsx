@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { ChangePasswordDialog } from "@/components/auth/ChangePasswordDialog";
 
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState("General Settings");
@@ -138,6 +139,30 @@ const AdminSettings = () => {
                   </div>
                 </CardContent>
               </Card>
+            ) : activeTab === "Access Control" ? (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <Card className="bg-dark-surface border-gold/10">
+                   <CardHeader>
+                      <CardTitle className="text-lg font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
+                         <Shield size={18} className="text-gold" />
+                         Account Security
+                      </CardTitle>
+                   </CardHeader>
+                   <CardContent className="space-y-6">
+                      <div className="flex items-center justify-between p-6 rounded-2xl bg-dark-deep border border-gold/10">
+                         <div className="space-y-1">
+                            <h4 className="text-sm font-black text-white uppercase tracking-widest">Admin Password</h4>
+                            <p className="text-[10px] text-muted-foreground font-medium">Rotate your master password to maintain platform security.</p>
+                         </div>
+                         <ChangePasswordDialog>
+                            <Button className="bg-gold hover:bg-gold-light text-background font-black tracking-widest uppercase">
+                              Change Password
+                            </Button>
+                         </ChangePasswordDialog>
+                      </div>
+                   </CardContent>
+                </Card>
+              </div>
             ) : (
               <Card className="bg-dark-surface border-gold/10 p-20 flex flex-col items-center justify-center text-center animate-in fade-in duration-500">
                 <div className="w-20 h-20 rounded-full bg-gold/5 border border-gold/10 flex items-center justify-center text-gold/20 mb-6">
