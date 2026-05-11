@@ -44,7 +44,7 @@ export default function LoginPage() {
         setError("Invalid admin key. Please try again.")
         setIsLoading(false)
       } else {
-        router.push("/dashboard")
+        router.push("/admin/dashboard")
         router.refresh()
       }
     } catch (e) {

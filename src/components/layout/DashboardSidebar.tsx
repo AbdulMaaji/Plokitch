@@ -20,17 +20,17 @@ import {
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Orders", icon: ShoppingBag, href: "/dashboard/orders" },
-  { label: "Vendors", icon: Store, href: "/dashboard/vendors" },
-  { label: "Riders", icon: Bike, href: "/dashboard/riders" },
-  { label: "Dispatch", icon: Zap, href: "/dashboard/dispatch" },
-  { label: "Payments", icon: CreditCard, href: "/dashboard/payments" },
-  { label: "Customers", icon: Users, href: "/dashboard/customers" },
-  { label: "Complaints", icon: MessageSquareWarning, href: "/dashboard/complaints" },
-  { label: "Notifications", icon: Bell, href: "/dashboard/notifications" },
-  { label: "Analytics", icon: BarChart3, href: "/dashboard/analytics" },
-  { label: "Settings", icon: Settings, href: "/dashboard/settings" },
+  { label: "Overview", icon: LayoutDashboard, href: "/admin/dashboard" },
+  { label: "Orders", icon: ShoppingBag, href: "/admin/dashboard/orders" },
+  { label: "Vendors", icon: Store, href: "/admin/dashboard/vendors" },
+  { label: "Riders", icon: Bike, href: "/admin/dashboard/riders" },
+  { label: "Dispatch", icon: Zap, href: "/admin/dashboard/dispatch" },
+  { label: "Payments", icon: CreditCard, href: "/admin/dashboard/payments" },
+  { label: "Customers", icon: Users, href: "/admin/dashboard/customers" },
+  { label: "Complaints", icon: MessageSquareWarning, href: "/admin/dashboard/complaints" },
+  { label: "Notifications", icon: Bell, href: "/admin/dashboard/notifications" },
+  { label: "Analytics", icon: BarChart3, href: "/admin/dashboard/analytics" },
+  { label: "Settings", icon: Settings, href: "/admin/dashboard/settings" },
 ]
 
 export function DashboardSidebar() {
@@ -40,7 +40,7 @@ export function DashboardSidebar() {
     <div className="w-64 h-screen bg-navy flex flex-col border-r border-divider fixed left-0 top-0 z-30">
       {/* Logo */}
       <div className="p-8 pb-12">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/admin/dashboard" className="flex items-center gap-2">
           <span className="font-bold text-[24px] text-white">PLO</span>
           <span className="font-bold text-[24px] text-action">KITCH</span>
         </Link>
