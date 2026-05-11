@@ -15,7 +15,11 @@ import {
   Bell, 
   BarChart3, 
   Settings,
-  ChevronRight
+  ChevronRight,
+  Headphones,
+  Terminal,
+  Activity as ActivityIcon,
+  History as HistoryIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -28,7 +32,10 @@ const NAV_ITEMS = [
   { label: "Payments", icon: CreditCard, href: "/admin/dashboard/payments" },
   { label: "Customers", icon: Users, href: "/admin/dashboard/customers" },
   { label: "Complaints", icon: MessageSquareWarning, href: "/admin/dashboard/complaints" },
+  { label: "Support", icon: Headphones, href: "/admin/dashboard/support" },
   { label: "Notifications", icon: Bell, href: "/admin/dashboard/notifications" },
+  { label: "System", icon: ActivityIcon, href: "/admin/dashboard/system" },
+  { label: "Activity", icon: HistoryIcon, href: "/admin/dashboard/activity" },
   { label: "Analytics", icon: BarChart3, href: "/admin/dashboard/analytics" },
   { label: "Settings", icon: Settings, href: "/admin/dashboard/settings" },
 ]
