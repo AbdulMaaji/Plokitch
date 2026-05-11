@@ -2,9 +2,9 @@
   "name": "plokitch-monorepo",
   "private": true,
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint"
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
   },
   "devDependencies": {
     "turbo": "latest"
@@ -12,5 +12,9 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@11.0.9"
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
