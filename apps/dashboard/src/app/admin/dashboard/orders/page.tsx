@@ -141,39 +141,49 @@ export default function OrdersPage() {
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-h1 font-bold text-navy">Order Management</h1>
-          <p className="text-body text-subtle">Monitor and manage all platform orders in real-time.</p>
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-3xl font-heading font-bold text-navy tracking-tight">Order Management</h1>
+          <p className="text-[15px] font-medium text-subtle/80">Monitor and manage all platform orders in real-time.</p>
         </div>
-        <Button className="bg-navy hover:bg-navy/90 text-white flex items-center gap-2">
-          <Download size={18} /> EXPORT CSV
+        <Button className="bg-navy hover:bg-navy/90 text-white font-heading font-semibold text-[13px] tracking-wide px-6 py-6 shadow-sm">
+          <Download size={18} className="mr-2" /> EXPORT CSV
         </Button>
       </div>
 
-      {/* Filters & Search */}
-      <div className="bg-white p-6 rounded-card border border-divider shadow-sm flex flex-col md:flex-row justify-between gap-4">
-        <div className="flex flex-col md:flex-row gap-4 flex-1">
-          <SearchBar placeholder="Search by ID, customer, or vendor..." className="max-w-md w-full" />
-          <FilterDropdown 
-            placeholder="Filter by Status" 
-            options={[
-              { label: "All Statuses", value: "all" },
-              { label: "Live Orders", value: "LIVE" },
-              { label: "Completed", value: "COMPLETED" },
-              { label: "Delayed", value: "DELAYED" },
-              { label: "Cancelled", value: "CANCELLED" },
-            ]} 
-          />
-          <FilterDropdown 
-            placeholder="Select Vendor" 
-            options={[
-              { label: "All Vendors", value: "all" },
-              { label: "Pizza Palace", value: "pizza" },
-              { label: "Sushi Bar", value: "sushi" },
-            ]} 
-          />
+      <div className="bg-white p-8 rounded-card border border-divider shadow-sm flex flex-col md:flex-row justify-between items-end gap-6">
+        <div className="flex flex-col md:flex-row gap-6 flex-1 w-full">
+          <div className="flex-1 max-w-md">
+            <p className="text-[11px] font-bold text-subtle/60 uppercase tracking-widest mb-2 px-1">Search Orders</p>
+            <SearchBar placeholder="Search by ID, customer..." className="h-12 rounded-xl" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-subtle/60 uppercase tracking-widest mb-2 px-1">Status</p>
+            <FilterDropdown 
+              placeholder="Filter by Status" 
+              options={[
+                { label: "All Statuses", value: "all" },
+                { label: "Live Orders", value: "LIVE" },
+                { label: "Completed", value: "COMPLETED" },
+                { label: "Delayed", value: "DELAYED" },
+                { label: "Cancelled", value: "CANCELLED" },
+              ]} 
+              className="h-12 rounded-xl"
+            />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-subtle/60 uppercase tracking-widest mb-2 px-1">Vendor</p>
+            <FilterDropdown 
+              placeholder="Select Vendor" 
+              options={[
+                { label: "All Vendors", value: "all" },
+                { label: "Pizza Palace", value: "pizza" },
+                { label: "Sushi Bar", value: "sushi" },
+              ]} 
+              className="h-12 rounded-xl"
+            />
+          </div>
         </div>
-        <Button variant="outline" className="flex items-center gap-2 h-12 px-6">
+        <Button variant="outline" className="flex items-center gap-2 h-12 px-8 font-heading font-semibold text-[13px] tracking-wide border-divider hover:bg-muted/30 rounded-xl">
           <Filter size={18} /> MORE FILTERS
         </Button>
       </div>
