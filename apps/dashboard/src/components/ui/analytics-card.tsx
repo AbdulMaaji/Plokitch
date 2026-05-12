@@ -29,8 +29,8 @@ export function AnalyticsCard({
       className
     )}>
       <div className="flex justify-between items-start">
-        <div className="p-2 rounded-lg bg-beige">
-          <Icon size={20} className="text-navy" />
+        <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/10">
+          <Icon size={18} className="text-primary" />
         </div>
         {trend && (
           <div className={cn(
@@ -43,10 +43,11 @@ export function AnalyticsCard({
         )}
       </div>
       <div>
-        <p className="text-caption font-bold text-subtle uppercase tracking-wider">{title}</p>
-        <h3 className="text-[28px] font-bold text-navy mt-1 leading-tight">{value}</h3>
+      <div>
+        <p className="text-[11px] font-bold text-subtle/70 uppercase tracking-[0.15em] mb-1">{title}</p>
+        <h3 className="text-[30px] font-heading font-semibold text-navy leading-tight tracking-tight">{value}</h3>
         {description && (
-          <p className="text-caption text-subtle mt-1">{description}</p>
+          <p className="text-[12px] font-medium text-subtle/80 mt-1">{description}</p>
         )}
       </div>
     </div>

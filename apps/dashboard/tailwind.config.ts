@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        heading: ['var(--font-heading)', 'serif'],
+        body: ['var(--font-body)', 'sans-serif'],
+      },
   		colors: {
   			background: 'var(--background)',
   			foreground: 'var(--foreground)',
@@ -16,12 +20,16 @@ const config: Config = {
   				DEFAULT: '#001a40',
   				50: '#f0f4f8',
   			},
+        primary: {
+          DEFAULT: '#d4af37', // Synced Gold
+          foreground: '#001a40',
+        },
   			action: {
-  				DEFAULT: '#ff6b00',
-  				hover: '#e65a00',
+  				DEFAULT: '#d4af37',
+  				hover: '#c5a028',
   			},
   			gold: {
-  				DEFAULT: '#ffc870',
+  				DEFAULT: '#d4af37',
   			},
   			beige: {
   				DEFAULT: '#f4f3ea',

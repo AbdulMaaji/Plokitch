@@ -17,9 +17,9 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-h1 font-bold text-navy">Executive Overview</h1>
-        <p className="text-body text-subtle">Real-time operational health and platform performance metrics.</p>
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-3xl font-heading font-bold text-navy tracking-tight">Executive Overview</h1>
+        <p className="text-[15px] font-medium text-subtle/80">Real-time operational health and platform performance metrics.</p>
       </div>
 
       {/* Stats Grid */}
@@ -57,40 +57,40 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Analytics Area */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          <div className="bg-white p-8 rounded-card border border-divider shadow-card">
+          <div className="bg-white p-8 rounded-card border border-divider shadow-card transition-all hover:shadow-lg">
             <RevenueChart className="w-full h-full" />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-card border border-divider shadow-card flex flex-col gap-4">
-              <h3 className="text-body font-bold text-navy">Dispatch Performance</h3>
+              <h3 className="text-[16px] font-heading font-bold text-navy">Dispatch Performance</h3>
               <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center text-caption font-medium">
+                <div className="flex justify-between items-center text-[12px] font-semibold uppercase tracking-wider">
                   <span className="text-subtle">Pickup Efficiency</span>
                   <span className="text-navy">94%</span>
                 </div>
-                <div className="w-full h-2 bg-beige rounded-full overflow-hidden">
-                  <div className="h-full bg-action w-[94%]" />
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-primary w-[94%] shadow-[0_0_8px_rgba(212,175,55,0.3)]" />
                 </div>
-                <div className="flex justify-between items-center text-caption font-medium mt-2">
+                <div className="flex justify-between items-center text-[12px] font-semibold uppercase tracking-wider mt-2">
                   <span className="text-subtle">Delivery Success</span>
                   <span className="text-navy">98.2%</span>
                 </div>
-                <div className="w-full h-2 bg-beige rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-green-500 w-[98.2%]" />
                 </div>
               </div>
             </div>
             
             <div className="bg-white p-6 rounded-card border border-divider shadow-card flex flex-col gap-4">
-              <h3 className="text-body font-bold text-navy">Vendor Health</h3>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full border-4 border-action border-r-transparent flex items-center justify-center">
-                  <span className="text-caption font-bold text-navy">86%</span>
+              <h3 className="text-[16px] font-heading font-bold text-navy">Vendor Health</h3>
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-full border-[3px] border-primary border-r-transparent flex items-center justify-center shadow-sm">
+                  <span className="text-[14px] font-bold text-navy">86%</span>
                 </div>
                 <div>
-                  <p className="text-caption font-bold text-navy">Active Vendors</p>
-                  <p className="text-[11px] text-subtle">242 verified and online</p>
+                  <p className="text-[14px] font-bold text-navy leading-tight">Active Vendors</p>
+                  <p className="text-[11px] font-medium text-subtle mt-0.5">242 verified and online</p>
                 </div>
               </div>
             </div>

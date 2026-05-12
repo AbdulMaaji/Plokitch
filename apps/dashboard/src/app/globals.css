@@ -4,25 +4,26 @@
 
 @layer base {
   :root {
-    --background: #f4f3ea;
-    --foreground: #001a40;
-    --card: #ffffff;
-    --card-foreground: #001a40;
-    --popover: #ffffff;
-    --popover-foreground: #001a40;
-    --primary: #ff6b00;
-    --primary-foreground: #ffffff;
-    --secondary: #001a40;
-    --secondary-foreground: #ffffff;
-    --muted: #f4f3ea;
-    --muted-foreground: #66768c;
-    --accent: #ff6b00;
-    --accent-foreground: #ffffff;
-    --destructive: #ff0000;
-    --destructive-foreground: #ffffff;
-    --border: rgba(0, 26, 64, 0.08);
-    --input: rgba(0, 26, 64, 0.08);
-    --ring: #ff6b00;
+    --background: 45 30% 94%; /* Light beige matching brand feel */
+    --foreground: 217 100% 13%; /* Navy #001a40 */
+    --card: 0 0% 100%;
+    --card-foreground: 217 100% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 100% 13%;
+    --primary: 30 52% 72%; /* Web Gold */
+    --primary-foreground: 217 100% 13%;
+    --secondary: 217 100% 13%;
+    --secondary-foreground: 45 30% 94%;
+    --muted: 45 30% 92%;
+    --muted-foreground: 217 20% 45%;
+    --accent: 30 52% 72%;
+    --accent-foreground: 217 100% 13%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 100% 13% / 0.08;
+    --input: 217 100% 13% / 0.08;
+    --ring: 30 52% 72%;
+    --radius: 0.5rem;
   }
 }
 
@@ -35,23 +36,20 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-navy;
+    @apply font-heading font-semibold text-navy tracking-tight;
   }
 }
 
 @layer components {
   .glass-morphism {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 2px 12px rgba(0, 26, 64, 0.14);
+    @apply bg-white/80 backdrop-blur-xl border border-white/40 shadow-glass;
   }
 
   .nav-link-active {
-    @apply flex items-center gap-3 px-4 py-3 rounded-r-lg bg-beige border-l-[3px] border-action text-navy;
+    @apply flex items-center gap-3 px-4 py-3 rounded-r-xl bg-primary/10 border-l-[3px] border-primary text-navy font-medium transition-all;
   }
 
   .nav-link-inactive {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-subtle hover:bg-beige hover:text-navy transition-all duration-150;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-subtle hover:bg-muted hover:text-navy transition-all duration-200;
   }
 }

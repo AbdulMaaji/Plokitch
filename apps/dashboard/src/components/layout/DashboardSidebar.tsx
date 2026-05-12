@@ -47,9 +47,9 @@ export function DashboardSidebar() {
     <div className="w-64 h-screen bg-navy flex flex-col border-r border-divider fixed left-0 top-0 z-30">
       {/* Logo */}
       <div className="p-8 pb-12">
-        <Link href="/admin/dashboard" className="flex items-center gap-2">
-          <span className="font-bold text-[24px] text-white">PLO</span>
-          <span className="font-bold text-[24px] text-action">KITCH</span>
+        <Link href="/admin/dashboard" className="flex items-center gap-1.5 tracking-tight">
+          <span className="font-heading font-bold text-[26px] text-white">PLO</span>
+          <span className="font-heading font-bold text-[26px] text-primary">KITCH</span>
         </Link>
       </div>
 
@@ -62,22 +62,25 @@ export function DashboardSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-8 py-3.5 transition-all duration-150",
+                "flex items-center gap-3 px-8 py-3.5 transition-all duration-200 relative group",
                 isActive 
-                  ? "bg-beige border-l-[3px] border-action text-navy" 
-                  : "text-white/60 hover:bg-white/5 hover:text-white"
+                  ? "bg-white/5 text-primary" 
+                  : "text-white/50 hover:bg-white/5 hover:text-white"
               )}
             >
+              {isActive && (
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary shadow-[0_0_12px_rgba(212,175,55,0.4)]" />
+              )}
               <item.icon 
-                size={20} 
+                size={18} 
                 className={cn(
                   "transition-colors",
-                  isActive ? "text-action" : "text-white/60"
+                  isActive ? "text-primary" : "text-white/40 group-hover:text-white"
                 )} 
               />
               <span className={cn(
-                "text-nav font-semibold",
-                isActive ? "text-navy" : "text-white/60"
+                "text-nav font-medium tracking-wide",
+                isActive ? "text-white" : "text-white/50 group-hover:text-white"
               )}>
                 {item.label}
               </span>
@@ -88,12 +91,12 @@ export function DashboardSidebar() {
 
       {/* Footer / Status */}
       <div className="p-6 border-t border-white/5">
-        <div className="bg-white/5 rounded-lg p-4">
+        <div className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Platform Node</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Platform Node</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-primary/80 animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
           </div>
-          <p className="text-[13px] font-semibold text-white/90">v2.0.4 - Production</p>
+          <p className="text-[12px] font-medium text-white/70">v2.0.4 - Production</p>
         </div>
       </div>
     </div>
