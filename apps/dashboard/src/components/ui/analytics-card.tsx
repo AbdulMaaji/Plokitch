@@ -43,7 +43,6 @@ export function AnalyticsCard({
         )}
       </div>
       <div>
-      <div>
         <p className="text-[11px] font-bold text-subtle/70 uppercase tracking-[0.15em] mb-1">{title}</p>
         <h3 className="text-[30px] font-heading font-semibold text-navy leading-tight tracking-tight">{value}</h3>
         {description && (
