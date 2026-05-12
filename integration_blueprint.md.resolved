@@ -1,0 +1,176 @@
+# Plokitch Unified Architecture & Integration Blueprint
+
+This document serves as the official decision plan for unifying the Plokitch Web App and Admin Dashboard into a single-source-of-truth ecosystem.
+
+---
+
+## 1. System Classification Map
+
+| Feature Area | Classification | System Ownership | Description |
+| :--- | :--- | :--- | :--- |
+| **Discovery (Search/Map)** | WEB-ONLY | Web App | Primary consumer entry point. |
+| **Ordering & Checkout** | WEB-ONLY | Web App | Transaction initiation layer. |
+| **Consumer Tracking** | WEB-ONLY | Web App | Read-only state for users. |
+| **Global Dispatch Control**| ADMIN-ONLY | Dashboard | Operational override and queue management. |
+| **Global Analytics** | ADMIN-ONLY | Dashboard | Executive-level platform intelligence. |
+| **Financial Reconciliation**| ADMIN-ONLY | Dashboard | Payouts, audits, and revenue tracking. |
+| **Support & Complaints** | ADMIN-ONLY | Dashboard | Manual conflict resolution layer. |
+| **Authentication** | SHARED CORE | Unified Auth | Single Identity across all platforms. |
+| **Order/Vendor Data** | SHARED CORE | Unified API | Shared schemas for consistency. |
+| **Legacy Admin Pages** | **LEGACY** | **REMOVE** | `apps/web/src/pages/admin/*` |
+
+---
+
+## 2. Truth Ownership Matrix
+
+| Data Entity | Primary Owner | Secondary Access (Read) | Modification Authority |
+| :--- | :--- | :--- | :--- |
+| **Order State** | Unified Backend | Web (Tracking) | Dashboard (Full Override) |
+| **Vendor Status** | Unified Backend | Web (Profile) | Dashboard (Verification/Suspension) |
+| **User Identity** | Supabase Auth | Both | Dashboard (Global Management) |
+| **Payment Records** | Unified Backend | Web (History) | Dashboard (Auditing/Reconciliation) |
+
+---
+
+## 3. Deprecation & Removal Plan (The "Cleanup")
+
+To eliminate "split-brain" architecture and data duplication, the following assets must be removed or redirected:
+
+### 🗑️ Files to Remove (Web App)
+- `apps/web/src/pages/admin/` (Full directory delete)
+- `apps/web/src/pages/admin/AdminAnalytics.tsx`
+- `apps/web/src/pages/admin/UserManagement.tsx`
+- `apps/web/src/pages/admin/OrderOverview.tsx`
+- `apps/web/src/pages/admin/AdminSettings.tsx`
+- `apps/web/src/pages/admin/AdminPanel.tsx`
+
+### 🔄 Route Redirections
+- Any request to `/admin/*` on the Web App domain should be server-side redirected (301) to the dedicated Dashboard domain (e.g., `admin.plokitch.com`).
+
+---
+
+## 4. Integration Strategy
+
+### A. API Consolidation
+- **Uniformity**: Transition from the ephemeral `:4000` assumptions to a production-ready API gateway.
+- **Protocol**: Standardize on a unified REST or GraphQL schema that both apps consume.
+- **Clients**: Move all data fetching logic to a shared `@plokitch/api-client` to prevent schema drift.
+
+### B. Auth Unification (RBAC)
+- **Single Sign-On (SSO)**: Implement a unified Supabase Auth layer.
+- **Roles**:
+  - `CUSTOMER`: Access to Web App only.
+  - `VENDOR`: Access to Web (Kitchen Management) + Limited Dashboard views.
+  - `ADMIN`: Full access to Dashboard; restricted to user views on Web.
+
+---
+
+## 5. Final Unified Architecture Blueprint
+
+```mermaid
+graph TD
+    subgraph "Experience Layer (Frontend)"
+        WA[Plokitch Web App]
+        AD[Admin Dashboard]
+    end
+
+    subgraph "Integration Layer"
+        API[Unified API Gateway]
+        AUTH[Unified Auth / RBAC]
+    end
+
+    subgraph "Data Layer (Source of Truth)"
+        DB[(Supabase / Postgres)]
+    end
+
+    WA --> API
+    WA --> AUTH
+    AD --> API
+    AD --> AUTH
+    API --> DB
+    AUTH --> DB
+```
+
+---
+
+## 6. Dashboard Feature Expansion Roadmap (Post-Unification)
+
+### Category: Operations Intelligence
+| Feature | Purpose | Dependency |
+| :--- | :--- | :--- |
+| **Anomaly Detection Engine** | Automatically flag orders with unusual delays or patterns. | Real-time Stream |
+| **Live Operational Heatmap** | Global view of platform demand vs. rider supply. | Geolocation Data |
+
+### Category: Financial & Reconciliation
+| Feature | Purpose | Dependency |
+| :--- | :--- | :--- |
+| **Payout Reconciliation** | automated matching of bank transfers to vendor balances. | Stripe/Bank API |
+| **Revenue Leakage Alerts** | Detect unpaid orders or commission calculation errors. | Transaction Audit |
+
+### Category: AI & Automation
+| Feature | Purpose | Dependency |
+| :--- | :--- | :--- |
+| **AI Dispute Mediator** | Initial automated resolution for minor customer-vendor disputes. | Complaint History |
+| **Predictive Risk Scoring** | Flag vendors/riders likely to violate SLAs based on history. | ML Training Data |
+
+### Category: Governance & Trust
+| Feature | Purpose | Dependency |
+| :--- | :--- | :--- |
+| **Audit Trail Explorer** | Immutable log of every admin action taken on the platform. | Event Logging |
+| **Role Activity Monitoring** | Track permission usage to prevent internal data leaks. | Auth Audit |
+
+---
+
+## 7. Risk Analysis
+
+- **Split-Brain Risk**: High if legacy admin pages remain in the Web app. Mitigated by strict deprecation.
+- **Auth Conflict**: Potential for session hijacking between subdomains. Mitigated by Secure/SameSite cookie policy.
+- **Schema Drift**: If Web and Dashboard developers use different versions of the API. Mitigated by a versioned shared API client.
+
+---
+
+## 8. Architecture Enforcement & Execution Guardrails
+
+This section converts the blueprint into a binding **System Contract**. All future development must adhere to these rules to maintain platform integrity.
+
+### 🔒 Core Enforcement Rules
+
+#### 1. System Boundary Enforcement
+- **WEB APP**: Strictly limited to **Experience Layer** flows. No global admin capabilities, operational overrides, or system-wide analytics are permitted.
+- **ADMIN DASHBOARD**: Strictly limited to **Control Plane** logic. No customer discovery, public marketplace, or checkout flows are permitted.
+- **SHARED CORE**: All shared logic must be accessed via the **Unified API Layer**. Direct database divergence or duplicated business logic is a violation.
+
+#### 2. Legacy System "Hard Stop" Rule
+- Any feature classified as **LEGACY/REMOVE** (specifically `apps/web/src/pages/admin`) must be deleted or redirected immediately. Parallel maintenance is strictly prohibited to prevent "split-brain" administration.
+
+#### 3. Single Source of Truth (SSOT)
+- **Zero Dual-Writes**: Data must have exactly one owner.
+- **Orders**: One backend state.
+- **Vendors**: One backend state.
+- **Users**: One identity system (Supabase/Auth).
+- **Payments**: One reconciliation system.
+
+#### 4. API & Dependency Isolation
+- **API Contract**: All services MUST use `@plokitch/api-client`. Direct database queries that bypass the service layer are prohibited.
+- **Isolation**: The Web App and Dashboard must **NEVER** import each other's modules or share internal UI state. The only allowed bridge is the Shared API and Auth layers.
+
+#### 5. Authorization (RBAC) Enforcement
+- **CUSTOMER**: Access to Web App only.
+- **VENDOR**: Access to Web (Kitchen tools) + Restricted Dashboard views.
+- **ADMIN**: Access to Dashboard only (except for personal account views on Web).
+- **Rule**: Security must be enforced at the API/Backend layer, never just the UI.
+
+### 🚨 Integration Failure Conditions
+The system is considered **unstable** or **violating contract** if:
+- Duplicated order state logic exists in both Web and Dashboard.
+- Legacy admin routes remain active in the Web App.
+- Direct database usage bypasses the `@plokitch/api-client`.
+- Auth systems diverge or sessions do not synchronize across apps.
+
+### 📊 Validation Requirement (The "Developer Checklist")
+Before any feature addition, developers must answer:
+1. **Source**: Where does this data originate?
+2. **Authority**: Who owns modification rights?
+3. **Truth**: Which layer is responsible for the final state?
+4. **Duplication**: Is this logic mirrored anywhere else?
+5. **Boundary**: Does this logic belong in this system's layer?

@@ -1,0 +1,94 @@
+# Plokitch Architecture Study: Web App vs. Admin Dashboard
+
+This study provides a static analysis of the Plokitch ecosystem, comparing the user-facing Web App and the operational Admin Dashboard.
+
+## PHASE 1: Web App Structure Extraction
+
+### 1. User Pages (src/pages)
+- **Guest/Discovery**: `Index.tsx`, `Explore.tsx`, `Restaurants.tsx`, `Kitchens.tsx`.
+- **Consumer Flow**: `Cart.tsx`, `Checkout.tsx`, `LiveTrack.tsx`, `Dishes.tsx`, `KitchenDetail.tsx`.
+- **Authentication**: `Login.tsx`, `Register.tsx`, `ForgotPassword.tsx`.
+- **User Profile**: `CustomerProfile.tsx`.
+- **LEGACY/DUPLICATED ADMIN**: 
+  - `admin/AdminPanel.tsx`
+  - `admin/AdminAnalytics.tsx`
+  - `admin/AdminSettings.tsx`
+  - `admin/OrderOverview.tsx`
+  - `admin/UserManagement.tsx`
+  - *Observation*: These routes likely represent a legacy admin system embedded in the web app, which should be deprecated in favor of the dedicated Dashboard app.
+
+### 2. Core Features
+- **Discovery**: Map-based search (Leaflet), category filtering.
+- **Ordering**: Cart management, checkout flow, real-time order tracking.
+- **Vendor Specific**: Kitchen details, menu browsing, chef-specific data fetching (`useChefData`).
+
+### 3. API & Data Integration
+- **Direct Supabase**: `lib/supabase.ts` used for some client-side operations.
+- **Backend API**: Connects to an external API (default `http://localhost:4000`).
+  - `GET /api/vendors/me`: Profile for logged-in chef/vendor.
+  - `GET /api/vendors/:id/menu`: Public menu fetching.
+  - `GET /api/orders`: Order history/active orders.
+
+---
+
+## PHASE 2: Admin Dashboard Structure Extraction
+
+### 1. Operational Systems (src/app/admin/dashboard)
+- **Operations Management**:
+  - `orders`: Centralized order monitoring.
+  - `dispatch`: Real-time rider/dispatch queue management.
+  - `vendors`: Vendor onboarding, verification, and performance tracking.
+  - `riders`: Rider management and status tracking.
+- **Intelligence Hub**:
+  - `analytics`: Executive-level platform health metrics.
+  - `activity`: Global system event logs.
+  - `system`: Server and database health monitoring.
+
+### 2. Control Systems
+- **Reconciliation**: `payments` for vendor payouts and financial auditing.
+- **Support & Conflict Resolution**: `complaints` and `support` modules for manual intervention.
+- **User Authority**: `customers` management.
+
+---
+
+## PHASE 3: System Comparison Matrix
+
+| Feature Area | Exists in Web App | Exists in Dashboard | Notes |
+| :--- | :--- | :--- | :--- |
+| **Order Tracking** | Yes (LiveTrack) | Yes (Orders/Dispatch) | Web is for consumer tracking; Dashboard is for operational control. |
+| **Vendor Management** | Partial (Chef Dashboard) | Yes (Full Lifecycle) | Web handles vendor's own kitchen; Dashboard handles all vendors globally. |
+| **Analytics** | Yes (Legacy Admin) | Yes (Primary Hub) | Dashboard analytics are significantly more advanced and operational. |
+| **User Management** | No | Yes | Dashboard handles global user list and permissions. |
+| **Payments** | Checkout only | Full Reconciliation | Web handles transaction initiation; Dashboard handles payouts. |
+
+---
+
+## PHASE 4: Gap Analysis
+
+### 1. Web App Redundancies
+- The `src/pages/admin` folder in the Web App contains features (Analytics, User Management) that are now fully implemented and improved in the Dashboard.
+- **Action**: These should be slated for removal to prevent "split-brain" administration.
+
+### 2. Integration Gaps
+- **Shared Authentication**: Currently, they seem to use separate auth mechanisms (Web uses custom `auth-client`, Dashboard uses `NextAuth`).
+- **Data Model Inconsistency**: The Web app expects a backend at `:4000`, while the Dashboard uses mock data and direct API routes.
+- **Design System**: Web uses standard Shadcn; Dashboard uses a refined, synchronized "Professional" theme.
+
+---
+
+## PHASE 5: Future Integration Plan (Roadmap)
+
+### 1. Data Layer Unification
+- Establish a shared `@plokitch/api-client` package to ensure both apps talk to the same backend services using the same types.
+- Migrate Web app's `:4000` API calls to the same infrastructure used by the Dashboard.
+
+### 2. Auth Consolidation
+- Implement a unified Single Sign-On (SSO) using Supabase Auth or NextAuth, allowing a user to transition from Web to Dashboard (if they have permissions) without re-logging.
+
+### 3. Component Library Sync
+- Move shared UI components (Buttons, Inputs, Status Badges) into a shared `packages/ui` workspace to ensure visual consistency across both applications.
+- Standardize on the "Professional" look established in the Dashboard.
+
+### 4. Admin Feature Migration
+- Fully decommission `apps/web/src/pages/admin`.
+- Redirect any legacy admin links in the Web app to the Dashboard at `admin.plokitch.com`.
