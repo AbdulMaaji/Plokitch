@@ -1,0 +1,144 @@
+# Plokitch System Contract (Final Execution-Ready Version)
+
+This section defines the non-negotiable system rules for all development in the Plokitch ecosystem. All agents, developers, and systems MUST comply.
+
+---
+
+## 🔒 1. SYSTEM BOUNDARY ENFORCEMENT (STRICT)
+
+### WEB APP (Experience Layer)
+The Web App is strictly limited to:
+- Discovery
+- Ordering
+- Checkout
+- Tracking
+- Profile management (personal only)
+
+❌ **PROHIBITED**:
+- Admin dashboards
+- System analytics
+- Operational controls
+- Vendor management at platform level
+- Any global mutation capability
+
+### ADMIN DASHBOARD (Control Plane)
+The Admin Dashboard is strictly limited to:
+- System operations
+- Analytics & intelligence
+- Vendor management
+- Order dispatch control
+- Reconciliation & payments
+- Support & dispute resolution
+
+❌ **PROHIBITED**:
+- Customer-facing marketplace flows
+- Checkout or ordering systems
+- Public discovery features
+
+### SHARED CORE (API LAYER ONLY)
+Only the following is allowed to be shared:
+- `@plokitch/api-client`
+- Auth system (SSO)
+- API contracts
+- Data schemas
+
+❌ **STRICTLY FORBIDDEN**:
+- Direct database access outside API layer
+- Duplicated business logic across apps
+- Shared UI or frontend modules
+
+---
+
+## 🧱 2. LEGACY SYSTEM HARD STOP RULE
+
+Any feature marked **LEGACY / REMOVE** MUST:
+- Be deleted OR fully redirected.
+- NOT be maintained in parallel systems.
+- NOT be reintroduced in any form inside Web App.
+
+**Special Rule**: 
+- `apps/web/src/pages/admin/*` is permanently deprecated.
+- All routes must redirect to Admin Dashboard domain.
+
+---
+
+## 🧠 3. SINGLE SOURCE OF TRUTH (SSOT)
+
+Each entity must have EXACTLY ONE authoritative source:
+
+| Entity | Source of Truth |
+| :--- | :--- |
+| **Orders** | Unified Backend |
+| **Vendors** | Unified Backend |
+| **Users** | Supabase Auth |
+| **Payments** | Reconciliation Engine |
+
+**Rules**:
+- No dual writes.
+- No mirrored tables.
+- No shadow state.
+- No duplicated reducers or state logic.
+
+---
+
+## 🔌 4. API & DEPENDENCY ISOLATION
+
+### API CONTRACT RULE
+All data access MUST go through `@plokitch/api-client`.
+
+❌ **NOT ALLOWED**:
+- Direct Supabase queries in UI.
+- Direct REST calls bypassing API client.
+- Ad-hoc fetch logic inside components.
+
+### MODULE ISOLATION RULE
+- Web App and Dashboard MUST NOT import from each other.
+- No shared internal UI components across apps.
+- No shared frontend state systems.
+- **Allowed Bridge Only**: API Layer & Auth Layer.
+
+---
+
+## 🔐 5. AUTHORIZATION (RBAC ENFORCEMENT)
+
+### ROLE DEFINITIONS
+- **CUSTOMER**: Web App only.
+- **VENDOR**: Web App + limited management views.
+- **ADMIN**: Dashboard only.
+
+### SECURITY RULE
+- RBAC MUST be enforced at backend level.
+- UI restrictions are NOT sufficient.
+- API must validate all permissions.
+
+---
+
+## 🚨 6. INTEGRATION FAILURE CONDITIONS (CRITICAL ALERTS)
+
+The system is considered **BROKEN** if ANY of the following occur:
+- Duplicated order state logic exists in Web + Dashboard.
+- Legacy admin routes are active in Web App.
+- Direct DB access bypasses API client.
+- Auth sessions are inconsistent across apps.
+- Same business logic exists in multiple layers.
+
+---
+
+## 📊 7. VALIDATION CHECKLIST (MANDATORY BEFORE ANY CHANGE)
+
+Every feature must pass this checklist:
+1. **Source**: Where does this data originate?
+2. **Authority**: Which system owns write permissions?
+3. **Truth**: Which layer defines final state?
+4. **Duplication**: Is this logic implemented elsewhere?
+5. **Boundary**: Does this belong in this system layer?
+
+---
+
+## 🧭 FINAL SYSTEM DEFINITION
+- **Web App**: Experience Layer
+- **Dashboard**: Control Plane
+- **API Layer**: Source of Truth
+- **Auth Layer**: Identity Authority
+
+⚠️ **FINAL PRINCIPLE**: If a rule is violated, the system is architecturally inconsistent — not just buggy.
