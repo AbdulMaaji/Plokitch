@@ -1,0 +1,37 @@
+# Plokitch Enterprise Architecture Firewall
+
+The **Plokitch Architecture Firewall** is a multi-layered enforcement system designed to protect the platform's structural integrity. It ensures that the "One Backend, Two Interfaces" contract is never violated.
+
+## 🧱 Layered Defense
+
+### L1: Pre-Commit Prevention
+Fast, regex-based checks that block immediate violations (forbidden imports, legacy routes) before they are committed.
+
+### L2: AST-Based Analysis (`ast-check.js`)
+Uses **ts-morph** to perform deep static analysis of the TypeScript Abstract Syntax Tree. This layer understands module relationships and intent, blocking:
+- Cross-application imports (Web ↔ Dashboard).
+- Direct Supabase access from UI components.
+- Reintroduction of legacy admin routes.
+
+### L3: Dependency Graph Firewall (`madge`)
+Validates the entire dependency graph to ensure:
+- Zero circular dependencies.
+- No hidden coupling between application silos.
+
+### L4: Schema Drift Detection (`schema-drift-check.js`)
+Monitors the gap between the database truth (Supabase) and the frontend API contracts. It ensures that migrations and types never diverge.
+
+---
+
+## 🚦 System Failure Conditions (Hard Blocks)
+The CI pipeline will fail and block merging if:
+1.  **Web App** imports any code from `apps/dashboard`.
+2.  **Dashboard** imports any code from `apps/web`.
+3.  **Direct DB calls** (`supabase.from`) are found outside of sanctioned service layers.
+4.  **Legacy Admin Routes** are detected in the `apps/web` directory.
+5.  **Schema Mismatches** are detected between the DB snapshot and API types.
+
+---
+
+## 🧭 Operational State
+After implementation, the Plokitch ecosystem becomes a **self-governing architecture**. Structural consistency is no longer a matter of discipline but a mechanical guarantee.

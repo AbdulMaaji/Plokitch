@@ -1,0 +1,30 @@
+name: Plokitch Architecture Firewall
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  firewall:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run AST Firewall Check
+        run: node scripts/firewall/ast-check.js
+
+      - name: Run Schema Drift Check
+        run: node scripts/firewall/schema-drift-check.js
+
+      - name: Dependency Graph Check
+        run: npx madge apps --circular

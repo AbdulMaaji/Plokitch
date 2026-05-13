@@ -1,0 +1,40 @@
+# Plokitch Architecture Enforcement System
+
+This system ensures that the **Plokitch System Contract** is mechanically enforced at every stage of the development lifecycle.
+
+## 🛡️ Enforcement Layers
+
+### 1. Local Prevention (Pre-commit)
+Local commits are gated by a pre-commit hook that runs the architecture guard script. This prevents violations from ever leaving a developer's machine.
+
+### 2. CI Pipeline (GitHub Actions)
+Every Pull Request and push to `main` is validated by the **Plokitch Architecture Enforcement** workflow. If a violation is detected, the build fails and merging is blocked.
+
+---
+
+## 🔒 Automated Rules
+
+### A. System Boundary Rules
+- **No Cross-Imports**: Web App cannot import from Dashboard; Dashboard cannot import from Web.
+- **Isolation**: Shared logic must reside in `@plokitch/api-client` or `@plokitch/shared`.
+
+### B. Data Access Rules
+- **API Client Mandatory**: Direct `supabase.from()` calls are blocked. Developers must use the unified API client.
+- **SSOT Enforcement**: Prevents dual-write logic by scanning for shadow state implementations.
+
+### C. Legacy Code Hard Stop
+- **Admin Removal**: Any reference to `pages/admin` within the Web App triggers an immediate failure.
+
+---
+
+## 🛠️ Components
+
+- **Script**: `scripts/architecture-check.js` (The brain of the enforcement).
+- **Workflow**: `.github/workflows/architecture-check.yml` (The CI gatekeeper).
+
+---
+
+## 🚨 Failure Behavior
+If a violation is detected:
+1. **Commit Blocked**: The developer receives a clear error message explaining the violation.
+2. **Build Failed**: The CI pipeline turns red, and the PR cannot be merged until the architecture is corrected.
