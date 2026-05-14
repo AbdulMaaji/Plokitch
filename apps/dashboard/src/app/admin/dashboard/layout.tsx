@@ -1,4 +1,4 @@
-import * as React from "react"
+import { inter, playfair } from "@/app/fonts"
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar"
 import { DashboardTopbar } from "@/components/layout/DashboardTopbar"
 import { protectAdminRoute } from "@/lib/guards"
@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   await protectAdminRoute();
 
   return (
-    <div className="flex min-h-screen bg-beige">
+    <div className="flex min-h-screen bg-[#f8fafc]">
       {/* Desktop Sidebar */}
       <DashboardSidebar />
 
@@ -19,7 +19,7 @@ export default async function DashboardLayout({
       <div className="flex-1 flex flex-col pl-64">
         <DashboardTopbar />
         <main className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-[1280px] mx-auto">
+          <div className="max-w-[1440px] mx-auto">
             {children}
           </div>
         </main>

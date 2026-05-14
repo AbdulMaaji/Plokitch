@@ -4,10 +4,7 @@ import { api } from "@/lib/api"
 
 export default async function OrdersPage() {
   const orders = await api.orders.list();
-
-  // Calculate quick stats
-  const activeOrders = orders.filter(o => !['completed', 'cancelled'].includes(o.status)).length;
-  const completedToday = orders.filter(o => o.status === 'completed').length;
+  const stats = await api.orders.getStats();
 
   return (
     <div className="flex flex-col gap-8">
@@ -23,19 +20,19 @@ export default async function OrdersPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-card border border-divider shadow-card transition-all hover:shadow-md">
           <p className="text-[12px] font-bold text-subtle uppercase tracking-widest">Active Orders</p>
-          <h3 className="text-[28px] font-bold text-navy mt-1">{activeOrders}</h3>
+          <h3 className="text-[28px] font-bold text-navy mt-1">{stats.active}</h3>
         </div>
         <div className="bg-white p-6 rounded-card border border-divider shadow-card transition-all hover:shadow-md">
           <p className="text-[12px] font-bold text-subtle uppercase tracking-widest">Completed Today</p>
-          <h3 className="text-[28px] font-bold text-green-600 mt-1">{completedToday}</h3>
+          <h3 className="text-[28px] font-bold text-green-600 mt-1">{stats.completedToday}</h3>
         </div>
         <div className="bg-white p-6 rounded-card border border-divider shadow-card transition-all hover:shadow-md">
           <p className="text-[12px] font-bold text-subtle uppercase tracking-widest">Avg. Prep Time</p>
-          <h3 className="text-[28px] font-bold text-navy mt-1">18m</h3>
+          <h3 className="text-[28px] font-bold text-navy mt-1">{stats.avgPrepTime}m</h3>
         </div>
         <div className="bg-white p-6 rounded-card border border-divider shadow-card transition-all hover:shadow-md">
           <p className="text-[12px] font-bold text-subtle uppercase tracking-widest">Delayed</p>
-          <h3 className="text-[28px] font-bold text-red-600 mt-1">4</h3>
+          <h3 className="text-[28px] font-bold text-red-600 mt-1">{stats.delayed}</h3>
         </div>
       </div>
 

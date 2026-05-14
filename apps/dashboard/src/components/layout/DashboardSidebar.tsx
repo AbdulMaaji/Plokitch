@@ -90,13 +90,31 @@ export function DashboardSidebar() {
       </nav>
 
       {/* Footer / Status */}
-      <div className="p-6 border-t border-white/5">
-        <div className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Platform Node</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-primary/80 animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+      <div className="flex flex-col border-t border-white/5">
+        <div className="p-6">
+          <div className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Platform Node</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-primary/80 animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+            </div>
+            <p className="text-[12px] font-medium text-white/70">v2.0.4 - Production</p>
           </div>
-          <p className="text-[12px] font-medium text-white/70">v2.0.4 - Production</p>
+        </div>
+
+        {/* User Profile */}
+        <div className="px-6 pb-8">
+          <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-navy font-bold text-sm">
+                SA
+              </div>
+              <div className="flex flex-col items-start text-left">
+                <span className="text-[13px] font-bold text-white leading-none">System Admin</span>
+                <span className="text-[10px] text-white/40 font-medium uppercase tracking-wider mt-1">Super Administrator</span>
+              </div>
+            </div>
+            <ChevronRight size={14} className="text-white/30 group-hover:text-white transition-colors" />
+          </button>
         </div>
       </div>
     </div>

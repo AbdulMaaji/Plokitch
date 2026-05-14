@@ -29,16 +29,20 @@ export function DashboardTopbar() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-6">
-        {/* Platform Status CTA */}
-        <button className="bg-navy text-white px-5 py-2.5 rounded-button text-nav font-semibold flex items-center gap-2 hover:bg-navy/90 transition-all shadow-sm">
-          PLATFORM STATUS <ChevronRight size={14} className="text-action" />
-        </button>
+      <div className="flex items-center gap-8">
+        {/* Platform Status Badge */}
+        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-beige/50 border border-divider">
+          <span className="text-[11px] font-bold text-navy uppercase tracking-widest">Platform Status</span>
+          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-green-50 text-[10px] font-bold text-green-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            OPERATIONAL
+          </span>
+        </div>
 
         {/* Notifications */}
-        <button className="relative p-2 text-subtle hover:text-navy transition-colors">
+        <button className="relative p-2 text-navy hover:text-primary transition-colors">
           <Bell size={22} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-action rounded-full border-2 border-white" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
         </button>
 
         {/* Vertical Divider */}
