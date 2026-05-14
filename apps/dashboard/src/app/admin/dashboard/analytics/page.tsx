@@ -35,6 +35,15 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { COLORS } from "@/lib/design-system"
+import { 
+  getExecutiveMetricsAction, 
+  getAiInsightsAction, 
+  getRevenueAnalyticsAction,
+  getOperationalAnalyticsAction,
+  getVendorAnalyticsAction,
+  getCustomerAnalyticsAction,
+  getPredictionsAction
+} from "@/app/actions/analytics-actions"
 
 // New Analytics Components
 import { AIInsightCard } from "@/components/analytics/AIInsightCard"
@@ -42,30 +51,6 @@ import { PredictiveMetricCard } from "@/components/analytics/PredictiveMetricCar
 import { PlatformHealthIndicator } from "@/components/analytics/PlatformHealthIndicator"
 import { RiskDetectionFeed } from "@/components/analytics/RiskDetectionFeed"
 import { AIRecommendationCard } from "@/components/analytics/AIRecommendationCard"
-
-// --- Mock Data ---
-
-const ORDER_TRENDS = [
-  { time: "00:00", value: 120 }, { time: "03:00", value: 80 }, { time: "06:00", value: 450 },
-  { time: "09:00", value: 1200 }, { time: "12:00", value: 2400 }, { time: "15:00", value: 1800 },
-  { time: "18:00", value: 3200 }, { time: "21:00", value: 1600 }
-]
-
-const REVENUE_TRENDS = [
-  { day: "Mon", rev: 12400 }, { day: "Tue", rev: 15600 }, { day: "Wed", rev: 18200 },
-  { day: "Thu", rev: 14800 }, { day: "Fri", rev: 22400 }, { day: "Sat", rev: 28900 },
-  { day: "Sun", rev: 24500 }
-]
-
-const COMPLAINT_TRENDS = [
-  { week: "W1", count: 42 }, { week: "W2", count: 38 }, { week: "W3", count: 56 },
-  { week: "W4", count: 24 }, { week: "W5", count: 31 }
-]
-
-const PERFORMANCE_DATA = [
-  { name: "Pickup", score: 92 }, { name: "Transit", score: 88 }, { name: "Handover", score: 95 },
-  { name: "Support", score: 84 }, { name: "Fulfillment", score: 90 }
-]
 
 // --- Helper Components ---
 
@@ -75,10 +60,12 @@ const MiniSparkline = ({ data, color }: { data: any[], color: string }) => {
   
   if (!mounted) return <div className="h-8 w-24" />
 
+  const chartData = (data || []).map((v, i) => ({ value: v, id: i }))
+
   return (
     <div className="h-8 w-24">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
+        <LineChart data={chartData}>
           <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
@@ -98,10 +85,12 @@ const OperationalScoreCard = ({ title, value, trend, isUp, insight, icon: Icon, 
       <p className="text-caption font-bold text-subtle uppercase tracking-wider">{title}</p>
       <div className="flex items-end gap-2 mt-1">
         <h3 className="text-h2 font-bold text-navy">{value}</h3>
-        <div className={cn("flex items-center gap-0.5 text-[11px] font-bold mb-1", isUp ? "text-green-600" : "text-red-600")}>
-          {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-          {trend}%
-        </div>
+        {trend && (
+          <div className={cn("flex items-center gap-0.5 text-[11px] font-bold mb-1", isUp ? "text-green-600" : "text-red-600")}>
+            {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {trend}
+          </div>
+        )}
       </div>
       <p className="text-[10px] text-subtle mt-2 font-medium leading-relaxed italic border-l-2 border-divider pl-2">
         {insight}
@@ -128,11 +117,53 @@ const AnalyticsTrendChart = ({ title, children }: any) => {
 
 export default function AnalyticsPage() {
   const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => setMounted(true), [])
+  const [timeframe, setTimeframe] = React.useState("week")
+  const [isLive, setIsLive] = React.useState(true)
+  const [lastRefreshed, setLastRefreshed] = React.useState(new Date())
 
-  const sparklineData = React.useMemo(() => 
-    Array.from({ length: 10 }, (_, i) => ({ value: Math.floor(Math.random() * 50) + 20 })),
-  [])
+  // Data States
+  const [metrics, setMetrics] = React.useState<any>(null)
+  const [insights, setInsights] = React.useState<any[]>([])
+  const [revenueTrends, setRevenueTrends] = React.useState<any[]>([])
+  const [operationalData, setOperationalData] = React.useState<any[]>([])
+  const [vendorStats, setVendorStats] = React.useState<any>(null)
+  const [customerStats, setCustomerStats] = React.useState<any>(null)
+  const [predictions, setPredictions] = React.useState<any[]>([])
+
+  const fetchData = React.useCallback(async () => {
+    try {
+      const [m, ins, rev, op, vend, cust, pred] = await Promise.all([
+        getExecutiveMetricsAction(),
+        getAiInsightsAction(),
+        getRevenueAnalyticsAction(timeframe),
+        getOperationalAnalyticsAction(timeframe),
+        getVendorAnalyticsAction(),
+        getCustomerAnalyticsAction(),
+        getPredictionsAction()
+      ])
+      
+      setMetrics(m)
+      setInsights(ins as any[])
+      setRevenueTrends(rev)
+      setOperationalData(op)
+      setVendorStats(vend)
+      setCustomerStats(cust)
+      setPredictions(pred)
+      setLastRefreshed(new Date())
+    } catch (error) {
+      console.error("Analytics fetch failed", error)
+    }
+  }, [timeframe])
+
+  React.useEffect(() => {
+    setMounted(true)
+    fetchData()
+    let interval: any
+    if (isLive) {
+      interval = setInterval(fetchData, 30000)
+    }
+    return () => clearInterval(interval)
+  }, [isLive, fetchData])
 
   if (!mounted) return null
 
@@ -140,26 +171,45 @@ export default function AnalyticsPage() {
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-h1 font-bold text-navy">AI Operational Analytics</h1>
-            <div className="px-2 py-0.5 rounded-full bg-navy text-white text-[9px] font-bold tracking-widest flex items-center gap-1">
-              <Sparkles size={10} fill="currentColor" /> AI LIVE
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-heading font-bold text-navy tracking-tight">AI Operational Intelligence</h1>
+            <div className="px-3 py-1 rounded-full bg-navy text-white text-[9px] font-bold tracking-[0.2em] flex items-center gap-1.5 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              AI LIVE ENGINE
             </div>
           </div>
-          <p className="text-body text-subtle">Real-time platform intelligence, operational insights, and predictive performance monitoring.</p>
+          <p className="text-[15px] font-medium text-subtle/80">Real-time platform intelligence, pattern recognition, and predictive monitoring.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <div className="flex bg-white rounded-button border border-divider p-1">
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-[11px] font-bold">24H</Button>
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-[11px] font-bold bg-navy text-white">7D</Button>
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-[11px] font-bold">30D</Button>
+          <div className="flex bg-white rounded-full border border-divider p-1 shadow-sm">
+            {['today', 'week', 'month'].map((t) => (
+              <Button 
+                key={t}
+                onClick={() => setTimeframe(t)}
+                variant="ghost" 
+                size="sm" 
+                className={cn(
+                  "h-8 px-4 text-[11px] font-black rounded-full uppercase tracking-widest",
+                  timeframe === t ? "bg-navy text-white shadow-md" : "text-subtle hover:text-navy"
+                )}
+              >
+                {t === 'today' ? '24H' : t === 'week' ? '7D' : '30D'}
+              </Button>
+            ))}
           </div>
-          <Button variant="outline" className="flex items-center gap-2 h-10">
-            <Download size={18} /> EXPORT REPORT
+          <Button variant="outline" className="flex items-center gap-2 h-10 border-divider font-bold">
+            <Download size={18} /> EXPORT
           </Button>
-          <Button className="bg-navy hover:bg-navy/90 text-white flex items-center gap-2 h-10">
-            <Sparkles size={18} /> GENERATE SUMMARY
+          <Button 
+            onClick={() => setIsLive(!isLive)}
+            className={cn(
+              "text-white flex items-center gap-2 h-10 px-6 font-bold shadow-md transition-all",
+              isLive ? "bg-green-600 hover:bg-green-700" : "bg-navy hover:bg-navy/90"
+            )}
+          >
+            {isLive ? <RefreshCcw size={18} className="animate-spin" /> : <Sparkles size={18} />}
+            {isLive ? "MONITORING LIVE" : "PAUSED"}
           </Button>
         </div>
       </div>
@@ -167,36 +217,28 @@ export default function AnalyticsPage() {
       {/* Executive KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <OperationalScoreCard 
-          title="Total Orders Today" value="4,284" trend="12.4" isUp={true} icon={ShoppingBag}
-          insight="Orders surging in Central District peak hours." sparklineData={sparklineData}
+          title="Active Orders" value={metrics?.activeOrders.current || "---"} 
+          trend={metrics?.activeOrders.trend} isUp={true} icon={ShoppingBag}
+          insight="Real-time volume distribution across zones." 
+          sparklineData={metrics?.activeOrders.sparkline}
         />
         <OperationalScoreCard 
-          title="Platform Revenue" value="₦128,450" trend="8.2" isUp={true} icon={DollarSign}
-          insight="Revenue per order up by 4% vs last week." sparklineData={sparklineData}
+          title="Est. Revenue" value={`₦${(metrics?.revenue.current || 0).toLocaleString()}`} 
+          trend={metrics?.revenue.trend} isUp={true} icon={DollarSign}
+          insight="Gross revenue intelligence for selected period." 
+          sparklineData={metrics?.revenue.sparkline}
         />
         <OperationalScoreCard 
-          title="Resolution Rate" value="94.2%" trend="2.1" isUp={true} icon={MessageSquareWarning}
-          insight="Refund escalations decreased by 14%." sparklineData={sparklineData}
+          title="Active Customers" value={metrics?.activeEngagement.customers || "---"} 
+          trend="+14%" isUp={true} icon={Heart}
+          insight="Behavioral retention is trending upward." 
+          sparklineData={[12, 45, 32, 67, 45, 89, 72, 94]}
         />
         <OperationalScoreCard 
-          title="Dispatch Efficiency" value="88.5%" trend="4.5" isUp={false} icon={Zap}
-          insight="Pickup delays increased in Lagos Island." sparklineData={sparklineData}
-        />
-        <OperationalScoreCard 
-          title="Vendor Health" value="4.8/5" trend="0.5" isUp={true} icon={Store}
-          insight="Fulfillment quality steady across top vendors." sparklineData={sparklineData}
-        />
-        <OperationalScoreCard 
-          title="Rider Reliability" value="96.8%" trend="1.2" isUp={true} icon={Bike}
-          insight="Average transit time reduced by 48 seconds." sparklineData={sparklineData}
-        />
-        <OperationalScoreCard 
-          title="Customer CSAT" value="4.9" trend="0.2" isUp={true} icon={Heart}
-          insight="High satisfaction reported for quick deliveries." sparklineData={sparklineData}
-        />
-        <OperationalScoreCard 
-          title="Failed Delivery Rate" value="1.2%" trend="0.8" isUp={true} icon={AlertCircle}
-          insight="Anomaly: Failed payouts affecting 4 riders." sparklineData={sparklineData}
+          title="Fulfillment Efficiency" value={`${metrics?.vendorHealth.percentage || 0}%`} 
+          trend={metrics?.failedDeliveries.trend} isUp={false} icon={Zap}
+          insight="Dispatch latency detected in some clusters." 
+          sparklineData={metrics?.failedDeliveries.sparkline}
         />
       </div>
 
@@ -204,42 +246,35 @@ export default function AnalyticsPage() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-action/10 text-action">
+            <div className="p-2 rounded-xl bg-action/10 text-action shadow-sm">
               <Sparkles size={18} />
             </div>
-            <h3 className="text-caption font-bold text-navy uppercase tracking-widest">AI Operational Intelligence</h3>
+            <h3 className="text-caption font-bold text-navy uppercase tracking-[0.2em]">Operational Intelligence</h3>
           </div>
-          <span className="text-[10px] font-bold text-subtle uppercase">Last Analysis: 2m ago</span>
+          <span className="text-[10px] font-bold text-subtle uppercase tracking-widest flex items-center gap-2">
+            <RefreshCcw size={10} className={isLive ? "animate-spin" : ""} />
+            Sync: {lastRefreshed.toLocaleTimeString()}
+          </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <AIInsightCard 
-            severity="HIGH" timestamp="12:45 PM" title="Dispatch Delay Anomaly"
-            description="Late-night dispatch delays increased in Abuja between 8PM–11PM. Impacting 12% of orders."
-            trend="Projected recovery: 2h"
-          />
-          <AIInsightCard 
-            severity="MODERATE" timestamp="12:30 PM" title="Vendor Complaint Spike"
-            description="Vendor complaint frequency is rising for high-volume restaurants in Downtown Zone."
-            trend="Root cause: Delayed preparation"
-          />
-          <AIInsightCard 
-            severity="LOW" timestamp="12:15 PM" title="Efficiency Optimization"
-            description="Rider reassignment algorithm improved delivery completion by 14% in Lekki area."
-            trend="Saved 12.4 mins per cycle"
-          />
-          <AIInsightCard 
-            severity="CRITICAL" timestamp="12:00 PM" title="Payment Gateway Latency"
-            description="Peak failed deliveries occurred during 480ms latency spike in Stripe-PB-02 gateway."
-            trend="Monitoring incident PB-99"
-          />
+          {insights.map((insight, idx) => (
+            <AIInsightCard 
+              key={idx}
+              severity={insight.severity} 
+              timestamp={insight.timestamp} 
+              title={insight.title}
+              description={insight.description}
+              trend={insight.trend}
+            />
+          ))}
         </div>
       </div>
 
       {/* Operational Trend Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <AnalyticsTrendChart title="Orders Over Time (Peak Hourly Distribution)">
+        <AnalyticsTrendChart title="Operational Volume Distribution">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={ORDER_TRENDS}>
+            <AreaChart data={revenueTrends}>
               <defs>
                 <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={COLORS.action} stopOpacity={0.1}/>
@@ -250,38 +285,26 @@ export default function AnalyticsPage() {
               <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
               <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
-              <Area type="monotone" dataKey="value" stroke={COLORS.action} strokeWidth={3} fill="url(#colorOrders)" />
+              <Area type="monotone" dataKey="orders" stroke={COLORS.action} strokeWidth={3} fill="url(#colorOrders)" />
             </AreaChart>
           </ResponsiveContainer>
         </AnalyticsTrendChart>
 
-        <AnalyticsTrendChart title="Revenue Trends (Daily Operational Performance)">
+        <AnalyticsTrendChart title="Revenue Performance Analytics">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={REVENUE_TRENDS}>
+            <BarChart data={revenueTrends}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.divider} />
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
+              <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} tickFormatter={(value) => `₦${(value/1000).toFixed(0)}k`} />
               <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} formatter={(value: any) => [`₦${value.toLocaleString()}`, "Revenue"]} />
-              <Bar dataKey="rev" fill={COLORS.navy} radius={[4, 4, 0, 0]} barSize={40} />
+              <Bar dataKey="revenue" fill={COLORS.navy} radius={[4, 4, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </AnalyticsTrendChart>
 
-        <AnalyticsTrendChart title="Complaint Volume Trends (Weekly Stability)">
+        <AnalyticsTrendChart title="Fulfillment Quality (Lifecycle Efficiency)">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={COMPLAINT_TRENDS}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.divider} />
-              <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
-              <Line type="stepAfter" dataKey="count" stroke="#ef4444" strokeWidth={3} dot={{ r: 4, fill: "#ef4444" }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </AnalyticsTrendChart>
-
-        <AnalyticsTrendChart title="Fulfillment Quality (Phase-wise Efficiency)">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={PERFORMANCE_DATA} layout="vertical">
+            <BarChart data={operationalData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={COLORS.divider} />
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.navy, fontWeight: 700 }} />
@@ -290,78 +313,63 @@ export default function AnalyticsPage() {
             </BarChart>
           </ResponsiveContainer>
         </AnalyticsTrendChart>
+
+        <AnalyticsTrendChart title="Platform Health Indicators">
+          <div className="flex flex-col gap-6 py-4">
+             <PlatformHealthIndicator label="Payment Stability" value={98} status="OPTIMAL" />
+             <PlatformHealthIndicator label="Dispatch Core" value={100} status="OPTIMAL" />
+             <PlatformHealthIndicator label="Vendor Quality" value={metrics?.vendorHealth.percentage || 0} status={metrics?.vendorHealth.percentage > 80 ? "OPTIMAL" : "STABLE"} />
+             <PlatformHealthIndicator label="Rider Network" value={92} status="OPTIMAL" />
+          </div>
+        </AnalyticsTrendChart>
       </div>
 
       {/* Predictive & Health Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-navy/5 text-navy">
+            <div className="p-2 rounded-xl bg-navy/5 text-navy shadow-sm">
               <Calendar size={18} />
             </div>
-            <h3 className="text-caption font-bold text-navy uppercase tracking-widest">Predictive Intelligence</h3>
+            <h3 className="text-caption font-bold text-navy uppercase tracking-[0.2em]">Predictive Intelligence</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PredictiveMetricCard 
-              title="Dispatch Forecast" prediction="High probability of congestion"
-              confidence={88} impact="Average delivery time +14m"
-              recommendation="Activate surge dispatch optimization during evening peak hours (6PM-9PM)."
-              isPositive={false}
-            />
-            <PredictiveMetricCard 
-              title="Demand Surge" prediction="32% growth expected this weekend"
-              confidence={94} impact="Estimated +2,400 additional orders"
-              recommendation="Onboard 45 temporary riders and enable 'Fast-Track' vendor payouts."
-              isPositive={true}
-            />
+            {predictions.map((p, i) => (
+              <PredictiveMetricCard 
+                key={i}
+                title={p.title} 
+                prediction={p.prediction}
+                confidence={p.confidence} 
+                impact={p.impact}
+                recommendation={p.recommendation}
+                isPositive={p.isPositive}
+              />
+            ))}
           </div>
 
-          <div className="bg-white p-8 rounded-card border border-divider shadow-card">
-            <h3 className="text-caption font-bold text-navy uppercase tracking-widest mb-8">Platform Health Monitoring</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-              <PlatformHealthIndicator label="Payment Gateway Stability" value={98} status="OPTIMAL" />
-              <PlatformHealthIndicator label="Dispatch Core Engine" value={100} status="OPTIMAL" />
-              <PlatformHealthIndicator label="Vendor Fulfillment quality" value={84} status="STABLE" />
-              <PlatformHealthIndicator label="Rider Network Availability" value={92} status="OPTIMAL" />
-              <PlatformHealthIndicator label="Complaint Pressure Index" value={62} status="DEGRADED" />
-              <PlatformHealthIndicator label="Customer Satisfaction Score" value={96} status="OPTIMAL" />
+          <div className="bg-white p-10 rounded-[32px] border border-divider shadow-card overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-10 opacity-5">
+               <Target size={120} className="text-navy" />
+            </div>
+            <h3 className="text-caption font-bold text-navy uppercase tracking-[0.2em] mb-10">AI Strategic Recommendations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <AIRecommendationCard 
+                priority="CRITICAL" department="Rider"
+                title="Increase rider allocation in Surulere"
+                impact="+18% Delivery Completion"
+              />
+              <AIRecommendationCard 
+                priority="HIGH" department="Vendor"
+                title="Audit 'The Gourmet Kitchen' quality"
+                impact="-42% Weekly Complaints"
+              />
             </div>
           </div>
         </div>
 
         {/* Risk Feed Sidebar */}
-        <RiskDetectionFeed />
-      </div>
-
-      {/* AI Recommendations Section */}
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-green-50 text-green-600">
-            <Target size={18} />
-          </div>
-          <h3 className="text-caption font-bold text-navy uppercase tracking-widest">AI Strategic Recommendations</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <AIRecommendationCard 
-            priority="CRITICAL" department="Rider"
-            title="Increase rider allocation in Surulere"
-            impact="+18% Delivery Completion"
-          />
-          <AIRecommendationCard 
-            priority="HIGH" department="Vendor"
-            title="Audit 'The Gourmet Kitchen' quality"
-            impact="-42% Weekly Complaints"
-          />
-          <AIRecommendationCard 
-            priority="MEDIUM" department="Dispatch"
-            title="Enable auto-scaling for night dispatch"
-            impact="14m Reduction in wait time"
-          />
-          <AIRecommendationCard 
-            priority="MEDIUM" department="Experience"
-            title="Review loyalty credit for 800+ users"
-            impact="+12% Customer Retention"
-          />
+        <div className="h-full">
+           <RiskDetectionFeed insights={insights} />
         </div>
       </div>
     </div>
