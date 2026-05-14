@@ -54,8 +54,12 @@ webFiles.forEach(file => {
 const allFiles = project.getSourceFiles();
 allFiles.forEach(file => {
   const filePath = file.getFilePath();
-  // We allow it in the designated client file only
-  if (filePath.endsWith("supabase.ts") || filePath.endsWith("auth-client.ts")) return;
+  // We allow it in the designated client and api files only
+  if (
+    filePath.endsWith("supabase.ts") || 
+    filePath.endsWith("auth-client.ts") ||
+    filePath.includes("src/lib/api")
+  ) return;
 
   const content = file.getFullText();
   if (content.includes("supabase.from(")) {

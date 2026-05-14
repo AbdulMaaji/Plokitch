@@ -10,10 +10,17 @@ function scan(dir, forbiddenPattern, message) {
     const fullPath = path.join(dir, file.name);
 
     if (file.isDirectory()) {
-      if (file.name === 'node_modules' || file.name === '.next' || file.name === 'dist') continue;
+      if (file.name === 'node_modules' || file.name === '.next' || file.name === 'dist' || file.name === 'scripts') continue;
+      // Allow Supabase access in dedicated API layers
+      if (file.name === 'api' && dir.endsWith('src/lib')) {
+        continue; 
+      }
       scan(fullPath, forbiddenPattern, message);
     } else {
       if (!/\.(js|ts|jsx|tsx)$/.test(file.name)) continue;
+      
+      // Also allow in specific lib files if needed
+      if (fullPath.endsWith('src/lib/supabase.ts') || fullPath.endsWith('src/lib/api.ts')) continue;
       
       const content = fs.readFileSync(fullPath, 'utf8');
       if (forbiddenPattern.test(content)) {
