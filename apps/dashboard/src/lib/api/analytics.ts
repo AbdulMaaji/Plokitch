@@ -67,7 +67,7 @@ export const analyticsApi = {
     return orders?.map(o => ({
       id: o.id,
       title: `Order #${o.id.slice(0, 4).toUpperCase()}`,
-      description: `Status updated to ${o.status} for ${o.vendor?.business_name || 'Vendor'}.`,
+      description: `Status updated to ${o.status} for ${(o.vendor as any)?.business_name || 'Vendor'}.`,
       timestamp: new Date(o.created_at).toLocaleTimeString(),
       type: (o.status === 'cancelled' ? 'alert' : 'order') as 'order' | 'rider' | 'vendor' | 'alert',
     })) || [];
