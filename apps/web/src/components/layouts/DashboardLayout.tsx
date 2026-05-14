@@ -102,10 +102,6 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
     ],
     admin: [
       { icon: LayoutDashboard, label: "System Status", href: "/dashboard" },
-      { icon: Users, label: "User Management", href: "/dashboard/users" },
-      { icon: ShoppingBag, label: "Order Overview", href: "/dashboard/orders" },
-      { icon: PieChart, label: "Global Analytics", href: "/dashboard/analytics" },
-      { icon: Settings, label: "Platform Settings", href: "/dashboard/settings" },
     ],
     customer: [
       { icon: Sparkles, label: "Discover", href: "/explore" },
@@ -174,7 +170,7 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
                 {allowedRoles.includes("customer") && <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>}
                 {allowedRoles.includes("chef") && <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>}
                 {allowedRoles.includes("rider") && <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>}
-                {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>}
+                {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => window.location.href = (import.meta.env.VITE_ADMIN_URL || "http://localhost:3001")} className="hover:bg-gold/10 cursor-pointer text-gold font-bold">External Admin Portal</DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -339,7 +335,7 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
               {allowedRoles.includes("customer") && <DropdownMenuItem onClick={() => handleRoleSwitch("customer")} className="hover:bg-gold/10 cursor-pointer">Customer View</DropdownMenuItem>}
               {allowedRoles.includes("chef") && <DropdownMenuItem onClick={() => handleRoleSwitch("chef")} className="hover:bg-gold/10 cursor-pointer">Chef Dashboard</DropdownMenuItem>}
               {allowedRoles.includes("rider") && <DropdownMenuItem onClick={() => handleRoleSwitch("rider")} className="hover:bg-gold/10 cursor-pointer">Rider Dashboard</DropdownMenuItem>}
-              {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => handleRoleSwitch("admin")} className="hover:bg-gold/10 cursor-pointer">Admin Panel</DropdownMenuItem>}
+              {allowedRoles.includes("admin") && <DropdownMenuItem onClick={() => window.location.href = (import.meta.env.VITE_ADMIN_URL || "http://localhost:3001")} className="hover:bg-gold/10 cursor-pointer text-gold font-bold">External Admin Portal</DropdownMenuItem>}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
