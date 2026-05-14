@@ -25,6 +25,7 @@ export function TimeframeFilter() {
         { label: "Yesterday", value: "yesterday" },
         { label: "This Week", value: "week" },
         { label: "This Month", value: "month" },
+        { label: "This Year", value: "year" },
       ]}
     />
   )

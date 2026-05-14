@@ -138,7 +138,8 @@ export default async function DashboardPage({
             percentageLabel="Healthy Vendors"
             data={[
               { name: "Healthy", value: stats.vendorHealth.active, color: "#22c55e" },
-              { name: "Warning", value: stats.vendorHealth.suspended + stats.vendorHealth.pending, color: "#eab308" },
+              { name: "Suspended", value: stats.vendorHealth.suspended, color: "#ef4444" },
+              { name: "Pending", value: stats.vendorHealth.pending, color: "#eab308" },
             ]}
             metrics={[
               { label: "Active", value: stats.vendorHealth.active, color: "bg-green-500" },

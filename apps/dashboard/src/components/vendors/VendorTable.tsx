@@ -81,15 +81,26 @@ export function VendorTable({ initialData }: VendorTableProps) {
       accessorKey: "is_active",
       header: "STATUS",
       cell: ({ row }) => {
-        const isActive = row.getValue("is_active") as boolean
+        const isActive = row.original.is_active as boolean
         const isVerified = row.original.is_verified as boolean
+        
+        let label = "SUSPENDED"
+        let colorClass = "bg-red-50 text-red-600"
+
+        if (!isVerified) {
+          label = "PENDING"
+          colorClass = "bg-amber-50 text-amber-600"
+        } else if (isActive) {
+          label = "ACTIVE"
+          colorClass = "bg-green-50 text-green-600"
+        }
         
         return (
           <div className={cn(
             "px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider w-fit",
-            isActive ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+            colorClass
           )}>
-            {isActive ? (isVerified ? "ACTIVE" : "VERIFIED") : "SUSPENDED"}
+            {label}
           </div>
         )
       },
