@@ -12,8 +12,12 @@ import {
 import { AnalyticsCard } from "@/components/ui/analytics-card"
 import { ActivityFeed } from "@/components/ui/activity-feed"
 import { RevenueChart } from "@/components/ui/revenue-chart"
+import { api } from "@/lib/api"
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const stats = await api.analytics.getOverviewStats();
+  const activity = await api.analytics.getRecentActivity(5);
+
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
@@ -26,31 +30,31 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <AnalyticsCard 
           title="Daily Revenue" 
-          value="$42,850.00" 
+          value={`₦${stats.revenue.toLocaleString()}`} 
           icon={TrendingUp} 
           trend={{ value: "+14.2%", isUp: true }}
           description="vs. same day last week"
         />
         <AnalyticsCard 
           title="Active Orders" 
-          value="1,284" 
+          value={stats.activeOrders.toString()} 
           icon={ShoppingBag} 
           trend={{ value: "+8%", isUp: true }}
           description="Live dispatch queue"
         />
         <AnalyticsCard 
           title="Riders Online" 
-          value="452" 
+          value={stats.ridersOnline.toString()} 
           icon={Bike} 
           trend={{ value: "Steady", isUp: true, isNeutral: true }}
-          description="Average wait: 4 min"
+          description="Ready for dispatch"
         />
         <AnalyticsCard 
           title="Failed Deliveries" 
-          value="12" 
+          value={stats.failedDeliveries.toString()} 
           icon={AlertCircle} 
           trend={{ value: "-2%", isUp: true }}
-          description="Resolved: 8/12"
+          description="Resolution pending"
         />
       </div>
 
@@ -90,7 +94,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-[14px] font-bold text-navy leading-tight">Active Vendors</p>
-                  <p className="text-[11px] font-medium text-subtle mt-0.5">242 verified and online</p>
+                  <p className="text-[11px] font-medium text-subtle mt-0.5">Verified and online</p>
                 </div>
               </div>
             </div>
@@ -99,40 +103,16 @@ export default function DashboardPage() {
 
         {/* Live Feed Column */}
         <div className="bg-white p-8 rounded-card border border-divider shadow-card">
-          <ActivityFeed items={[
+          <ActivityFeed items={(activity.length > 0 ? activity : [
             {
-              id: "1",
-              title: "Order #8492 Escalated",
-              description: "Customer reported delayed pickup from Pizza Palace.",
-              timestamp: "2 min ago",
-              icon: AlertCircle,
+              id: "empty",
+              title: "No recent activity",
+              description: "Monitoring live platform events...",
+              timestamp: "Just now",
+              icon: Clock,
               type: "alert"
-            },
-            {
-              id: "2",
-              title: "New Vendor Verified",
-              description: "The Sushi Bar has completed documentation.",
-              timestamp: "15 min ago",
-              icon: CheckCircle2,
-              type: "vendor"
-            },
-            {
-              id: "3",
-              title: "Peak Hour Warning",
-              description: "High demand detected in Central District.",
-              timestamp: "24 min ago",
-              icon: Zap,
-              type: "alert"
-            },
-            {
-              id: "4",
-              title: "Bulk Payout Success",
-              description: "Weekly vendor payouts have been processed.",
-              timestamp: "1 hour ago",
-              icon: CheckCircle2,
-              type: "order"
             }
-          ]} />
+          ]) as any} />
         </div>
       </div>
     </div>

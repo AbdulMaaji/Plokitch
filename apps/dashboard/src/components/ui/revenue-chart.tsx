@@ -42,6 +42,7 @@ const RevenueChart = ({ className }: RevenueChartProps) => {
               axisLine={false} 
               tickLine={false} 
               tick={{ fontSize: 12, fill: COLORS.subtle }} 
+              tickFormatter={(value) => `₦${value.toLocaleString()}`}
             />
             <Tooltip 
               contentStyle={{ 
@@ -50,6 +51,7 @@ const RevenueChart = ({ className }: RevenueChartProps) => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 fontSize: '12px'
               }} 
+              formatter={(value: any) => [`₦${value.toLocaleString()}`, 'Revenue']}
             />
             <Area 
               type="monotone" 

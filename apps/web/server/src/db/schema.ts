@@ -259,6 +259,38 @@ export const riderProfile = pgTable("rider_profile", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const complaint = pgTable("complaint", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  orderId: uuid("order_id")
+    .references(() => order.id),
+  customerId: text("customer_id")
+    .notNull()
+    .references(() => user.id),
+  vendorId: uuid("vendor_id")
+    .references(() => vendor.id),
+  riderId: text("rider_id")
+    .references(() => user.id),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("open"), // open, in-progress, resolved, closed
+  priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
+  category: text("category").notNull().default("general"), // delivery, quality, missing_item, payment, etc
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const auditLog = pgTable("audit_log", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  adminId: text("admin_id").notNull(), // User ID of the admin who performed the action
+  action: text("action").notNull(), // e.g., 'update_vendor_status', 'approve_payout'
+  entityType: text("entity_type").notNull(), // e.g., 'vendor', 'order', 'payout'
+  entityId: text("entity_id"),
+  oldData: jsonb("old_data"),
+  newData: jsonb("new_data"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ──────────────────────────────────────────────────────────────
 // Relations
 // ──────────────────────────────────────────────────────────────
@@ -312,4 +344,11 @@ export const riderProfileRelations = relations(riderProfile, ({ one }) => ({
 export const favoriteVendorRelations = relations(favoriteVendor, ({ one }) => ({
   user: one(user, { fields: [favoriteVendor.userId], references: [user.id] }),
   vendor: one(vendor, { fields: [favoriteVendor.vendorId], references: [vendor.id] }),
+}));
+
+export const complaintRelations = relations(complaint, ({ one }) => ({
+  customer: one(user, { fields: [complaint.customerId], references: [user.id] }),
+  order: one(order, { fields: [complaint.orderId], references: [order.id] }),
+  vendor: one(vendor, { fields: [complaint.vendorId], references: [vendor.id] }),
+  rider: one(user, { fields: [complaint.riderId], references: [user.id] }),
 }));

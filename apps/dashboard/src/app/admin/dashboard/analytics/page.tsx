@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
           insight="Orders surging in Central District peak hours." sparklineData={sparklineData}
         />
         <OperationalScoreCard 
-          title="Platform Revenue" value="$128,450" trend="8.2" isUp={true} icon={DollarSign}
+          title="Platform Revenue" value="₦128,450" trend="8.2" isUp={true} icon={DollarSign}
           insight="Revenue per order up by 4% vs last week." sparklineData={sparklineData}
         />
         <OperationalScoreCard 
@@ -260,8 +260,8 @@ export default function AnalyticsPage() {
             <BarChart data={REVENUE_TRENDS}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.divider} />
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} />
-              <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.subtle }} tickFormatter={(value) => `₦${(value/1000).toFixed(0)}k`} />
+              <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} formatter={(value: any) => [`₦${value.toLocaleString()}`, "Revenue"]} />
               <Bar dataKey="rev" fill={COLORS.navy} radius={[4, 4, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>

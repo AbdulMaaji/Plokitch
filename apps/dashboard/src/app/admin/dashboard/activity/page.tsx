@@ -53,7 +53,7 @@ const ACTIVITY_LOGS = [
     timestamp: "2026-05-11 12:35:48",
     actor: "Admin (Sarah)",
     event: "REFUND_APPROVED",
-    details: "Approved $42.50 for Order #8492.",
+    details: "Approved ₦42.50 for Order #8492.",
     severity: "MEDIUM",
     ip: "102.44.12.8",
     icon: CreditCard

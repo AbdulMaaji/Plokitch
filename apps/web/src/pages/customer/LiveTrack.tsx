@@ -164,12 +164,12 @@ const LiveTrack = () => {
                 {orderLoc?.items?.map((item: any, i: number) => (
                   <div key={i} className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">{item.name} x{item.quantity}</span>
-                    <span className="text-white font-bold">${item.price * item.quantity}</span>
+                    <span className="text-white font-bold">₦{item.price * item.quantity}</span>
                   </div>
                 ))}
                 <div className="pt-4 border-t border-gold/5 flex justify-between items-center">
                   <span className="text-gold font-black uppercase tracking-widest text-xs">Total</span>
-                  <span className="text-2xl font-black text-white font-heading">${orderLoc?.totalAmount || '0'}</span>
+                  <span className="text-2xl font-black text-white font-heading">₦{orderLoc?.totalAmount || '0'}</span>
                 </div>
               </div>
               <Button variant="ghost" className="w-full mt-6 text-gold font-bold hover:bg-gold/5 flex items-center justify-center gap-2">

@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { loginSchema } from "./validations";
+import { validateAdminPassword } from "./config/secrets";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -9,14 +10,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const validatedFields = loginSchema.safeParse(credentials);
 
         if (validatedFields.success) {
-          // In a real app, you would check against a database here
-          // For now, we'll return a mock user
           const { password } = validatedFields.data;
           
-          if (password === "plokitch-agent-2026") {
+          // Environment-isolated operational session protection
+          if (validateAdminPassword(password)) {
             return {
-              id: "admin-1",
-              name: "System Admin",
+              id: "operational-admin",
+              name: "Operational Console",
               email: "admin@plokitch.com",
               role: "ADMIN",
             };
@@ -31,9 +31,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/admin",
   },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = (user as any).role;
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
+        (session.user as any).role = token.role;
       }
       return session;
     },

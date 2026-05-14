@@ -1,12 +1,15 @@
 import * as React from "react"
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar"
 import { DashboardTopbar } from "@/components/layout/DashboardTopbar"
+import { protectAdminRoute } from "@/lib/guards"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  await protectAdminRoute();
+
   return (
     <div className="flex min-h-screen bg-beige">
       {/* Desktop Sidebar */}

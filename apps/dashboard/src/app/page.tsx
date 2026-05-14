@@ -35,7 +35,7 @@ export default function Home() {
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           label="Total Revenue" 
-          value="$12,845.00" 
+          value="₦12,845.00" 
           icon={TrendingUp} 
           change="+12.5%" 
           trend="up" 
@@ -79,7 +79,7 @@ export default function Home() {
                 status="Out for Delivery" 
                 customerName="James Wilson" 
                 eta="12 mins" 
-                amount="$24.50"
+                amount="₦24.50"
                 riderName="David K."
               />
               <OrderCard 
@@ -88,7 +88,7 @@ export default function Home() {
                 status="Preparing Order" 
                 customerName="Sarah Chen" 
                 eta="25 mins" 
-                amount="$42.00"
+                amount="₦42.00"
               />
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function Home() {
             <FoodCard 
               name="Double Smash Burger" 
               description="Two wagyu beef patties, aged cheddar, caramelized onions, and house sauce."
-              price="$16.00"
+              price="₦16.00"
               category="Bestseller"
             />
           </div>
