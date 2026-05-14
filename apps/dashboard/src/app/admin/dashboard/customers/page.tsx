@@ -9,10 +9,10 @@ import { api } from "@/lib/api"
 
 export default async function CustomersPage() {
   const customers = await api.customers.list();
+  const stats = await api.customers.getStats();
 
-  // Calculate quick insights
-  const totalCustomers = customers.length;
-  const activeCount = customers.filter(c => c.is_active).length;
+  const totalCustomers = stats.total;
+  const activeCount = stats.active24h;
 
   return (
     <div className="flex flex-col gap-8">

@@ -73,9 +73,19 @@ export const analyticsApi = {
     const { count: failedCurrent } = await supabase.from('order').select('*', { count: 'exact', head: true }).eq('status', 'cancelled').gte('created_at', sPeriod);
     const { count: failedPrev } = await supabase.from('order').select('*', { count: 'exact', head: true }).eq('status', 'cancelled').lt('created_at', sPeriod).gte('created_at', sPrevPeriod);
 
-    // 5. Vendor Health
+    // 5. Active Engagement (Last 24h)
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    
+    // Active Customers: Customers who placed an order in the last 24h
+    const { data: activeCustData } = await supabase.from('order').select('customer_id').gte('created_at', twentyFourHoursAgo);
+    const activeCustomers24h = new Set(activeCustData?.map(o => o.customer_id)).size || 0;
+
+    // Active Vendors: Vendors who received an order in the last 24h
+    const { data: activeVendData } = await supabase.from('order').select('vendor_id').gte('created_at', twentyFourHoursAgo);
+    const activeVendors24h = new Set(activeVendData?.map(o => o.vendor_id)).size || 0;
+
+    // Vendor Health (Total snapshot)
     const { data: vendorStats } = await supabase.from('vendor').select('is_active, is_verified');
-    const activeVendors = vendorStats?.filter(v => v.is_active).length || 0;
 
     // Sparkline Helper
     const getSparklineData = async (table: string, type: 'revenue' | 'count', status?: string) => {
@@ -134,11 +144,15 @@ export const analyticsApi = {
         trend: (failedPrev || 0) > 0 ? `${((((failedCurrent || 0) - (failedPrev || 0)) / (failedPrev || 1)) * 100).toFixed(1)}%` : '0%',
         sparkline: failedSparkline
       },
+      activeEngagement: {
+        customers: activeCustomers24h,
+        vendors: activeVendors24h,
+      },
       vendorHealth: {
-        active: vendorStats?.filter(v => v.is_active && v.is_verified).length || 0,
+        active: activeVendors24h,
         suspended: vendorStats?.filter(v => !v.is_active && v.is_verified).length || 0,
         pending: vendorStats?.filter(v => !v.is_verified).length || 0,
-        percentage: vendorStats?.length ? Math.round((activeVendors / vendorStats.length) * 100) : 0
+        percentage: vendorStats?.length ? Math.round((activeVendors24h / vendorStats.length) * 100) : 0
       }
     };
   },
