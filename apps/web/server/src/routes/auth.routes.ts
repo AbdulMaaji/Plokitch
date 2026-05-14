@@ -14,7 +14,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const url = new URL(
           request.url,
-          `${request.protocol}://${request.hostname}`
+          `${request.protocol}://${request.headers.host}`
         );
 
         const headers = fromNodeHeaders(request.headers);
@@ -37,6 +37,11 @@ export async function authRoutes(fastify: FastifyInstance) {
         });
 
         const body = await response.text();
+
+        if (response.status >= 400) {
+          fastify.log.warn({ status: response.status, body }, "Auth handler error response");
+        }
+
         return reply.send(body || null);
       } catch (error) {
         fastify.log.error(error, "CRITICAL Auth handler error");

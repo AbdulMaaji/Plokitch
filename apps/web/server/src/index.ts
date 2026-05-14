@@ -24,9 +24,9 @@ const fastify = Fastify({
     transport:
       process.env.NODE_ENV !== "production"
         ? {
-            target: "pino-pretty",
-            options: { colorize: true, translateTime: "SYS:standard", ignore: "pid,hostname" },
-          }
+          target: "pino-pretty",
+          options: { colorize: true, translateTime: "SYS:standard", ignore: "pid,hostname" },
+        }
         : undefined,
   },
   // Do NOT use body parser on auth routes (better-auth parses its own body)
@@ -64,9 +64,9 @@ await fastify.register(fastifyCors, {
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
-    "Content-Type", 
-    "Authorization", 
-    "X-Requested-With", 
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
     "Cookie",
     "x-better-auth-session"
   ],
