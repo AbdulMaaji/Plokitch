@@ -55,10 +55,25 @@ const App = () => (
           <Route path="/admin" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
           
           <Route path="/dashboard/orders" element={<ProtectedRoute><DashboardOrders /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/orders" element={<ProtectedRoute><DashboardOrders /></ProtectedRoute>} />
+          <Route path="/dashboard/rider/orders" element={<ProtectedRoute><DashboardOrders /></ProtectedRoute>} />
+
           <Route path="/dashboard/menu" element={<ProtectedRoute><DashboardMenu /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/menu" element={<ProtectedRoute><DashboardMenu /></ProtectedRoute>} />
+
           <Route path="/dashboard/analytics" element={<ProtectedRoute><DashboardAnalytics /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/analytics" element={<ProtectedRoute><DashboardAnalytics /></ProtectedRoute>} />
+          <Route path="/dashboard/rider/analytics" element={<ProtectedRoute><DashboardAnalytics /></ProtectedRoute>} />
+
           <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardSettings /></ProtectedRoute>} />
+          <Route path="/dashboard/chef/settings" element={<ProtectedRoute><DashboardSettings /></ProtectedRoute>} />
+          <Route path="/dashboard/rider/settings" element={<ProtectedRoute><DashboardSettings /></ProtectedRoute>} />
+
           <Route path="/dashboard/users" element={<ProtectedRoute><DashboardUsers /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute><DashboardUsers /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute><DashboardSettings /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute><DashboardAnalytics /></ProtectedRoute>} />
+          <Route path="/admin/orders" element={<ProtectedRoute><DashboardOrders /></ProtectedRoute>} />
           
           {/* Customer Routes (auth-protected) */}
           <Route path="/customer" element={<Navigate to="/customer/kitchens" replace />} />
