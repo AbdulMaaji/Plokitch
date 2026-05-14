@@ -50,6 +50,10 @@ const App = () => (
           
           {/* Unified Dashboard Routes (auth-protected) */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+          <Route path="/dashboard/chef" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+          <Route path="/dashboard/rider" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+          
           <Route path="/dashboard/orders" element={<ProtectedRoute><DashboardOrders /></ProtectedRoute>} />
           <Route path="/dashboard/menu" element={<ProtectedRoute><DashboardMenu /></ProtectedRoute>} />
           <Route path="/dashboard/analytics" element={<ProtectedRoute><DashboardAnalytics /></ProtectedRoute>} />
