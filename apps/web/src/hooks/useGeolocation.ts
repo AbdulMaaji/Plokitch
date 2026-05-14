@@ -22,8 +22,8 @@ interface UseGeolocationOptions {
 
 const defaultOptions: UseGeolocationOptions = {
   enableHighAccuracy: true,
-  maximumAge: 5000,
-  timeout: 15000,
+  maximumAge: 10000,
+  timeout: 30000, // Increased to 30s
   autoStart: true,
 };
 
@@ -60,19 +60,26 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     let message: string;
     switch (error.code) {
       case error.PERMISSION_DENIED:
-        message = "Location permission denied. Please enable location access in your browser settings.";
+        message = "Location permission denied. Please enable location access.";
         break;
       case error.POSITION_UNAVAILABLE:
-        message = "Location unavailable. Please check your device's GPS.";
+        message = "Location unavailable. Please check your GPS.";
         break;
       case error.TIMEOUT:
-        message = "Location request timed out. Retrying...";
+        message = "Location request timed out. Trying low-accuracy mode...";
+        // Fallback: try one more time without high accuracy if it was enabled
+        if (opts.enableHighAccuracy && watchIdRef.current !== null) {
+           navigator.geolocation.clearWatch(watchIdRef.current);
+           watchIdRef.current = navigator.geolocation.watchPosition(onSuccess, (e) => {
+             setState((prev) => ({ ...prev, error: "Location failed after timeout.", isTracking: false }));
+           }, { ...opts, enableHighAccuracy: false, timeout: 15000 });
+        }
         break;
       default:
         message = "An unknown error occurred while getting your location.";
     }
     setState((prev) => ({ ...prev, error: message, isTracking: false }));
-  }, []);
+  }, [onSuccess, opts]);
 
   const startTracking = useCallback(() => {
     if (!navigator.geolocation) {
@@ -107,19 +114,27 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   }, []);
 
   const getLocation = useCallback((): Promise<{ lat: number; lng: number } | null> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        toast.error("Geolocation is not supported by your browser.");
+        toast.error("Geolocation not supported.");
         resolve(null);
         return;
       }
       navigator.geolocation.getCurrentPosition(
         (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
         (err) => {
-          console.error("Geolocation error:", err);
-          resolve(null);
+          if (err.code === err.TIMEOUT) {
+            // Fallback to low accuracy on single request timeout
+            navigator.geolocation.getCurrentPosition(
+              (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+              () => resolve(null),
+              { enableHighAccuracy: false, timeout: 10000 }
+            );
+          } else {
+            resolve(null);
+          }
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 15000 }
       );
     });
   }, []);

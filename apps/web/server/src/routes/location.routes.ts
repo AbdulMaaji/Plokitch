@@ -17,6 +17,29 @@ export async function locationRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string };
 
+      // Handle mock/demo IDs for development
+      if (orderId.startsWith("demo-")) {
+        return reply.send({
+          success: true,
+          data: {
+            orderId,
+            status: "preparing",
+            kitchen: { lat: 51.5074, lng: -0.1278 }, // Mock London coordinates
+            rider: { lat: 51.5174, lng: -0.1378 },
+            delivery: { lat: 51.4974, lng: -0.1178 },
+            riderInfo: { name: "Demo Rider", image: null },
+            items: [{ name: "Artisan Burger", quantity: 2 }],
+            totalAmount: "25.00"
+          }
+        });
+      }
+
+      // Validate UUID to prevent Postgres 500 errors
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+      if (!isUuid) {
+        return reply.status(404).send({ success: false, error: "Invalid order ID format" });
+      }
+
       const orderData = await db.query.order.findFirst({
         where: eq(order.id, orderId),
         with: {

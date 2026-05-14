@@ -31,9 +31,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
-// We keep a demo ID just for fallback if none selected
-const DEMO_ORDER_ID = "demo-order-9921";
-
 const RiderDashboard = () => {
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();

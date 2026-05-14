@@ -23,16 +23,11 @@ import type { LatLng } from "@/components/Map/OrderTrackingMap";
 import { useParams } from "react-router-dom";
 import { useOrderLocation, GOMBE_CENTER } from "@/hooks/useOrderLocation";
 
-// We keep a demo ID just for fallback if hitting /track without an ID
-// But ideally, the user should be routed to /track/:orderId
-const DEMO_ORDER_ID = "demo-order-9921";
-
 const LiveTrack = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const activeOrderId = orderId || DEMO_ORDER_ID;
 
-  const { data: orderLoc, isLoading } = useOrderLocation(activeOrderId);
-  const { riderPosition, isConnected } = useTrackRider(activeOrderId);
+  const { data: orderLoc, isLoading } = useOrderLocation(orderId);
+  const { riderPosition, isConnected } = useTrackRider(orderId);
 
   const currentRiderPos: LatLng = riderPosition
     ? { lat: riderPosition.lat, lng: riderPosition.lng }
@@ -40,6 +35,21 @@ const LiveTrack = () => {
 
   const currentKitchenPos: LatLng = orderLoc?.kitchen || GOMBE_CENTER;
   const currentDeliveryPos: LatLng = orderLoc?.delivery || { lat: GOMBE_CENTER.lat - 0.01, lng: GOMBE_CENTER.lng - 0.01 };
+
+  if (!orderId && !isLoading) {
+    return (
+      <DashboardLayout role="customer">
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-4">
+          <div className="w-20 h-20 bg-gold/5 rounded-full flex items-center justify-center border border-gold/10">
+            <Navigation size={40} className="text-gold/20" />
+          </div>
+          <h2 className="text-2xl font-black text-white uppercase tracking-widest">No Active Order</h2>
+          <p className="text-muted-foreground max-w-sm">You don't have any orders being delivered right now. Browse our kitchens to find something delicious!</p>
+          <Button onClick={() => window.location.href = "/customer/kitchens"} className="bg-gold text-background font-black px-10 rounded-xl h-12">EXPLORE KITCHENS</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const getStatusStep = (status: string) => {
     const statusMap: Record<string, number> = {
