@@ -23,9 +23,31 @@ interface OrderTableProps {
 }
 
 export function OrderTable({ initialData }: OrderTableProps) {
-  const [data, setData] = React.useState(initialData);
+  const [data, setData] = React.useState(initialData)
+  const [searchTerm, setSearchTerm] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("all")
+
+  React.useEffect(() => {
+    let filtered = [...initialData]
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(o => o.status === statusFilter)
+    }
+
+    if (searchTerm) {
+      const query = searchTerm.toLowerCase()
+      filtered = filtered.filter(o => 
+        o.id.toLowerCase().includes(query) ||
+        (o.customer?.name || '').toLowerCase().includes(query) ||
+        (o.vendor?.business_name || '').toLowerCase().includes(query)
+      )
+    }
+
+    setData(filtered)
+  }, [searchTerm, statusFilter, initialData])
 
   const columns: ColumnDef<any>[] = [
+    // ... same columns as before (omitted for brevity in instruction, but keep them in replacement)
     {
       accessorKey: "id",
       header: "ORDER ID",
@@ -108,9 +130,16 @@ export function OrderTable({ initialData }: OrderTableProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col md:flex-row justify-between gap-4">
-        <SearchBar placeholder="Search orders..." className="max-w-md w-full" />
+        <SearchBar 
+          placeholder="Search orders..." 
+          className="max-w-md w-full" 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <FilterDropdown 
           placeholder="Filter Status" 
+          value={statusFilter}
+          onValueChange={setStatusFilter}
           options={[
             { label: "All Orders", value: "all" },
             { label: "Pending", value: "pending" },

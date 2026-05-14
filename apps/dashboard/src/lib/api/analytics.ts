@@ -9,14 +9,33 @@ export const analyticsApi = {
   /**
    * Fetches core operational metrics for the Dashboard Overview
    */
-  getOverviewStats: async () => {
+  getOverviewStats: async (timeframe: string = "today") => {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     const now = new Date();
-    const todayStart = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-    const yesterdayStart = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString();
-    yesterdayStart.split('T')[0] + 'T00:00:00.000Z'; // Ensure yesterday start is clean
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const todayStart = today.toISOString();
+    const yesterdayStart = yesterday.toISOString();
+
+    let startOfPeriod = todayStart;
+    if (timeframe === "yesterday") startOfPeriod = yesterdayStart;
+    else if (timeframe === "week") {
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      startOfPeriod = weekAgo.toISOString();
+    } else if (timeframe === "month") {
+      const monthAgo = new Date(today);
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      startOfPeriod = monthAgo.toISOString();
+    } else if (timeframe === "year") {
+      const yearAgo = new Date(today);
+      yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+      startOfPeriod = yearAgo.toISOString();
+    }
 
     // 1. Daily Revenue (Today vs Yesterday)
     const { data: revenueToday } = await supabase
@@ -73,19 +92,19 @@ export const analyticsApi = {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'cancelled')
       .lt('created_at', todayStart)
-      .gte('created_at', yesterdayStart);
+      .gte('created_at', new Date(yesterdayStart).toISOString());
 
     const fToday = failedTodayCount || 0;
     const fYesterday = failedYesterdayCount || 0;
 
     // 5. Vendor Health
     const { data: vendorStats } = await supabase
-      .from('vendor_profile')
-      .select('status');
+      .from('vendor')
+      .select('is_active, is_verified');
     
-    const activeVendors = vendorStats?.filter(v => v.status === 'active').length || 0;
-    const suspendedVendors = vendorStats?.filter(v => v.status === 'suspended').length || 0;
-    const pendingVendors = vendorStats?.filter(v => v.status === 'pending').length || 0;
+    const activeVendors = vendorStats?.filter(v => v.is_active).length || 0;
+    const suspendedVendors = vendorStats?.filter(v => !v.is_active).length || 0;
+    const pendingVendors = vendorStats?.filter(v => !v.is_verified).length || 0;
 
     // Helper for sparkline data (last 7 days)
     const getSparklineData = async (table: string, type: 'revenue' | 'count', status?: string) => {
@@ -148,14 +167,19 @@ export const analyticsApi = {
   /**
    * Fetches data for the Revenue vs Orders chart
    */
-  getChartData: async () => {
+  getChartData: async (timeframe: string = "today") => {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
     
+    // Default: Last 24 hours
+    let hours = 24;
+    if (timeframe === "week") hours = 168;
+    if (timeframe === "month") hours = 720;
+
     const { data: orders } = await supabase
       .from('order')
       .select('total_amount, created_at, status')
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .gte('created_at', new Date(Date.now() - hours * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: true });
 
     const buckets: Record<string, { revenue: number; orders: number }> = {
@@ -189,7 +213,7 @@ export const analyticsApi = {
   /**
    * Fetches data for dispatch performance donut chart
    */
-  getDispatchPerformance: async () => {
+  getDispatchPerformance: async (timeframe: string = "today") => {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
@@ -216,7 +240,7 @@ export const analyticsApi = {
   /**
    * Fetches average times for the order lifecycle timeline
    */
-  getLifecycleAverages: async () => {
+  getLifecycleAverages: async (timeframe: string = "today") => {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
@@ -258,7 +282,7 @@ export const analyticsApi = {
   /**
    * Fetches recent activity for the Activity Feed
    */
-  getRecentActivity: async (limit = 10) => {
+  getRecentActivity: async (limit = 10, timeframe: string = "today") => {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 

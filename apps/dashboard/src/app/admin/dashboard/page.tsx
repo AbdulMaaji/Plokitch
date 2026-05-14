@@ -13,13 +13,20 @@ import { RevenueChart } from "@/components/ui/revenue-chart"
 import { DonutChartCard } from "@/components/ui/donut-chart-card"
 import { ExecutiveTimeline } from "@/components/ui/executive-timeline"
 import { api } from "@/lib/api"
+import { TimeframeFilter } from "@/components/analytics/TimeframeFilter"
 
-export default async function DashboardPage() {
-  const stats = await api.analytics.getOverviewStats();
-  const activity = await api.analytics.getRecentActivity(8);
-  const chartData = await api.analytics.getChartData();
-  const dispatchPerformance = await api.analytics.getDispatchPerformance();
-  const lifecycleAverages = await api.analytics.getLifecycleAverages();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { timeframe?: string }
+}) {
+  const timeframe = searchParams.timeframe || "today"
+  
+  const stats = await api.analytics.getOverviewStats(timeframe);
+  const activity = await api.analytics.getRecentActivity(8, timeframe);
+  const chartData = await api.analytics.getChartData(timeframe);
+  const dispatchPerformance = await api.analytics.getDispatchPerformance(timeframe);
+  const lifecycleAverages = await api.analytics.getLifecycleAverages(timeframe);
 
   // Calculate aggregated totals for the chart footer
   const totalOrders = chartData.reduce((sum, d) => sum + d.orders, 0);
@@ -28,22 +35,19 @@ export default async function DashboardPage() {
   const completionRate = dispatchPerformance.onTimePercentage;
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header with Date Picker */}
-      <div className="flex justify-between items-end">
+    <div className="flex flex-col gap-10">
+      {/* Header with Date Filter */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[32px] font-heading font-bold text-navy tracking-tight">Executive Overview</h1>
+          <h1 className="text-[32px] font-heading font-black text-navy tracking-tight">Executive Overview</h1>
           <p className="text-[15px] font-medium text-subtle/80">Real-time operational health and platform performance metrics.</p>
         </div>
-        <div className="flex items-center gap-6">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-divider rounded-lg shadow-sm hover:bg-beige/50 transition-all">
-            <Calendar size={18} className="text-subtle" />
-            <span className="text-[13px] font-bold text-navy">Today</span>
-            <ChevronDown size={14} className="text-subtle" />
-          </button>
-          <div className="flex items-center gap-2">
+        
+        <div className="flex items-center gap-4">
+          <TimeframeFilter />
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-beige/30 rounded-full border border-divider">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[11px] font-bold text-subtle uppercase tracking-widest">Auto refresh: 30s</span>
+            <span className="text-[11px] font-black text-navy uppercase tracking-widest">Auto-Refresh: 30s</span>
           </div>
         </div>
       </div>

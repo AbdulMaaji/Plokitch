@@ -23,9 +23,35 @@ interface VendorTableProps {
 }
 
 export function VendorTable({ initialData }: VendorTableProps) {
-  const [data, setData] = React.useState(initialData);
+  const [data, setData] = React.useState(initialData)
+  const [searchTerm, setSearchTerm] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("all")
+
+  React.useEffect(() => {
+    let filtered = [...initialData]
+
+    if (statusFilter !== "all") {
+      if (statusFilter === "ACTIVE") {
+        filtered = filtered.filter(v => v.is_active)
+      } else if (statusFilter === "SUSPENDED") {
+        filtered = filtered.filter(v => !v.is_active)
+      }
+    }
+
+    if (searchTerm) {
+      const query = searchTerm.toLowerCase()
+      filtered = filtered.filter(v => 
+        v.business_name.toLowerCase().includes(query) ||
+        (v.user?.email || '').toLowerCase().includes(query) ||
+        (v.cuisine_type || '').toLowerCase().includes(query)
+      )
+    }
+
+    setData(filtered)
+  }, [searchTerm, statusFilter, initialData])
 
   const columns: ColumnDef<any>[] = [
+    // ... same columns (omitted for brevity)
     {
       accessorKey: "business_name",
       header: "VENDOR NAME",
@@ -99,9 +125,16 @@ export function VendorTable({ initialData }: VendorTableProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col md:flex-row justify-between gap-4">
-        <SearchBar placeholder="Search vendors..." className="max-w-md w-full" />
+        <SearchBar 
+          placeholder="Search vendors..." 
+          className="max-w-md w-full" 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <FilterDropdown 
           placeholder="Select Status" 
+          value={statusFilter}
+          onValueChange={setStatusFilter}
           options={[
             { label: "All Statuses", value: "all" },
             { label: "Active", value: "ACTIVE" },

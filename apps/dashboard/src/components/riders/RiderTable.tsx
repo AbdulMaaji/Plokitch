@@ -22,9 +22,35 @@ interface RiderTableProps {
 }
 
 export function RiderTable({ initialData }: RiderTableProps) {
-  const [data, setData] = React.useState(initialData);
+  const [data, setData] = React.useState(initialData)
+  const [searchTerm, setSearchTerm] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("all")
+
+  React.useEffect(() => {
+    let filtered = [...initialData]
+
+    if (statusFilter !== "all") {
+      if (statusFilter === "ONLINE") {
+        filtered = filtered.filter(r => r.is_available)
+      } else if (statusFilter === "OFFLINE") {
+        filtered = filtered.filter(r => !r.is_available)
+      }
+    }
+
+    if (searchTerm) {
+      const query = searchTerm.toLowerCase()
+      filtered = filtered.filter(r => 
+        (r.user?.name || '').toLowerCase().includes(query) ||
+        (r.user?.phone || '').toLowerCase().includes(query) ||
+        (r.vehicle_type || '').toLowerCase().includes(query)
+      )
+    }
+
+    setData(filtered)
+  }, [searchTerm, statusFilter, initialData])
 
   const columns: ColumnDef<any>[] = [
+    // ... same columns (omitted)
     {
       accessorKey: "user.name",
       header: "RIDER NAME",
@@ -98,9 +124,16 @@ export function RiderTable({ initialData }: RiderTableProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col md:flex-row justify-between gap-4">
-        <SearchBar placeholder="Search by name, ID, or phone..." className="max-w-md w-full" />
+        <SearchBar 
+          placeholder="Search by name, ID, or phone..." 
+          className="max-w-md w-full" 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <FilterDropdown 
           placeholder="Fleet Status" 
+          value={statusFilter}
+          onValueChange={setStatusFilter}
           options={[
             { label: "All Riders", value: "all" },
             { label: "Online", value: "ONLINE" },
