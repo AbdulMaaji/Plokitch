@@ -1,6 +1,7 @@
 import * as React from "react"
 import { LucideIcon, ShoppingBag, Bike, Store, AlertCircle, Clock, CheckCircle2, CreditCard, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 interface ActivityItem {
   id: string
@@ -44,7 +45,13 @@ export function ActivityFeed({ items, className }: ActivityFeedProps) {
       
       <div className="flex flex-col gap-6">
         {items.map((item, index) => {
-          const config = TYPE_CONFIG[item.type] || { icon: Clock, color: "text-navy", bgColor: "bg-beige" };
+          // Fallback for mapping the new categories to UI types
+          const uiType = (item.type as string).toLowerCase().includes('order') ? 'order' :
+                         (item.type as string).toLowerCase().includes('rider') ? 'rider' :
+                         (item.type as string).toLowerCase().includes('vendor') ? 'vendor' :
+                         (item.type as string).toLowerCase().includes('payout') ? 'payout' : 'system';
+          
+          const config = TYPE_CONFIG[uiType as ActivityItem['type']] || { icon: Clock, color: "text-navy", bgColor: "bg-beige" };
           const Icon = item.icon || config.icon;
           
           return (
@@ -70,9 +77,9 @@ export function ActivityFeed({ items, className }: ActivityFeedProps) {
       </div>
 
       <div className="pt-4 border-t border-divider">
-        <button className="text-[12px] font-bold text-navy hover:text-primary transition-colors flex items-center gap-2 uppercase tracking-widest mx-auto">
+        <Link href="/admin/dashboard/activity" className="text-[12px] font-bold text-navy hover:text-primary transition-colors flex items-center gap-2 uppercase tracking-widest mx-auto justify-center">
           View all activity <span className="text-primary">→</span>
-        </button>
+        </Link>
       </div>
     </div>
   )

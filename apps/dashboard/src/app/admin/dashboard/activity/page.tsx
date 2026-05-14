@@ -18,76 +18,92 @@ import {
   Filter,
   Activity,
   Terminal,
-  ExternalLink
+  ExternalLink,
+  ShoppingBag,
+  Clock,
+  RefreshCw
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import { SearchBar } from "@/components/ui/search-bar"
 import { FilterDropdown } from "@/components/ui/filter-dropdown"
 import { cn } from "@/lib/utils"
+import { getActivityFeedAction, getActivityMetricsAction } from "@/app/actions/activity-actions"
+import { formatDistanceToNow } from "date-fns"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
-// Mock Data for Activity Logs
-const ACTIVITY_LOGS = [
-  {
-    id: "LOG-9921",
-    timestamp: "2026-05-11 12:45:02",
-    actor: "Admin (Abdul)",
-    event: "VENDOR_VERIFIED",
-    details: "Verified 'The Sushi Bar' documents.",
-    severity: "INFO",
-    ip: "192.168.1.42",
-    icon: Store
-  },
-  {
-    id: "LOG-9922",
-    timestamp: "2026-05-11 12:40:15",
-    actor: "System",
-    event: "AUTO_DISPATCH_ON",
-    details: "Algorithm switched to high-demand mode.",
-    severity: "INFO",
-    ip: "Internal",
-    icon: Zap
-  },
-  {
-    id: "LOG-9923",
-    timestamp: "2026-05-11 12:35:48",
-    actor: "Admin (Sarah)",
-    event: "REFUND_APPROVED",
-    details: "Approved ₦42.50 for Order #8492.",
-    severity: "MEDIUM",
-    ip: "102.44.12.8",
-    icon: CreditCard
-  },
-  {
-    id: "LOG-9924",
-    timestamp: "2026-05-11 12:30:11",
-    actor: "Admin (System)",
-    event: "SECURITY_AUTH_FAILED",
-    details: "3 failed login attempts for user 'moderator_01'.",
-    severity: "HIGH",
-    ip: "45.12.84.192",
-    icon: Lock
-  },
-  {
-    id: "LOG-9925",
-    timestamp: "2026-05-11 12:15:22",
-    actor: "Rider (Ahmed)",
-    event: "RIDER_GPS_OFFLINE",
-    details: "Connection lost for 4 minutes in Downtown.",
-    severity: "LOW",
-    ip: "Mobile (LTE)",
-    icon: Bike
-  }
-]
-
-type ActivityLog = typeof ACTIVITY_LOGS[0]
+const ICON_MAP: Record<string, any> = {
+  'ORDER_EVENT': ShoppingBag,
+  'VENDOR_EVENT': Store,
+  'RIDER_EVENT': Bike,
+  'PAYMENT_EVENT': CreditCard,
+  'CUSTOMER_EVENT': User,
+  'ADMIN_EVENT': ShieldCheck,
+  'SYSTEM_EVENT': Zap,
+  'SECURITY_EVENT': Lock,
+}
 
 export default function ActivityPage() {
-  const columns: ColumnDef<ActivityLog>[] = [
+  const [logs, setLogs] = React.useState<any[]>([])
+  const [metrics, setMetrics] = React.useState<any>(null)
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [isLive, setIsLive] = React.useState(true)
+  const [lastRefreshed, setLastRefreshed] = React.useState(new Date())
+  
+  // Filter States
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [eventType, setEventType] = React.useState("all")
+  const [severity, setSeverity] = React.useState("all")
+
+  const fetchData = React.useCallback(async () => {
+    try {
+      const [newLogs, newMetrics] = await Promise.all([
+        getActivityFeedAction({ 
+          query: searchQuery, 
+          type: eventType, 
+          severity: severity 
+        }),
+        getActivityMetricsAction()
+      ])
+      setLogs(newLogs)
+      setMetrics(newMetrics)
+      setLastRefreshed(new Date())
+    } catch (error) {
+      console.error("Failed to fetch activity data", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [searchQuery, eventType, severity])
+
+  React.useEffect(() => {
+    fetchData()
+    let interval: any
+    if (isLive) {
+      interval = setInterval(fetchData, 15000)
+    }
+    return () => clearInterval(interval)
+  }, [isLive, fetchData])
+
+  const columns: ColumnDef<any>[] = [
     {
       accessorKey: "timestamp",
       header: "TIMESTAMP",
-      cell: ({ row }) => <span className="text-caption font-medium text-subtle">{row.getValue("timestamp")}</span>,
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("timestamp"))
+        return (
+          <div className="flex flex-col">
+            <span className="text-[11px] font-bold text-navy">{date.toLocaleTimeString()}</span>
+            <span className="text-[9px] text-subtle uppercase">{formatDistanceToNow(date, { addSuffix: true })}</span>
+          </div>
+        )
+      },
     },
     {
       accessorKey: "actor",
@@ -105,7 +121,7 @@ export default function ActivityPage() {
       accessorKey: "event",
       header: "EVENT",
       cell: ({ row }) => {
-        const Icon = row.original.icon
+        const Icon = ICON_MAP[row.original.type] || Activity
         return (
           <div className="flex items-center gap-2">
             <Icon size={14} className="text-subtle" />
@@ -117,7 +133,7 @@ export default function ActivityPage() {
     {
       accessorKey: "details",
       header: "DETAILS",
-      cell: ({ row }) => <span className="text-caption text-subtle max-w-[250px] truncate block">{row.getValue("details")}</span>,
+      cell: ({ row }) => <span className="text-caption text-subtle max-w-[300px] truncate block">{row.getValue("details")}</span>,
     },
     {
       accessorKey: "severity",
@@ -127,9 +143,9 @@ export default function ActivityPage() {
         return (
           <div className={cn(
             "px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest w-fit uppercase",
-            severity === "HIGH" ? "bg-red-50 text-red-600" :
-            severity === "MEDIUM" ? "bg-orange-50 text-orange-600" :
-            "bg-blue-50 text-blue-600"
+            severity === "HIGH" ? "bg-red-50 text-red-600 border border-red-100" :
+            severity === "MEDIUM" ? "bg-orange-50 text-orange-600 border border-orange-100" :
+            "bg-blue-50 text-blue-600 border border-blue-100"
           )}>
             {severity}
           </div>
@@ -138,7 +154,7 @@ export default function ActivityPage() {
     },
     {
       accessorKey: "ip",
-      header: "IP ADDRESS",
+      header: "SOURCE",
       cell: ({ row }) => <span className="text-[10px] font-mono text-subtle">{row.getValue("ip")}</span>,
     },
     {
@@ -150,12 +166,22 @@ export default function ActivityPage() {
               <MoreHorizontal size={16} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <ExternalLink size={14} /> View Raw JSON
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="text-[10px] font-bold text-subtle uppercase tracking-widest px-2 py-1.5">Intelligence Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-divider" />
+            {row.original.type === 'ORDER_EVENT' && (
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer p-2.5">
+                <History size={14} className="text-primary" />
+                <span className="font-semibold text-navy">View Order Timeline</span>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer p-2.5">
+              <ExternalLink size={14} /> 
+              <span className="font-semibold text-navy">View Raw JSON</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              Investigate Actor
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer p-2.5">
+              <ShieldCheck size={14} />
+              <span className="font-semibold text-navy">Investigate Actor</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -167,56 +193,72 @@ export default function ActivityPage() {
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-h1 font-bold text-navy">Activity Audit</h1>
-          <p className="text-body text-subtle">Complete audit trail of platform administrative and operational events.</p>
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-3xl font-heading font-bold text-navy tracking-tight">Activity Audit</h1>
+          <p className="text-[15px] font-medium text-subtle/80">Centralized operational intelligence and platform audit stream.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2 h-11 px-6 border-divider">
             <Download size={18} /> DOWNLOAD CSV
           </Button>
-          <Button className="bg-navy hover:bg-navy/90 text-white flex items-center gap-2">
-            <Activity size={18} /> LIVE STREAM OFF
+          <Button 
+            onClick={() => setIsLive(!isLive)}
+            className={cn(
+              "flex items-center gap-2 h-11 px-6 shadow-sm transition-all",
+              isLive ? "bg-green-600 hover:bg-green-700 text-white" : "bg-navy hover:bg-navy/90 text-white"
+            )}
+          >
+            {isLive ? <RefreshCw size={18} className="animate-spin" /> : <Activity size={18} />}
+            {isLive ? "LIVE STREAM ON" : "LIVE STREAM OFF"}
           </Button>
         </div>
       </div>
 
       {/* Audit Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-card border border-divider shadow-sm">
-          <p className="text-caption font-bold text-subtle uppercase tracking-wider">Total Events (24h)</p>
-          <h3 className="text-[28px] font-bold text-navy mt-1">1,842</h3>
+        <div className="bg-white p-6 rounded-card border border-divider shadow-card">
+          <p className="text-[10px] font-bold text-subtle uppercase tracking-widest">Total Events (24h)</p>
+          <h3 className="text-[28px] font-bold text-navy mt-1">{metrics?.totalEvents || "---"}</h3>
         </div>
-        <div className="bg-white p-6 rounded-card border border-divider shadow-sm">
-          <p className="text-caption font-bold text-subtle uppercase tracking-wider">Admin Actions</p>
-          <h3 className="text-[28px] font-bold text-navy mt-1">124</h3>
+        <div className="bg-white p-6 rounded-card border border-divider shadow-card">
+          <p className="text-[10px] font-bold text-subtle uppercase tracking-widest">Admin Actions</p>
+          <h3 className="text-[28px] font-bold text-navy mt-1">{metrics?.adminActions || "---"}</h3>
         </div>
-        <div className="bg-white p-6 rounded-card border border-divider shadow-sm">
-          <p className="text-caption font-bold text-subtle uppercase tracking-wider">High Severity</p>
-          <h3 className="text-[28px] font-bold text-red-600 mt-1">08</h3>
+        <div className="bg-white p-6 rounded-card border border-divider shadow-card">
+          <p className="text-[10px] font-bold text-subtle uppercase tracking-widest">High Severity</p>
+          <h3 className="text-[28px] font-bold text-red-600 mt-1">{metrics?.highSeverity || "0"}</h3>
         </div>
-        <div className="bg-white p-6 rounded-card border border-divider shadow-sm">
-          <p className="text-caption font-bold text-subtle uppercase tracking-wider">Unique Actors</p>
-          <h3 className="text-[28px] font-bold text-navy mt-1">452</h3>
+        <div className="bg-white p-6 rounded-card border border-divider shadow-card">
+          <p className="text-[10px] font-bold text-subtle uppercase tracking-widest">Platform Uptime</p>
+          <h3 className="text-[28px] font-bold text-navy mt-1">{metrics?.platformUptime || "99.9%"}</h3>
         </div>
       </div>
 
       {/* Table Section */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row justify-between gap-4">
-          <SearchBar placeholder="Search by actor, event, or keyword..." className="max-w-md w-full" />
+          <SearchBar 
+            placeholder="Search by actor, event, or keyword..." 
+            className="max-w-md w-full h-11" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <div className="flex gap-3">
             <FilterDropdown 
               placeholder="Event Type" 
+              value={eventType}
+              onValueChange={setEventType}
               options={[
                 { label: "All Events", value: "all" },
-                { label: "Admin Actions", value: "admin" },
-                { label: "System Events", value: "system" },
-                { label: "Security Logs", value: "security" },
+                { label: "Orders", value: "ORDER_EVENT" },
+                { label: "Vendors", value: "VENDOR_EVENT" },
+                { label: "Security", value: "SECURITY_EVENT" },
               ]} 
             />
             <FilterDropdown 
               placeholder="Severity" 
+              value={severity}
+              onValueChange={setSeverity}
               options={[
                 { label: "All Severities", value: "all" },
                 { label: "High", value: "HIGH" },
@@ -226,32 +268,43 @@ export default function ActivityPage() {
             />
           </div>
         </div>
-        <DataTable columns={columns} data={ACTIVITY_LOGS} />
+        <DataTable columns={columns} data={logs} />
       </div>
 
-      {/* Terminal View Placeholder */}
-      <div className="bg-navy rounded-card border border-white/10 shadow-2xl p-6 overflow-hidden">
-        <div className="flex items-center gap-2 mb-4">
-          <Terminal size={16} className="text-white/40" />
-          <h3 className="text-caption font-bold text-white/40 uppercase tracking-widest">Real-time Stream</h3>
+      {/* Terminal View */}
+      <div className="bg-navy rounded-[24px] border border-white/10 shadow-2xl p-8 overflow-hidden relative group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+          <Terminal size={120} className="text-white" />
         </div>
-        <div className="font-mono text-[11px] flex flex-col gap-2">
-          <p className="text-green-400 opacity-80">[12:45:02] INFO: VENDOR_VERIFIED - Actor: admin_abdul - Target: sushi_bar_01</p>
-          <p className="text-blue-400 opacity-80">[12:40:15] INFO: AUTO_DISPATCH_ON - Actor: system - Region: downtown</p>
-          <p className="text-orange-400 opacity-80">[12:35:48] WARN: REFUND_APPROVED - Actor: admin_sarah - Amount: 42.50</p>
-          <p className="text-red-400 animate-pulse">[12:30:11] ERROR: SECURITY_AUTH_FAILED - Actor: moderator_01 - Action: login</p>
-          <p className="text-white/20 italic">Waiting for new events...</p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500/50" />
+              <div className="w-3 h-3 rounded-full bg-orange-500/50" />
+              <div className="w-3 h-3 rounded-full bg-green-500/50" />
+            </div>
+            <h3 className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] ml-2">Intelligence Stream</h3>
+          </div>
+          <span className="text-[10px] font-mono text-white/30">Last Sync: {lastRefreshed.toLocaleTimeString()}</span>
+        </div>
+        <div className="font-mono text-[12px] flex flex-col gap-3">
+          {logs.slice(0, 5).map((log, i) => (
+            <p key={log.id} className={cn(
+              "flex gap-4",
+              log.severity === "HIGH" ? "text-red-400" : 
+              log.severity === "MEDIUM" ? "text-orange-400" : "text-green-400"
+            )}>
+              <span className="text-white/20">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+              <span className="font-bold opacity-80">{log.event}:</span>
+              <span className="opacity-60">{log.details}</span>
+            </p>
+          ))}
+          <p className="text-white/20 italic animate-pulse mt-2 flex items-center gap-2">
+            <RefreshCw size={12} className="animate-spin" />
+            Listening for operational events...
+          </p>
         </div>
       </div>
     </div>
   )
 }
-
-// Helper components for the table
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"

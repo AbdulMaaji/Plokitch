@@ -23,7 +23,7 @@ export default async function DashboardPage({
   const timeframe = searchParams.timeframe || "today"
   
   const stats = await api.analytics.getOverviewStats(timeframe);
-  const activity = await api.analytics.getRecentActivity(8, timeframe);
+  const activity = await api.activity.getLiveOperationalUpdates(8);
   const chartData = await api.analytics.getChartData(timeframe);
   const dispatchPerformance = await api.analytics.getDispatchPerformance(timeframe);
   const lifecycleAverages = await api.analytics.getLifecycleAverages(timeframe);

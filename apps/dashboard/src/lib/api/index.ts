@@ -8,6 +8,7 @@ import { paymentsApi } from './payments';
 import { supportApi } from './support';
 import { settingsApi } from './settings';
 import { authApi } from './auth';
+import { activityApi } from './activity';
 
 /**
  * Centralized API Client Layer for Plokitch Dashboard
@@ -24,5 +25,6 @@ export const api = {
   support: supportApi,
   settings: settingsApi,
   auth: authApi,
+  activity: activityApi,
   // Add more modules as they are refactored
 };
