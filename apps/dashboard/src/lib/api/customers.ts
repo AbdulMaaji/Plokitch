@@ -23,7 +23,14 @@ export const customersApi = {
       query = query.or(`name.ilike.%${params.query}%,email.ilike.%${params.query}%`);
     }
 
-    let customers = (data || []).map(u => {
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('[API:customers:list]', error);
+      throw new Error(`Failed to fetch customers: ${error.message}`);
+    }
+
+    let customers = (data || []).map((u: any) => {
       const orders = u.orders || [];
       const totalOrders = orders.length;
       const ltv = orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0);
@@ -50,7 +57,7 @@ export const customersApi = {
     });
 
     if (params?.segment && params.segment !== 'all') {
-      customers = customers.filter(c => c.segment === params.segment);
+      customers = customers.filter((c: any) => c.segment === params.segment);
     }
 
     return customers;
@@ -117,7 +124,7 @@ export const customersApi = {
 
     // 2. Active Customers (Last 24h engagement)
     const { data: activeOrders } = await supabase.from('order').select('customer_id').gte('created_at', twentyFourHoursAgo);
-    const activeCount = new Set(activeOrders?.map(o => o.customer_id)).size || 0;
+    const activeCount = new Set((activeOrders || []).map(o => o.customer_id)).size || 0;
 
     return {
       total: total || 0,

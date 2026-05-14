@@ -78,11 +78,11 @@ export const analyticsApi = {
     
     // Active Customers: Customers who placed an order in the last 24h
     const { data: activeCustData } = await supabase.from('order').select('customer_id').gte('created_at', twentyFourHoursAgo);
-    const activeCustomers24h = new Set(activeCustData?.map(o => o.customer_id)).size || 0;
+    const activeCustomers24h = new Set((activeCustData || []).map(o => o.customer_id)).size || 0;
 
     // Active Vendors: Vendors who received an order in the last 24h
     const { data: activeVendData } = await supabase.from('order').select('vendor_id').gte('created_at', twentyFourHoursAgo);
-    const activeVendors24h = new Set(activeVendData?.map(o => o.vendor_id)).size || 0;
+    const activeVendors24h = new Set((activeVendData || []).map(o => o.vendor_id)).size || 0;
 
     // Vendor Health (Total snapshot)
     const { data: vendorStats } = await supabase.from('vendor').select('is_active, is_verified');
