@@ -156,7 +156,7 @@ export function CustomerHeader({ customers }: CustomerHeaderProps) {
             <div className="px-8 pb-8 flex flex-col gap-2">
               <p className="text-[11px] font-bold text-subtle uppercase tracking-widest">Segment Intelligence</p>
               <div className="p-4 bg-beige/20 rounded-xl border border-divider">
-                <p className="text-[13px] font-medium text-navy leading-relaxed italic">{"Your VIP segment represents high-value growth. Consider targeting the 'At Risk' group with a reactivation campaign in the next 48 hours."}
+                <p className="text-[13px] font-medium text-navy leading-relaxed italic">&quot;Your VIP segment represents high-value growth. Consider targeting the &apos;At Risk&apos; group with a reactivation campaign in the next 48 hours.&quot;
                 </p>
               </div>
             </div>
