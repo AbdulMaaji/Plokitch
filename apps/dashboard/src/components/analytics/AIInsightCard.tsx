@@ -10,14 +10,20 @@ interface SeverityBadgeProps {
 }
 
 export const SeverityBadge = ({ severity, className }: SeverityBadgeProps) => {
-  const config = {
+  const config: Record<string, { color: string; icon: React.ElementType }> = {
     LOW: { color: "text-blue-600 bg-blue-50", icon: Info },
     MODERATE: { color: "text-green-600 bg-green-50", icon: CheckCircle2 },
     HIGH: { color: "text-orange-600 bg-orange-50", icon: AlertCircle },
     CRITICAL: { color: "text-red-600 bg-red-50", icon: ShieldAlert },
+    // common API variants — map them to canonical keys
+    INFO: { color: "text-blue-600 bg-blue-50", icon: Info },
+    MEDIUM: { color: "text-orange-600 bg-orange-50", icon: AlertCircle },
+    WARNING: { color: "text-orange-600 bg-orange-50", icon: AlertCircle },
   }
 
-  const { color, icon: Icon } = config[severity]
+  // Normalise to uppercase; fall back to LOW so the component never crashes
+  const normalised = (severity ?? "LOW").toString().toUpperCase()
+  const { color, icon: Icon } = config[normalised] ?? config["LOW"]
 
   return (
     <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase w-fit", color, className)}>

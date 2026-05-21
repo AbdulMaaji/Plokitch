@@ -1,0 +1,6 @@
+#!/bin/bash
+if [[ "$*" == *"config"* ]]; then
+  exec /usr/bin/npm "$@" --no-workspaces
+else
+  exec /usr/bin/npm "$@"
+fi
