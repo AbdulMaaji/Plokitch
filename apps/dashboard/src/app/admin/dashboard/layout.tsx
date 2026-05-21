@@ -1,4 +1,3 @@
-import { inter, playfair } from "@/app/fonts"
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar"
 import { DashboardTopbar } from "@/components/layout/DashboardTopbar"
 import { protectAdminRoute } from "@/lib/guards"
