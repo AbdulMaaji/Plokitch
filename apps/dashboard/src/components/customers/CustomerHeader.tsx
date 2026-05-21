@@ -3,11 +3,11 @@
 import * as React from "react"
 import { Download, UserCheck, PieChart, Users, TrendingUp, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogDescription,
   DialogTrigger
 } from "@/components/ui/dialog"
@@ -25,7 +25,7 @@ export function CustomerHeader({ customers }: CustomerHeaderProps) {
     try {
       // 1. Prepare CSV headers
       const headers = ["ID", "Name", "Email", "Segment", "Total Orders", "LTV (₦)", "Joined Date"]
-      
+
       // 2. Prepare rows
       const rows = customers.map(c => [
         c.id.slice(0, 8),
@@ -53,7 +53,7 @@ export function CustomerHeader({ customers }: CustomerHeaderProps) {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       toast.success("Customer data exported successfully")
     } catch (error) {
       toast.error("Failed to export data")
@@ -78,10 +78,10 @@ export function CustomerHeader({ customers }: CustomerHeaderProps) {
         <h1 className="text-3xl font-heading font-bold text-navy tracking-tight">Customer Operations</h1>
         <p className="text-[15px] font-medium text-subtle/80">Manage platform users, monitor spending patterns, and handle account flags.</p>
       </div>
-      
+
       <div className="flex gap-3">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="flex items-center gap-2 h-11 px-6 border-divider hover:bg-beige/20 transition-all"
           onClick={handleExport}
           disabled={isExporting}
@@ -156,8 +156,7 @@ export function CustomerHeader({ customers }: CustomerHeaderProps) {
             <div className="px-8 pb-8 flex flex-col gap-2">
               <p className="text-[11px] font-bold text-subtle uppercase tracking-widest">Segment Intelligence</p>
               <div className="p-4 bg-beige/20 rounded-xl border border-divider">
-                <p className="text-[13px] font-medium text-navy leading-relaxed italic">
-                  "Your VIP segment represents high-value growth. Consider targeting the 'At Risk' group with a reactivation campaign in the next 48 hours."
+                <p className="text-[13px] font-medium text-navy leading-relaxed italic">{"Your VIP segment represents high-value growth. Consider targeting the 'At Risk' group with a reactivation campaign in the next 48 hours."}
                 </p>
               </div>
             </div>
