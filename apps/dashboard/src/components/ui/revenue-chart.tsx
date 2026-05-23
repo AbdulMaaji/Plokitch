@@ -5,7 +5,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianG
 import { COLORS } from "@/lib/design-system"
 
 interface RevenueChartProps {
-  data: { time: string; revenue: number; orders: number }[]
+  data?: { time: string; revenue: number; orders: number }[]
   totals?: {
     revenue: number
     orders: number
@@ -15,7 +15,27 @@ interface RevenueChartProps {
   className?: string
 }
 
-const RevenueChart = ({ data, totals, className }: RevenueChartProps) => {
+const DEFAULT_REVENUE_DATA = [
+  { time: "09:00", revenue: 2400, orders: 12 },
+  { time: "11:00", revenue: 4500, orders: 20 },
+  { time: "13:00", revenue: 8200, orders: 38 },
+  { time: "15:00", revenue: 6100, orders: 28 },
+  { time: "17:00", revenue: 9500, orders: 45 },
+  { time: "19:00", revenue: 12845, orders: 48 },
+];
+
+const DEFAULT_TOTALS = {
+  revenue: 12845,
+  orders: 48,
+  avgOrderValue: 267.6,
+  completionRate: 98.4
+};
+
+const RevenueChart = ({ 
+  data = DEFAULT_REVENUE_DATA, 
+  totals = DEFAULT_TOTALS, 
+  className 
+}: RevenueChartProps) => {
   return (
     <div className={className}>
       <div className="flex justify-between items-center mb-8">

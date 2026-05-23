@@ -52,7 +52,7 @@ export function OrderTable({ initialData }: OrderTableProps) {
       accessorKey: "id",
       header: "ORDER ID",
       cell: ({ row }) => (
-        <span className="font-bold text-navy uppercase">#{row.getValue("id").toString().slice(0, 8)}</span>
+        <span className="font-bold text-navy uppercase">#{String(row.getValue("id") || "").slice(0, 8)}</span>
       ),
     },
     {

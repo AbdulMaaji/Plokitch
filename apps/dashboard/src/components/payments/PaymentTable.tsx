@@ -27,7 +27,7 @@ export function PaymentTable({ initialData }: PaymentTableProps) {
     {
       accessorKey: "id",
       header: "TRANSACTION ID",
-      cell: ({ row }) => <span className="font-bold text-navy uppercase">{row.getValue("id").toString().slice(0, 8)}</span>,
+      cell: ({ row }) => <span className="font-bold text-navy uppercase">{String(row.getValue("id") || "").slice(0, 8)}</span>,
     },
     {
       accessorKey: "vendor.business_name",

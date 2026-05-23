@@ -5,6 +5,13 @@ import { cookies } from "next/headers";
  * Payments API Module
  * Manages financial reconciliation and vendor payouts.
  */
+export interface PendingPayout {
+  vendorId: string;
+  businessName: string;
+  pendingAmount: number;
+  orderCount: number;
+}
+
 export const paymentsApi = {
   /**
    * Fetches a list of platform transactions
@@ -35,7 +42,7 @@ export const paymentsApi = {
   /**
    * Fetches pending payouts for vendors
    */
-  getPendingPayouts: async () => {
+  getPendingPayouts: async (): Promise<PendingPayout[]> => {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
@@ -52,7 +59,7 @@ export const paymentsApi = {
     }
 
     // Aggregate by vendor
-    const aggregated = data.reduce((acc: any, curr: any) => {
+    const aggregated = (data || []).reduce((acc: Record<string, PendingPayout>, curr: any) => {
       const vendorId = curr.vendor_id;
       if (!acc[vendorId]) {
         acc[vendorId] = {

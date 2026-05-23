@@ -32,7 +32,7 @@ export function ComplaintTable({ initialData }: ComplaintTableProps) {
     {
       accessorKey: "id",
       header: "TICKET ID",
-      cell: ({ row }) => <span className="font-bold text-navy uppercase">{row.getValue("id").toString().slice(0, 8)}</span>,
+      cell: ({ row }) => <span className="font-bold text-navy uppercase">{String(row.getValue("id") || "").slice(0, 8)}</span>,
     },
     {
       accessorKey: "customer.name",
