@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { createPortal } from "react-dom";
 
 interface DishDetailOverlayProps {
   dish: any;
@@ -43,7 +44,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
     });
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div 
         key="overlay"
@@ -51,7 +52,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-dark-deep/80 backdrop-blur-sm z-[100]"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
       />
       <motion.div 
         key="sheet"
@@ -59,7 +60,7 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed inset-y-0 right-0 w-full max-w-2xl bg-dark-surface border-l border-gold/20 z-[101] overflow-y-auto shadow-2xl"
+        className="fixed inset-y-0 right-0 w-full max-w-2xl bg-dark-surface border-l border-gold/20 z-[101] overflow-y-auto shadow-2xl h-screen"
       >
         {/* Header Image */}
         <div className="relative h-[25rem] lg:h-[35rem]">
@@ -162,7 +163,8 @@ const DishDetailOverlay = ({ dish, onClose }: DishDetailOverlayProps) => {
         {/* Footer Spacer */}
         <div className="h-20" />
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

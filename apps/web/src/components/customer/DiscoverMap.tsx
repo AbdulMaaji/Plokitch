@@ -26,7 +26,7 @@ const DiscoverMap = ({ restaurants, isFullScreen, onExitFullScreen, userLocation
   const navigate = useNavigate();
 
   // Access the unified spatial context
-  const { setMapBounds, setMapCenter, setMapZoom, mapCenter, mapZoom } = useDiscover();
+  const { setMapBounds, setMapCenter, setMapZoom, mapCenter, mapZoom, breakpoint } = useDiscover();
 
   // Expose navigation to window context for popup button triggers
   useEffect(() => {
@@ -90,7 +90,7 @@ const DiscoverMap = ({ restaurants, isFullScreen, onExitFullScreen, userLocation
     };
   }, []);
 
-  // Sync Map Viewport on Full Screen Toggles
+  // Sync Map Viewport on Full Screen and Breakpoint Toggles
   useEffect(() => {
     if (mapInstanceRef.current) {
       setTimeout(() => {
@@ -100,7 +100,7 @@ const DiscoverMap = ({ restaurants, isFullScreen, onExitFullScreen, userLocation
         }
       }, 300);
     }
-  }, [isFullScreen]);
+  }, [isFullScreen, breakpoint]);
 
   // Update Live User GPS Marker
   useEffect(() => {
@@ -175,11 +175,15 @@ const DiscoverMap = ({ restaurants, isFullScreen, onExitFullScreen, userLocation
       
       const innerDot = `<div style="width: 8px; height: 8px; background: black; border-radius: 50%;"></div>`;
 
+      const isMobile = breakpoint === "xs" || breakpoint === "sm";
+      const baseWidth = isTopRated ? (isMobile ? 30 : 38) : (isMobile ? 24 : 32);
+      const halfSize = baseWidth / 2;
+
       return L.divIcon({
         html: `
           <div style="
-            width: ${isTopRated ? "38px" : "32px"};
-            height: ${isTopRated ? "38px" : "32px"};
+            width: ${baseWidth}px;
+            height: ${baseWidth}px;
             background: ${pinColor};
             border-radius: 50%;
             border: 3px solid #0E171E;
@@ -188,13 +192,13 @@ const DiscoverMap = ({ restaurants, isFullScreen, onExitFullScreen, userLocation
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-          " class="map-marker-pin">
+          " class="map-marker-pin hover:scale-110 active:scale-95 duration-200">
             ${isTopRated ? starSvg : innerDot}
           </div>
         `,
         className: "custom-div-icon",
-        iconSize: [38, 38],
-        iconAnchor: [19, 19],
+        iconSize: [baseWidth, baseWidth],
+        iconAnchor: [halfSize, halfSize],
       });
     };
 

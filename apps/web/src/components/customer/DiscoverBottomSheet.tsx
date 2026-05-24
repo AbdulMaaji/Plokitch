@@ -2,6 +2,7 @@ import { motion, useDragControls, useMotionValue } from "framer-motion";
 import { useState, useEffect } from "react";
 import { GripHorizontal, Star } from "lucide-react";
 import DiscoverFoodCard, { FoodItem } from "./DiscoverFoodCard";
+import { useDiscover } from "@/context/DiscoverContext";
 
 export interface FilterState {
   category: string; // 'All', 'mains', 'sides', etc.
@@ -22,9 +23,14 @@ const DiscoverBottomSheet = ({ items, filters, onFilterChange, isFullScreen = fa
   const dragControls = useDragControls();
   const y = useMotionValue(0);
 
+  const { breakpoint, isMobile, isTablet, isDesktop } = useDiscover();
+
   const handleDragEnd = (_: any, info: { offset: { y: number }; velocity: { y: number } }) => {
-    const shouldExpand = info.offset.y < -50 || info.velocity.y < -500;
-    const shouldCollapse = info.offset.y > 50 || info.velocity.y > 500;
+    const offsetLimit = 50;
+    const velocityLimit = 500;
+
+    const shouldExpand = info.offset.y < -offsetLimit || info.velocity.y < -velocityLimit;
+    const shouldCollapse = info.offset.y > offsetLimit || info.velocity.y > velocityLimit;
 
     if (shouldExpand) {
       setIsExpanded(true);
@@ -52,7 +58,7 @@ const DiscoverBottomSheet = ({ items, filters, onFilterChange, isFullScreen = fa
       dragElastic={0.15}
       onDragEnd={handleDragEnd}
       style={{ y }}
-      className={`fixed bottom-0 left-0 right-0 z-50 bg-[#0E171E] border-t border-gold/20 shadow-elevated touch-none flex flex-col pointer-events-auto ${
+      className={`fixed bottom-0 left-0 right-0 z-50 bg-[#0E171E] border-t border-gold/20 shadow-elevated touch-none flex flex-col pointer-events-auto w-full ${
         isFullScreen ? "h-[100vh] rounded-none border-t-0" : "h-[90vh] rounded-t-[2.5rem]"
       }`}
     >
@@ -70,7 +76,7 @@ const DiscoverBottomSheet = ({ items, filters, onFilterChange, isFullScreen = fa
       {isFullScreen && <div className="h-20 flex-shrink-0" />}
 
       {/* Header controls */}
-      <div className="px-6 pb-4 flex-shrink-0 space-y-4">
+      <div className="px-6 pb-4 flex-shrink-0 space-y-4 pt-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-heading font-black text-white lowercase">

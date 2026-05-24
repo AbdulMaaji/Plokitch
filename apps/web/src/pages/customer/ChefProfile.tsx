@@ -328,6 +328,7 @@ const ChefProfile = () => {
             </div>
           </div>
 
+
           {/* Desktop Order Summary Sidebar Column */}
           <div className="hidden lg:block lg:col-span-1">
             <Card className="bg-dark-surface/85 backdrop-blur-md border-gold/10 rounded-[2rem] p-6 lg:sticky lg:top-28 flex flex-col max-h-[80vh] overflow-hidden">

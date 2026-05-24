@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { User, Maximize2, Minimize2, Navigation2, Loader2, LogOut } from "lucide-react";
+import { User, Maximize2, Minimize2, Navigation2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/context/DiscoverContext";
 import { authClient } from "@/lib/auth-client";
@@ -18,15 +18,6 @@ const Discover = () => {
     isListFullScreen
   } = useDiscover();
 
-  const handleSignOut = async () => {
-    try {
-      await authClient.signOut();
-      toast.success("Signed out successfully");
-      navigate("/");
-    } catch (e) {
-      toast.error("Failed to sign out");
-    }
-  };
 
   return (
     <div className="relative h-full w-full pointer-events-none">
@@ -80,14 +71,7 @@ const Discover = () => {
               <User className="w-4 h-4" />
             </button>
 
-            {/* Sign Out Button */}
-            <button
-              onClick={handleSignOut}
-              className="p-3.5 rounded-full glass border border-red-500/20 hover:border-red-500/50 text-red-500 shadow-soft active:scale-95 transition-all bg-dark-deep/60 backdrop-blur-md"
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+
           </div>
         </div>
       </motion.header>

@@ -5,6 +5,8 @@ import { authClient } from "@/lib/auth-client";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+export type BreakpointType = "xs" | "sm" | "md" | "lg" | "xl";
+
 export interface FilterState {
   category: string;
   topRated: boolean;
@@ -36,6 +38,11 @@ interface DiscoverContextType {
   setMapCenter: (center: [number, number]) => void;
   mapZoom: number;
   setMapZoom: (zoom: number) => void;
+  breakpoint: BreakpointType;
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+  densityScale: number;
 }
 
 const DiscoverContext = createContext<DiscoverContextType | undefined>(undefined);
@@ -58,6 +65,41 @@ export const DiscoverProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   
   const [isListFullScreen, setIsListFullScreen] = useState(false);
   const [isMapFullScreen, setIsMapFullScreen] = useState(false);
+
+  // ResponsiveLayoutEngine Breakpoints & Density Scaling
+  const [breakpoint, setBreakpoint] = useState<BreakpointType>("lg");
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w <= 480) {
+        setBreakpoint("xs");
+      } else if (w <= 768) {
+        setBreakpoint("sm");
+      } else if (w <= 1024) {
+        setBreakpoint("md");
+      } else if (w <= 1440) {
+        setBreakpoint("lg");
+      } else {
+        setBreakpoint("xl");
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = breakpoint === "xs" || breakpoint === "sm";
+  const isTablet = breakpoint === "md";
+  const isDesktop = breakpoint === "lg" || breakpoint === "xl";
+
+  const densityScale = useMemo(() => {
+    if (breakpoint === "xs") return 0.9;
+    if (breakpoint === "sm") return 0.95;
+    if (breakpoint === "md") return 1.0;
+    return 1.05;
+  }, [breakpoint]);
 
   // Map state persistence
   const [mapCenter, setMapCenter] = useState<[number, number]>([10.2897, 11.1673]);
@@ -199,6 +241,11 @@ export const DiscoverProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setMapCenter,
         mapZoom,
         setMapZoom,
+        breakpoint,
+        isMobile,
+        isTablet,
+        isDesktop,
+        densityScale,
       }}
     >
       {children}
