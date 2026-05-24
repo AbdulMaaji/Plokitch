@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -7,19 +9,81 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Locate,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
 import { useChefData } from "@/hooks/useChefData";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const ChefDashboard = () => {
   const { myVendor, activeOrders, loading, refreshData, session } = useChefData();
+  
+  // Geolocation & Onboarding State
+  const { getLocation } = useGeolocation({ autoStart: false });
+  const [address, setAddress] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [submittingLocation, setSubmittingLocation] = useState(false);
+
+  const handleDetectLocation = async () => {
+    toast.info("Accessing browser GPS...");
+    const pos = await getLocation();
+    if (pos) {
+      setCoords({ lat: pos.lat, lng: pos.lng });
+      toast.success("GPS Coordinates Captured!");
+    } else {
+      toast.error("Failed to capture GPS. Please grant location permissions.");
+    }
+  };
+
+  const handleOnboardingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!coords || !address) {
+      toast.error("Please provide both address and map coordinates.");
+      return;
+    }
+    setSubmittingLocation(true);
+    try {
+      const res = await fetch(`${API_URL}/api/vendors/${myVendor.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.session?.token}`
+        },
+        body: JSON.stringify({
+          ...myVendor,
+          location: {
+            address,
+            city: myVendor.location?.city || "Gombe",
+            state: myVendor.location?.state || "Gombe",
+            lat: coords.lat,
+            lng: coords.lng
+          },
+          isActive: true
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Onboarding Completed!", {
+          description: "Your kitchen location is active and discoverable!"
+        });
+        refreshData();
+      } else {
+        toast.error(data.error || "Failed to save location details");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setSubmittingLocation(false);
+    }
+  };
 
   const handleUpdateStatus = async (orderId: string, currentStatus: string) => {
     let nextStatus: string;
@@ -88,6 +152,91 @@ const ChefDashboard = () => {
           <h2 className="text-2xl font-black text-white uppercase tracking-widest">No Kitchen Active</h2>
           <p className="text-muted-foreground max-w-sm">You haven't set up your kitchen identity yet. Go to settings to start your artisan journey.</p>
           <Button className="bg-gold text-background font-black px-10 rounded-xl h-12">OPEN SETTINGS</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Forced location onboarding modal on first login
+  if (myVendor && (!myVendor.location?.lat || !myVendor.location?.lng)) {
+    return (
+      <DashboardLayout role="chef">
+        <div className="min-h-[70vh] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-lg bg-dark-surface border border-gold/20 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            
+            <div className="space-y-6 relative z-10">
+              <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
+                <Locate className="w-8 h-8 stroke-[1.5]" />
+              </div>
+              
+              <div>
+                <h2 className="text-3xl font-heading font-black text-white lowercase">
+                  kitchen <span className="italic text-gold italic-custom">onboarding</span>
+                </h2>
+                <p className="text-xs uppercase tracking-widest font-black text-gold/60 mt-1">
+                  Set Your Pinned Location Coordinates
+                </p>
+                <p className="text-muted-foreground text-sm leading-relaxed mt-3">
+                  To publish your gourmet dishes on Gombe's discovery map, we need to map your kitchen's geographic location. This enables active customer discovery.
+                </p>
+              </div>
+
+              <form onSubmit={handleOnboardingSubmit} className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gold/60">Street Address</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 12 Hassan Gombe Way, Gombe"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="w-full h-12 rounded-xl bg-dark-deep border border-gold/10 focus:border-gold px-4 text-white text-sm outline-none transition-all placeholder:text-white/20"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleDetectLocation}
+                    className="flex-1 h-12 rounded-xl border border-gold/20 hover:border-gold text-gold text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 bg-gold/5"
+                  >
+                    <Locate className="w-4 h-4" />
+                    Detect Location GPS
+                  </button>
+                </div>
+
+                {coords && (
+                  <div className="p-4 rounded-xl bg-gold/5 border border-gold/10 grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <p className="text-[9px] font-black text-gold uppercase tracking-wider">Latitude</p>
+                      <p className="text-xs font-bold text-white font-mono mt-0.5">{coords.lat.toFixed(6)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-gold uppercase tracking-wider">Longitude</p>
+                      <p className="text-xs font-bold text-white font-mono mt-0.5">{coords.lng.toFixed(6)}</p>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={submittingLocation || !coords || !address}
+                  className="w-full h-12 bg-gold hover:bg-gold-light text-background font-black tracking-widest uppercase rounded-xl mt-4 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:scale-100"
+                >
+                  {submittingLocation ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    "Complete Onboarding"
+                  )}
+                </button>
+              </form>
+            </div>
+          </motion.div>
         </div>
       </DashboardLayout>
     );

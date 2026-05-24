@@ -17,17 +17,25 @@ import {
   DashboardUsers
 } from "./components/routing/UnifiedDashboard.tsx";
 import Kitchens from "./pages/customer/Kitchens.tsx";
-import Restaurants from "./pages/customer/Restaurants.tsx";
-import KitchenDetail from "./pages/customer/KitchenDetail.tsx";
-import Dishes from "./pages/customer/Dishes.tsx";
-import Explore from "./pages/Explore.tsx";
+import Discover from "./pages/customer/Discover.tsx";
+import ChefProfile from "./pages/customer/ChefProfile.tsx";
+import CustomerDiscoveryShell from "./components/customer/CustomerDiscoveryShell.tsx";
 import LiveTrack from "./pages/customer/LiveTrack.tsx";
+import Explore from "./pages/Explore.tsx";
+import Dishes from "./pages/customer/Dishes.tsx";
+import Restaurants from "./pages/customer/Restaurants.tsx";
 import CustomerProfile from "./pages/customer/CustomerProfile.tsx";
 import Cart from "./pages/customer/Cart.tsx";
 import Checkout from "./pages/customer/Checkout.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 
 import { CartProvider } from "./context/CartContext";
+import { useParams } from "react-router-dom";
+
+const RedirectToChef = () => {
+  const { slug } = useParams<{ slug: string }>();
+  return <Navigate to={`/customer/discover/chef/${slug}`} replace />;
+};
 
 const queryClient = new QueryClient();
 
@@ -75,20 +83,30 @@ const App = () => (
           <Route path="/admin/analytics" element={<ProtectedRoute><DashboardAnalytics /></ProtectedRoute>} />
           <Route path="/admin/orders" element={<ProtectedRoute><DashboardOrders /></ProtectedRoute>} />
           
-          {/* Customer Routes (auth-protected) */}
-          <Route path="/customer" element={<Navigate to="/customer/kitchens" replace />} />
-          <Route path="/customer/kitchens" element={<Kitchens />} />
-          <Route path="/customer/kitchens/:idOrSlug" element={<KitchenDetail />} />
-          <Route path="/customer/marketplace" element={<Navigate to="/dishes" replace />} />
-          <Route path="/customer/track" element={<ProtectedRoute><LiveTrack /></ProtectedRoute>} />
-          <Route path="/customer/track/:orderId" element={<ProtectedRoute><LiveTrack /></ProtectedRoute>} />
-          <Route path="/customer/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-          <Route path="/customer/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-          <Route path="/customer/profile" element={<ProtectedRoute><CustomerProfile /></ProtectedRoute>} />
+          {/* Customer Routes (auth-protected Operating Environment) */}
+          <Route path="/customer" element={<Navigate to="/customer/discover" replace />} />
           
-          {/* Top-level restaurant slug — e.g. /siennas-organic
-              MUST be LAST before the catch-all so named routes match first */}
-          <Route path="/:slug" element={<KitchenDetail />} />
+          <Route path="/customer/discover" element={<CustomerDiscoveryShell />}>
+            <Route index element={<Discover />} />
+            <Route path="chef/:idOrSlug" element={<ChefProfile />} />
+            <Route path="orders" element={<ProtectedRoute><LiveTrack /></ProtectedRoute>} />
+            <Route path="orders/:orderId" element={<ProtectedRoute><LiveTrack /></ProtectedRoute>} />
+            <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="profile" element={<ProtectedRoute><CustomerProfile /></ProtectedRoute>} />
+          </Route>
+
+          {/* Legacy & Clean redirects back into the Discover Operating Environment */}
+          <Route path="/customer/kitchens" element={<Navigate to="/customer/discover" replace />} />
+          <Route path="/customer/kitchens/:idOrSlug" element={<Navigate to="/customer/discover" replace />} />
+          <Route path="/customer/marketplace" element={<Navigate to="/customer/discover" replace />} />
+          <Route path="/customer/track" element={<Navigate to="/customer/discover/orders" replace />} />
+          <Route path="/customer/track/:orderId" element={<Navigate to="/customer/discover/orders/:orderId" replace />} />
+          <Route path="/customer/cart" element={<Navigate to="/customer/discover" replace />} />
+          <Route path="/customer/checkout" element={<Navigate to="/customer/discover/checkout" replace />} />
+          <Route path="/customer/profile" element={<Navigate to="/customer/discover/profile" replace />} />
+          
+          {/* Top-level restaurant wildcard slug redirects into Discover Environment */}
+          <Route path="/:slug" element={<RedirectToChef />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

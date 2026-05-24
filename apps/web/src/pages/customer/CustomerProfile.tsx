@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   User, 
   ShoppingBag, 
@@ -11,14 +9,17 @@ import {
   CreditCard, 
   Bell,
   Settings,
-  MoreVertical,
   LogOut,
   ChevronRight,
   Camera,
-  Loader2
+  Loader2,
+  X,
+  Compass,
+  ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { 
   AlertDialog, 
@@ -182,8 +183,6 @@ const CustomerProfile = () => {
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
 
-
-
   useEffect(() => {
     const fetchOrders = async () => {
       if (!session?.session?.token) return;
@@ -234,343 +233,290 @@ const CustomerProfile = () => {
   };
 
   return (
-    <DashboardLayout role="customer">
-      <div className="space-y-10 max-w-6xl mx-auto">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-white/5">
-           <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-full border-4 border-gold/20 bg-dark-surface overflow-hidden shadow-2xl flex items-center justify-center">
-                {user?.image ? (
-                  <img src={user.image} alt={`${user.name || "User"}'s Profile`} className="w-full h-full object-cover" />
-                ) : (
-                  <User size={40} className="text-gold/50" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-4xl font-heading font-black text-white capitalize">
-                  {isPending ? "Loading..." : user?.name || "Customer"}
-                </h1>
-                <p className="text-muted-foreground font-body text-sm mt-1">
-                  {user?.email || "No email"} • {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Customer"}
-                </p>
-                {user?.phone && (
-                  <p className="text-muted-foreground font-body text-xs mt-2 border border-white/10 rounded-full px-3 py-1 inline-block bg-white/5">
-                    {user.phone}
-                  </p>
-                )}
-                <div className="flex gap-2 mt-3">
-                  <Badge className="bg-white/5 text-white border-white/10 font-bold text-[10px] py-1 px-3">
-                    {orderHistory.length} {orderHistory.length === 1 ? 'ORDER' : 'ORDERS'}
-                  </Badge>
-                </div>
-              </div>
-           </div>
-           <div className="flex gap-4">
-              <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-12 border-gold/20 text-gold hover:bg-gold/5 font-black uppercase tracking-widest px-8">
-                    EDIT PROFILE
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-dark-surface border-gold/20 text-white sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-black font-heading text-gold">Edit Profile</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-6 py-4">
-                    <div className="flex flex-col items-center gap-4 py-2">
-                       <div className="relative group cursor-pointer">
-                          <div className="w-24 h-24 rounded-full border-4 border-gold/20 bg-dark-deep overflow-hidden flex items-center justify-center">
-                             {editForm.image ? (
-                                <img src={editForm.image} className="w-full h-full object-cover" alt="Avatar Preview" />
-                             ) : (
-                                <User size={40} className="text-gold/20" />
-                             )}
-                          </div>
-                          <label className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                             {isUploading ? <Loader2 size={18} className="text-gold animate-spin" /> : <Camera size={20} className="text-white" />}
-                             <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
-                          </label>
-                       </div>
-                       <p className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Change Profile Photo</p>
-                    </div>
+    <div className="fixed inset-0 z-50 bg-dark-deep overflow-y-auto scrollbar-none flex flex-col text-white font-body">
+      {/* Sticky Premium Header */}
+      <header className="px-5 pt-8 sm:pt-12 pb-5 bg-dark-surface/80 backdrop-blur-md border-b border-gold/10 sticky top-0 z-40 flex items-center gap-4">
+        <button 
+          onClick={() => navigate("/customer/discover")} 
+          className="p-2 rounded-full hover:bg-white/5 transition-colors border border-gold/10 text-white hover:text-gold"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="text-lg font-heading font-black text-white uppercase tracking-widest">Profile</h1>
+      </header>
 
-                    <div className="grid gap-2">
-                      <Label htmlFor="name" className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Full Name</Label>
+      <div className="max-w-xl mx-auto w-full px-5 pt-8 pb-32 space-y-8">
+        {/* Profile Card & Photo */}
+        <div className="flex flex-col items-center gap-4 py-6 text-center border-b border-white/5 pb-8">
+          <div className="relative group cursor-pointer">
+            <div className="w-24 h-24 rounded-full border-4 border-gold/20 bg-dark-deep overflow-hidden shadow-2xl flex items-center justify-center">
+              {user?.image ? (
+                <img src={user.image} alt={`${user.name || "User"}'s Profile`} className="w-full h-full object-cover" />
+              ) : (
+                <User size={32} className="text-gold/50" />
+              )}
+            </div>
+            <label className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              {isUploading ? <Loader2 size={16} className="text-gold animate-spin" /> : <Camera size={16} className="text-white" />}
+              <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
+            </label>
+          </div>
+          <div>
+            <h2 className="text-2xl font-heading font-black text-white capitalize">
+              {isPending ? "Loading..." : user?.name || "Customer"}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {user?.email || "No email"} • {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Customer"}
+            </p>
+            {user?.phone && (
+              <p className="text-[10px] text-gold font-black uppercase tracking-wider mt-2 border border-gold/20 rounded-full px-3 py-1 bg-gold/5 inline-block">
+                {user.phone}
+              </p>
+            )}
+          </div>
+
+          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="h-8 border-gold/20 text-gold hover:bg-gold/5 font-black uppercase tracking-widest text-[9px] px-4 rounded-full">
+                EDIT PROFILE
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-dark-surface border-gold/20 text-white sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-black font-heading text-gold">Edit Profile</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="flex flex-col items-center gap-3 py-2">
+                   <div className="relative group cursor-pointer">
+                      <div className="w-20 h-20 rounded-full border-4 border-gold/20 bg-dark-deep overflow-hidden flex items-center justify-center">
+                         {editForm.image ? (
+                            <img src={editForm.image} className="w-full h-full object-cover" alt="Avatar Preview" />
+                         ) : (
+                            <User size={32} className="text-gold/20" />
+                         )}
+                      </div>
+                      <label className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                         {isUploading ? <Loader2 size={16} className="text-gold animate-spin" /> : <Camera size={16} className="text-white" />}
+                         <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
+                      </label>
+                   </div>
+                   <p className="text-[9px] font-black text-gold uppercase tracking-[0.2em]">Change Profile Photo</p>
+                </div>
+                <div className="space-y-4">
+                   <div className="grid gap-1">
+                      <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Full Name</Label>
                       <Input 
-                        id="name" 
                         value={editForm.name} 
-                        onChange={(e) => setEditForm({...editForm, name: e.target.value})} 
-                        className="bg-dark-deep border-gold/10 focus-visible:ring-gold text-white" 
+                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        className="bg-dark-deep border-gold/10 focus:border-gold h-10 text-xs" 
                       />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="phone" className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Phone Number</Label>
+                   </div>
+                   <div className="grid gap-1">
+                      <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Phone Number</Label>
                       <Input 
-                        id="phone" 
                         value={editForm.phone} 
-                        onChange={(e) => setEditForm({...editForm, phone: e.target.value})} 
-                        className="bg-dark-deep border-gold/10 focus-visible:ring-gold text-white" 
-                        placeholder="+1 (555) 000-0000"
+                        onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                        className="bg-dark-deep border-gold/10 focus:border-gold h-10 text-xs" 
                       />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button 
-                      onClick={handleSaveProfile} 
-                      disabled={isSaving} 
-                      className="w-full bg-gold text-background hover:bg-gold/90 font-black tracking-widest uppercase"
-                    >
-                      {isSaving ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
-                      Save Changes
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                   </div>
+                </div>
+              </div>
+              <DialogFooter>
+                 <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full bg-gold text-background font-black tracking-widest uppercase h-11 text-xs">
+                    {isSaving ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                    SAVE CHANGES
+                 </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-              <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                <DialogTrigger asChild>
-                  <Button size="icon" variant="ghost" className="h-12 w-12 text-muted-foreground border border-white/5 hover:text-white">
-                    <Settings size={20} />
-                  </Button>
-                </DialogTrigger>
+        {/* Culinary History */}
+        <section className="space-y-4">
+          <h3 className="text-xs font-black text-gold uppercase tracking-[0.2em] pl-1">CULINARY HISTORY</h3>
+          <div className="space-y-3">
+            {ordersLoading ? (
+              [1, 2].map(i => <div key={i} className="h-20 rounded-2xl bg-dark-surface/50 border border-white/5 animate-pulse" />)
+            ) : orderHistory.length > 0 ? (
+              orderHistory.slice(0, 3).map((order) => (
+                <Card key={order.id} className="bg-dark-deep/40 border border-white/5 hover:border-gold/20 transition-all group overflow-hidden rounded-2xl">
+                  <CardContent className="p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-dark-deep border border-white/5 flex items-center justify-center text-gold shrink-0">
+                          <ShoppingBag size={16} />
+                      </div>
+                      <div>
+                          <h4 className="text-sm font-bold text-white group-hover:text-gold transition-colors">
+                            {order.vendor?.businessName || "Chef's Kitchen"}
+                          </h4>
+                          <p className="text-[8px] text-muted-foreground uppercase font-black tracking-widest mt-0.5">
+                            {new Date(order.createdAt).toLocaleDateString()} • {order.id.slice(0, 8).toUpperCase()}
+                          </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                          <p className="text-sm font-black text-white">₦{Number(order.totalPrice).toLocaleString()}</p>
+                          <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5 text-[8px] uppercase font-black">{order.status}</Badge>
+                      </div>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-white" onClick={() => navigate(`/customer/discover/orders/${order.id}`)}>
+                          <ChevronRight size={16} />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="py-10 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-deep/20">
+                <ShoppingBag size={32} className="mx-auto text-gold/20 mb-3" />
+                <p className="text-muted-foreground font-body text-xs max-w-xs mx-auto">Your culinary journey is just beginning. Explore our kitchens to place your first order!</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Favorite Ateliers */}
+        <section className="space-y-4">
+          <h3 className="text-xs font-black text-gold uppercase tracking-[0.2em] pl-1">FAVOURITE ATELIERS</h3>
+          <div className="grid grid-cols-1 gap-3">
+            {favsLoading ? (
+              [1, 2].map(i => <div key={i} className="h-16 rounded-2xl bg-dark-surface/50 animate-pulse border border-white/5" />)
+            ) : favoriteVendors.length > 0 ? (
+              favoriteVendors.slice(0, 3).map((vendor) => (
+                <Card 
+                  key={vendor.id} 
+                  className="bg-dark-deep/40 border border-white/5 hover:border-gold/20 transition-all cursor-pointer overflow-hidden group rounded-2xl"
+                  onClick={() => navigate(`/customer/discover/chef/${vendor.slug || vendor.id}`)}
+                >
+                  <div className="flex items-center p-3 justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-dark-deep border border-white/5 overflow-hidden shrink-0">
+                        <img src={vendor.imageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={vendor.businessName} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-white truncate group-hover:text-gold transition-colors">{vendor.businessName}</h4>
+                        <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">{vendor.cuisineType}</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="py-8 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-deep/20 col-span-full">
+                <p className="text-muted-foreground font-body text-xs">Your favorite kitchens will appear here as you explore the bazaar.</p>
+                <Button onClick={() => navigate("/customer/discover")} variant="link" className="text-gold mt-1 font-bold uppercase tracking-widest text-[9px] flex items-center gap-1.5 mx-auto">
+                  <Compass size={12} />
+                  Explore Map
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Preferences & Account settings */}
+        <section className="space-y-4">
+          <h3 className="text-xs font-black text-gold uppercase tracking-[0.2em] pl-1">PREFERENCES & SETTINGS</h3>
+          <div className="bg-dark-surface/50 border border-white/5 rounded-3xl overflow-hidden p-2 space-y-1">
+             <Dialog open={isAddressOpen} onOpenChange={setIsAddressOpen}>
+               <DialogTrigger asChild>
+                 <button 
+                   className="w-full flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-colors text-left text-sm font-bold text-white group"
+                 >
+                   <span className="flex items-center gap-3"><MapPin size={18} className="text-gold" /> Delivery Address</span>
+                   <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                 </button>
+               </DialogTrigger>
                 <DialogContent className="bg-dark-surface border-gold/20 text-white sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-black font-heading text-gold">Settings</DialogTitle>
+                    <DialogTitle className="text-xl font-black font-heading text-gold">Delivery Addresses</DialogTitle>
                   </DialogHeader>
-                  <div className="grid gap-6 py-4">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                      <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Push Notifications</Label>
-                        <p className="text-sm text-muted-foreground">Receive order updates and alerts.</p>
-                      </div>
-                      <Switch 
-                        checked={notifications} 
-                        onCheckedChange={(val) => {
-                          setNotifications(val);
-                          updatePreferences({ pushNotificationsEnabled: val });
-                        }} 
+                  <div className="space-y-4 py-4 text-xs">
+                    <div className="grid gap-1">
+                      <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Street Address</Label>
+                      <Input 
+                        placeholder="42 Artisan Way" 
+                        value={newAddress.street}
+                        onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
+                        className="bg-dark-deep border-gold/10 focus:border-gold h-10 text-xs" 
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Marketing Emails</Label>
-                        <p className="text-sm text-muted-foreground">Get exclusive deals and offers.</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-1">
+                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">City</Label>
+                        <Input value={newAddress.city} readOnly className="bg-dark-deep border-gold/10 h-10 text-xs" />
                       </div>
-                      <Switch 
-                        checked={marketing} 
-                        onCheckedChange={(val) => {
-                          setMarketing(val);
-                          updatePreferences({ marketingEmailsEnabled: val });
-                        }} 
-                      />
+                      <div className="grid gap-1">
+                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">State</Label>
+                        <Input value={newAddress.state} readOnly className="bg-dark-deep border-gold/10 h-10 text-xs" />
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t border-white/5 space-y-3">
+                       <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          toast.info("Syncing Location", { description: "Capturing your current coordinates..." });
+                          setNewAddress({...newAddress, lat: "10.2897", lng: "11.1673"});
+                        }}
+                        className="w-full h-11 border-gold/20 text-gold text-[9px] font-black tracking-widest flex gap-2 rounded-xl"
+                       >
+                          <MapPin size={12} />
+                           USE CURRENT LOCATION
+                       </Button>
+                       <Button 
+                         onClick={handleSaveAddress}
+                         disabled={isSaving}
+                         className="w-full bg-gold text-background font-black tracking-widest uppercase h-11 text-xs rounded-xl"
+                       >
+                         {isSaving ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                         SAVE ADDRESS
+                       </Button>
                     </div>
                   </div>
                 </DialogContent>
-              </Dialog>
-           </div>
-        </header>
+             </Dialog>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-10">
-            {/* Recent Orders */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                 <h2 className="text-xl font-heading font-black text-white uppercase tracking-wider flex items-center gap-3">
-                   <ShoppingBag size={20} className="text-gold" />
-                   Recent Orders
-                 </h2>
-                 <Button variant="ghost" className="text-gold font-bold text-xs uppercase tracking-widest">VIEW ALL</Button>
-              </div>
-              <div className="space-y-4">
-                {ordersLoading ? (
-                  [1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-dark-surface/50 border border-white/5 animate-pulse" />)
-                ) : orderHistory.length > 0 ? (
-                  orderHistory.map((order) => (
-                    <Card key={order.id} className="bg-dark-surface border-white/5 hover:border-gold/20 transition-all group overflow-hidden">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-dark-deep border border-white/5 flex items-center justify-center text-gold">
-                                <ShoppingBag size={20} />
-                            </div>
-                            <div>
-                                <h4 className="text-lg font-bold text-white group-hover:text-gold transition-colors">
-                                  {order.vendor?.businessName || "Chef's Kitchen"}
-                                </h4>
-                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
-                                  {new Date(order.createdAt).toLocaleDateString()} • {order.id.slice(0, 8).toUpperCase()}
-                                </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-8">
-                            <div className="text-right">
-                                <p className="text-lg font-black text-white">₦{Number(order.totalPrice).toLocaleString()}</p>
-                                <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5 text-[9px] uppercase font-black">{order.status}</Badge>
-                            </div>
-                            <Button size="icon" variant="ghost" className="h-10 w-10 text-muted-foreground hover:text-white" onClick={() => navigate(`/customer/track/${order.id}`)}>
-                                <ChevronRight size={20} />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="py-12 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-surface/30">
-                    <ShoppingBag size={40} className="mx-auto text-gold/20 mb-4" />
-                    <p className="text-muted-foreground font-body">Your culinary journey is just beginning. Explore our kitchens to place your first order!</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-6">
-                <h2 className="text-xl font-heading font-black text-white uppercase tracking-wider flex items-center gap-3">
-                  <Heart size={20} className="text-gold" />
-                  Kitchen Selection
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {favsLoading ? (
-                    [1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-dark-surface/50 animate-pulse border border-white/5" />)
-                  ) : favoriteVendors.length > 0 ? (
-                    favoriteVendors.map((vendor) => (
-                      <Card 
-                        key={vendor.id} 
-                        className="bg-dark-surface border-white/5 hover:border-gold/20 transition-all cursor-pointer overflow-hidden group"
-                        onClick={() => navigate(`/${vendor.slug || vendor.id}`)}
-                      >
-                        <div className="flex items-center p-4 gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-dark-deep border border-white/5 overflow-hidden shrink-0">
-                            <img src={vendor.imageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={vendor.businessName} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-white truncate group-hover:text-gold transition-colors">{vendor.businessName}</h4>
-                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{vendor.cuisineType}</p>
-                          </div>
-                          <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
-                        </div>
-                      </Card>
-                    ))
-                  ) : (
-                    <div className="py-12 text-center border border-dashed border-white/10 rounded-[2rem] bg-dark-surface/30 col-span-full">
-                      <p className="text-muted-foreground font-body text-sm">Your favorite kitchens will appear here as you explore the bazaar.</p>
-                      <Button onClick={() => navigate("/customer/kitchens")} variant="link" className="text-gold mt-2 font-bold uppercase tracking-widest text-[10px]">Explore Now</Button>
-                    </div>
-                  )}
-                </div>
-            </div>
+             <button className="w-full flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-colors text-left text-sm font-bold text-white group">
+                <span className="flex items-center gap-3"><CreditCard size={18} className="text-gold" /> Payment Methods</span>
+                <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+             </button>
+             
+             <div className="p-1">
+               <ChangePasswordDialog />
+             </div>
+             
+             <button className="w-full flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-colors text-left text-sm font-bold text-white group">
+                <span className="flex items-center gap-3"><Bell size={18} className="text-gold" /> Notification Preferences</span>
+                <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+             </button>
           </div>
+        </section>
 
-          <div className="space-y-8">
-            <Card className="bg-dark-surface border-white/5 rounded-[2rem] overflow-hidden">
-              <CardHeader className="p-8 border-b border-white/5">
-                <CardTitle className="text-sm font-black text-white uppercase tracking-[0.2em]">Quick Access</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-1">
-                   <Dialog open={isAddressOpen} onOpenChange={setIsAddressOpen}>
-                     <DialogTrigger asChild>
-                       <Button 
-                         variant="ghost" 
-                         className="w-full justify-start gap-4 h-14 text-muted-foreground hover:text-gold hover:bg-gold/5 font-bold uppercase tracking-widest text-[10px]"
-                       >
-                         <MapPin size={18} />
-                         Delivery Addresses
-                       </Button>
-                     </DialogTrigger>
-                      <DialogContent className="bg-dark-surface border-gold/20 text-white sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle className="text-2xl font-black font-heading text-gold">Delivery Addresses</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-6 py-4">
-                          <div className="space-y-4">
-                            <div className="grid gap-2">
-                              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Street Address</Label>
-                              <Input 
-                                placeholder="42 Artisan Way" 
-                                value={newAddress.street}
-                                onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
-                                className="bg-dark-deep border-gold/10 focus:border-gold" 
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="grid gap-2">
-                                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">City</Label>
-                                <Input value={newAddress.city} readOnly className="bg-dark-deep border-gold/10" />
-                              </div>
-                              <div className="grid gap-2">
-                                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">State</Label>
-                                <Input value={newAddress.state} readOnly className="bg-dark-deep border-gold/10" />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="pt-4 border-t border-white/5 space-y-4">
-                             <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                toast.info("Syncing Location", { description: "Capturing your current coordinates..." });
-                                setNewAddress({...newAddress, lat: "10.2897", lng: "11.1673"});
-                              }}
-                              className="w-full h-12 border-gold/20 text-gold text-[10px] font-black tracking-widest flex gap-2"
-                             >
-                                <MapPin size={14} />
-                                 USE CURRENT LOCATION
-                             </Button>
-                             <Button 
-                               onClick={handleSaveAddress}
-                               disabled={isSaving}
-                               className="w-full bg-gold text-background font-black tracking-widest uppercase"
-                             >
-                               {isSaving ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
-                               SAVE ADDRESS
-                             </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                   </Dialog>
-
-                   <Button variant="ghost" className="w-full justify-start gap-4 h-14 text-muted-foreground hover:text-gold hover:bg-gold/5 font-bold uppercase tracking-widest text-[10px]">
-                      <CreditCard size={18} />
-                      Payment Methods
-                   </Button>
-                   <ChangePasswordDialog />
-                   <Button variant="ghost" className="w-full justify-start gap-4 h-14 text-muted-foreground hover:text-gold hover:bg-gold/5 font-bold uppercase tracking-widest text-[10px]">
-                      <Bell size={18} />
-                      Notification Settings
-                   </Button>
-                   <Button variant="ghost" className="w-full justify-start gap-4 h-14 text-muted-foreground hover:text-gold hover:bg-gold/5 font-bold uppercase tracking-widest text-[10px]">
-                      <User size={18} />
-                      Support & Help
-                   </Button>
-                </div>
-                <div className="pt-4 mt-4 border-t border-white/5">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" className="w-full justify-start gap-4 h-14 text-red-500 hover:bg-red-500/5 font-black uppercase tracking-widest text-[10px]">
-                        <LogOut size={18} />
-                        Sign Out
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-dark-surface border-gold/20 text-white">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="font-heading font-black text-gold">Ready to leave?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-muted-foreground">
-                          Are you sure you want to sign out of your account? You will need to log back in to access your dashboard.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="border-white/10 hover:bg-white/5 text-white">Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleSignOut} className="bg-red-500 text-white hover:bg-red-600 font-bold uppercase tracking-widest">Sign Out</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-
-          </div>
-        </div>
+        {/* Log Out Button & Actions */}
+        <section className="space-y-3 pt-4">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-red-500/10 text-red-500 font-bold hover:bg-red-500/20 transition-all border border-red-500/20 shadow-soft">
+                <LogOut size={18} />
+                LOG OUT
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-dark-surface border-gold/20 text-white">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-heading font-black text-gold text-lg">Ready to leave?</AlertDialogTitle>
+                <AlertDialogDescription className="text-muted-foreground text-xs">
+                  Are you sure you want to sign out of your account? You will need to log back in to access your dashboard.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="border-white/10 hover:bg-white/5 text-white">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSignOut} className="bg-red-500 text-white hover:bg-red-600 font-bold uppercase tracking-widest text-xs h-10 px-5">Sign Out</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </section>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

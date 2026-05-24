@@ -20,7 +20,7 @@ const Navbar = () => {
     if (role === "admin") return "/admin";
     if (role === "chef") return "/dashboard/chef";
     if (role === "rider") return "/dashboard/rider";
-    return "/customer/kitchens";
+    return "/customer/discover";
   };
 
   const getProfileLink = () => {
@@ -29,7 +29,7 @@ const Navbar = () => {
     if (role === "admin") return "/admin/settings";
     if (role === "chef") return "/dashboard/chef/settings";
     if (role === "rider") return "/dashboard/rider/settings";
-    return "/customer/profile";
+    return "/customer/discover/profile";
   };
 
   return (
@@ -72,7 +72,7 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-6">
           {session ? (
             <div className="flex items-center gap-6">
-               <Link to="/customer/cart" className="text-foreground/80 hover:text-gold transition-colors">
+               <Link to="/customer/discover" className="text-foreground/80 hover:text-gold transition-colors">
                   <ShoppingBag size={20} />
                </Link>
                <Link to={getProfileLink()} className="flex items-center gap-3 group">

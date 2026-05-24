@@ -127,30 +127,37 @@ export const ridersApi = {
     phone: string;
     vehicleType: string;
     plateNumber: string;
+    password?: string;
   }) => {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
-    const userId = crypto.randomUUID();
-    const profileId = crypto.randomUUID();
+    const tempPassword = data.password || "Plokitch@2026!";
+    const signupUrl = process.env.BETTER_AUTH_URL 
+      ? `${process.env.BETTER_AUTH_URL}/api/auth/signup`
+      : "http://localhost:4000/api/auth/signup";
 
-    // 1. Create the base User record
-    const { error: userError } = await supabase
-      .from('user')
-      .insert({
-        id: userId,
-        name: data.name,
+    // 1. Create user credentials via Better Auth signup API
+    const signupRes = await fetch(signupUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         email: data.email,
+        password: tempPassword,
+        name: data.name,
         phone: data.phone,
-        role: 'rider',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+        role: "rider"
+      })
+    });
 
-    if (userError) {
-      console.error('[API:riders:create:user]', userError);
-      throw new Error(`Failed to create rider user: ${userError.message}`);
+    if (!signupRes.ok) {
+      const errData = await signupRes.json().catch(() => ({ message: "Unknown signup error" }));
+      throw new Error(errData.message || `Auth signup failed: ${signupRes.statusText}`);
     }
+
+    const { user } = await signupRes.json();
+    const userId = user.id;
+    const profileId = crypto.randomUUID();
 
     // 2. Create the Rider profile
     const { data: rider, error: profileError } = await supabase
@@ -175,6 +182,9 @@ export const ridersApi = {
       throw new Error(`Failed to create rider profile: ${profileError.message}`);
     }
 
-    return rider;
+    return {
+      ...rider,
+      tempPassword
+    };
   }
 };

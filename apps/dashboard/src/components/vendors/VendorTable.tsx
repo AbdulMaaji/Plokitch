@@ -78,6 +78,21 @@ export function VendorTable({ initialData }: VendorTableProps) {
       ),
     },
     {
+      id: "onboarding",
+      header: "ONBOARDING",
+      cell: ({ row }) => {
+        const hasCoords = row.original.location?.lat && row.original.location?.lng
+        return (
+          <div className={cn(
+            "px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider w-fit",
+            hasCoords ? "bg-green-50 text-green-600 border border-green-200" : "bg-orange-50 text-orange-600 border border-orange-200"
+          )}>
+            {hasCoords ? "GEO-LOCATED" : "NO GPS PIN"}
+          </div>
+        )
+      }
+    },
+    {
       accessorKey: "is_active",
       header: "STATUS",
       cell: ({ row }) => {

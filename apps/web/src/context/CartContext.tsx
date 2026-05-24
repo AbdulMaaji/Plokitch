@@ -51,6 +51,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const numericPrice = parseInt(dish.price.replace(/[^\d]/g, ""));
     
     setItems((prev) => {
+      // Single-chef validation: reset the basket if the cart contains items from a different chef
+      if (prev.length > 0 && prev[0].vendorId !== dish.vendorId) {
+        toast.info("Basket Cleared", {
+          description: `Starting a new signature collection from ${dish.chef || 'Artisan'}.`,
+        });
+        return [
+          {
+            id: dish.id,
+            name: dish.name,
+            price: dish.price,
+            numericPrice,
+            image: dish.image,
+            chef: dish.chef,
+            vendorId: dish.vendorId,
+            quantity: 1,
+          }
+        ];
+      }
+
       const existing = prev.find((item) => item.id === dish.id);
       if (existing) {
         toast.success(`Increased ${dish.name} quantity`, {

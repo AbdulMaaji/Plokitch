@@ -25,6 +25,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { useChefData } from "@/hooks/useChefData";
 import { uploadImage } from "@/lib/upload";
 import { ChangePasswordDialog } from "@/components/auth/ChangePasswordDialog";
+import OrderTrackingMap from "@/components/Map/OrderTrackingMap";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -382,9 +383,17 @@ const ChefSettings = () => {
                       </div>
 
                       <div className="w-full md:w-80 space-y-4">
-                         <div className="aspect-square rounded-2xl bg-dark-deep border border-gold/10 flex items-center justify-center text-gold/20 relative overflow-hidden group">
-                            <MapIcon size={48} />
-                            <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                         <div className="aspect-square rounded-2xl bg-dark-deep border border-gold/10 relative overflow-hidden group">
+                            <OrderTrackingMap 
+                              kitchenLocation={
+                                vendorForm.location?.lat && vendorForm.location?.lng
+                                  ? { lat: vendorForm.location.lat, lng: vendorForm.location.lng }
+                                  : null
+                              }
+                              showLabels={true}
+                              showRoute={false}
+                              className="w-full h-full min-h-0"
+                            />
                          </div>
                          <p className="text-[10px] text-muted-foreground text-center font-medium">Pin your kitchen to the map to help riders find you faster.</p>
                       </div>

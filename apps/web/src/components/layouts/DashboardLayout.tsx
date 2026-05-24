@@ -104,7 +104,7 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
       { icon: LayoutDashboard, label: "System Status", href: "/dashboard" },
     ],
     customer: [
-      { icon: Sparkles, label: "Discover", href: "/explore" },
+      { icon: Sparkles, label: "Discover", href: "/customer/discover" },
       { icon: Store, label: "Kitchens", href: "/customer/kitchens" },
       { icon: Utensils, label: "Dishes", href: "/dishes" },
       { icon: MapPin, label: "Track Order", href: "/customer/track" },
@@ -121,7 +121,7 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
       chef: "/dashboard",
       rider: "/dashboard",
       admin: "/dashboard",
-      customer: "/customer/kitchens"
+      customer: "/customer/discover"
     };
     navigate(paths[newRole]);
   };
@@ -237,7 +237,7 @@ const DashboardLayout = ({ children, role: pageRole }: DashboardLayoutProps) => 
           <div className="flex items-center gap-3 md:gap-6">
             {role === "customer" && (
               <button 
-                onClick={() => navigate("/customer/cart")}
+                onClick={() => navigate("/customer/discover")}
                 className="relative text-muted-foreground hover:text-gold transition-colors p-2"
               >
                 <ShoppingBag size={20} />

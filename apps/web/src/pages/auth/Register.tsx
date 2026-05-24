@@ -69,8 +69,6 @@ const Register = () => {
 
   const roles = [
     { id: "customer", label: "Customer", icon: User, description: "Order delicious home-cooked meals" },
-    { id: "chef", label: "Chef", icon: ChefHat, description: "Share your culinary talent and earn" },
-    { id: "rider", label: "Rider", icon: Bike, description: "Deliver freshness to our community" },
   ];
 
   return (
@@ -103,7 +101,7 @@ const Register = () => {
               {step === 1 ? "Join Plokitch" : `Create ${role.charAt(0).toUpperCase() + role.slice(1)} Account`}
             </CardTitle>
             <CardDescription className="text-muted-foreground font-body">
-              {step === 1 ? "Select how you want to use our platform" : "Fill in your details to get started"}
+              {step === 1 ? "Register a secure customer profile to explore Gombe's local kitchens" : "Fill in your details to get started"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -113,7 +111,7 @@ const Register = () => {
                   <RadioGroup 
                     value={role} 
                     onValueChange={setRole}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                    className="grid grid-cols-1 gap-4"
                   >
                     {roles.map((r) => (
                       <div key={r.id}>
@@ -130,6 +128,12 @@ const Register = () => {
                     ))}
                   </RadioGroup>
                 </div>
+                
+                <div className="p-4 rounded-xl bg-gold/5 border border-gold/10 text-center space-y-1">
+                  <p className="text-xs font-black text-gold uppercase tracking-wider">Chef & Rider Onboarding</p>
+                  <p className="text-[11px] text-muted-foreground">Kitchen and rider account creation is restricted to platform administration.</p>
+                </div>
+
                 <Button 
                   onClick={() => setStep(2)}
                   className="w-full bg-gold hover:bg-gold-light text-background font-black tracking-widest uppercase py-6"
