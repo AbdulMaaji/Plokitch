@@ -53,3 +53,29 @@
     @apply flex items-center gap-3 px-4 py-3 rounded-xl text-subtle hover:bg-muted hover:text-navy transition-all duration-200;
   }
 }
+
+/* Custom Elegant Scrollbar Across Web and Dashboard Apps */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.25);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(229, 195, 140, 0.55);
+}
+
+/* Firefox standard scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.25) transparent;
+}

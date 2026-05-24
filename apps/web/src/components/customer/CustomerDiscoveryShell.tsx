@@ -80,7 +80,9 @@ const SpatialShellContainer = () => {
       {/* Persistent Bottom Sheet - Rendered on Root exploration flow */}
       <div 
         className={`absolute inset-0 z-20 pointer-events-none transition-all duration-500 ${
-          isRoot ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12 select-none pointer-events-none"
+          isRoot && !isMapFullScreen 
+            ? "opacity-100 translate-y-0" 
+            : "opacity-0 translate-y-full select-none pointer-events-none"
         }`}
       >
         <DiscoverBottomSheet
