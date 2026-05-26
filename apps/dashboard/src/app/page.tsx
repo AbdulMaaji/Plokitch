@@ -22,9 +22,12 @@ export default function Home() {
     <main className="max-w-[1280px] mx-auto p-8 flex flex-col gap-12">
       {/* Brand Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <span className="font-bold text-[32px] text-navy">PLO</span>
-          <span className="font-bold text-[32px] text-action">KITCH</span>
+        <div className="flex items-center gap-2.5">
+          <img src="/logo.svg" className="w-10 h-10 object-contain" alt="Plokitch Logo" />
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-[32px] text-navy">PLO</span>
+            <span className="font-bold text-[32px] text-action">KITCH</span>
+          </div>
         </div>
         <button className="bg-navy text-white px-5 py-2.5 rounded-button text-nav font-semibold flex items-center gap-2">
           LIVE ORDERS <ShoppingBag size={14} />

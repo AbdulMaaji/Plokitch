@@ -4,6 +4,8 @@ import { Menu, X, User, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { authClient } from "@/lib/auth-client";
 
+import logoSvg from "@/assets/logo.svg";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session } = authClient.useSession();
@@ -37,11 +39,7 @@ const Navbar = () => {
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
-          <svg width="34" height="34" viewBox="0 0 64 64" fill="none" className="text-gold">
-            <path d="M32 8C24 8 16 16 16 28c0 10 8 20 16 24 8-4 16-14 16-24C48 16 40 8 32 8z" stroke="currentColor" strokeWidth="2.5" fill="none"/>
-            <path d="M22 36c4-4 6-10 10-12 4 2 6 8 10 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-            <circle cx="32" cy="28" r="4" fill="currentColor"/>
-          </svg>
+          <img src={logoSvg} className="w-10 h-10 object-contain" alt="Plokitch Logo" />
           <span className="text-xl font-heading font-semibold text-gold tracking-wide">Plokitch</span>
         </Link>
 

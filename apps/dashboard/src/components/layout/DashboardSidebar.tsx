@@ -47,9 +47,12 @@ export function DashboardSidebar() {
     <div className="w-64 h-screen bg-navy flex flex-col border-r border-divider fixed left-0 top-0 z-30">
       {/* Logo */}
       <div className="p-8 pb-12">
-        <Link href="/admin/dashboard" className="flex items-center gap-1.5 tracking-tight">
-          <span className="font-heading font-bold text-[26px] text-white">PLO</span>
-          <span className="font-heading font-bold text-[26px] text-primary">KITCH</span>
+        <Link href="/admin/dashboard" className="flex items-center gap-2.5 tracking-tight">
+          <img src="/logo.svg" className="w-10 h-10 object-contain" alt="Plokitch Logo" />
+          <div className="flex items-center gap-1">
+            <span className="font-heading font-bold text-[26px] text-white">PLO</span>
+            <span className="font-heading font-bold text-[26px] text-primary">KITCH</span>
+          </div>
         </Link>
       </div>
 

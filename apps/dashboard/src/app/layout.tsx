@@ -18,6 +18,14 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Plokitch Dashboard | Operational Control",
   description: "Modern food delivery and vendor operations platform.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", type: "image/x-icon" }
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  }
 };
 
 export default function RootLayout({

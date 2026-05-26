@@ -23,9 +23,12 @@ const AuthSplitLayout = ({
       {/* Left Column: Visual & Branding (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-navy flex-col justify-between p-16 overflow-hidden">
         <div className="relative z-10">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-bold text-[28px] text-white">PLO</span>
-            <span className="font-bold text-[28px] text-action">KITCH</span>
+          <Link href="/" className="flex items-center gap-2.5">
+            <img src="/logo.svg" className="w-10 h-10 object-contain" alt="Plokitch Logo" />
+            <div className="flex items-center gap-1">
+              <span className="font-bold text-[28px] text-white">PLO</span>
+              <span className="font-bold text-[28px] text-action">KITCH</span>
+            </div>
             <span className="bg-white/10 px-2 py-0.5 rounded text-[10px] font-bold text-white/60 ml-2 uppercase tracking-widest">Admin</span>
           </Link>
         </div>
@@ -78,9 +81,12 @@ const AuthSplitLayout = ({
         <div className="w-full max-w-[440px] flex flex-col gap-8 bg-white p-10 rounded-card shadow-card border border-divider">
           {/* Mobile Logo */}
           <div className="lg:hidden flex justify-center mb-4">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="font-bold text-[24px] text-navy">PLO</span>
-              <span className="font-bold text-[24px] text-action">KITCH</span>
+            <Link href="/" className="flex items-center gap-2.5">
+              <img src="/logo.svg" className="w-10 h-10 object-contain animate-pulse" alt="Plokitch Logo" />
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-[24px] text-navy">PLO</span>
+                <span className="font-bold text-[24px] text-action">KITCH</span>
+              </div>
             </Link>
           </div>
 
